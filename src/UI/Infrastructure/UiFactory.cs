@@ -235,7 +235,7 @@ namespace XingShangMod.UI.Infrastructure
                 "Viewport",
                 null,
                 null,
-                new Color(0f, 0f, 0f, 0f));
+                new Color(1f, 1f, 1f, 1f));
             Stretch(viewportImage.rectTransform);
             Mask mask = viewportImage.gameObject.AddComponent<Mask>();
             mask.showMaskGraphic = false;

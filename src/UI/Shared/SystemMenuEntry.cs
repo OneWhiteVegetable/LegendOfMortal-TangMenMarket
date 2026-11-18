@@ -174,11 +174,12 @@ namespace XingShangMod.UI.Shared
                 yield break;
             }
 
+            entryRect.localScale = sourceRect.localScale;
             RectTransform uncap = source.transform.parent.Find("UncapSixStatsEntry") as RectTransform;
             if (uncap != null)
             {
-                float distance = Mathf.Max(entryRect.rect.height * entryRect.lossyScale.y, 36f) + 6f;
-                entryRect.position = uncap.position + new Vector3(0f, distance, 0f);
+                entryRect.localScale = uncap.localScale == Vector3.zero ? Vector3.one : uncap.localScale;
+                entryRect.localPosition = uncap.localPosition + new Vector3(0f, uncap.rect.height + 12f, 0f);
                 yield break;
             }
 

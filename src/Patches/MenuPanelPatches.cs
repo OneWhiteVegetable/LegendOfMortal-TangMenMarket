@@ -26,8 +26,12 @@ namespace XingShangMod.Patches
             PatchGuard.Run("MenuPanel.Attach", delegate(ModApplication app)
             {
                 ModUserInterface ui = app.UI as ModUserInterface;
-                if (ui != null)
-                    ui.AttachSystemMenu(panel);
+                if (ui == null || !ui.IsAlive)
+                {
+                    ui = new ModUserInterface(app);
+                    app.AttachUI(ui);
+                }
+                ui.AttachSystemMenu(panel);
             });
         }
     }

@@ -56,6 +56,7 @@ namespace XingShangMod.UI
         }
 
         public Canvas Canvas { get { return _canvas; } }
+        public bool IsAlive { get { return !_disposed && _canvas != null; } }
         public bool IsOpen
         {
             get
