@@ -1,0 +1,22 @@
+{
+  "id": "brush_red_short",
+  "file": "brush_red_short.png",
+  "width": 256,
+  "height": 64,
+  "category": "brushes",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 400,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_brush_red_short.py"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "tab_range_normal_9s",
+  "file": "tab_range_normal_9s.png",
+  "width": 192,
+  "height": 96,
+  "category": "buttons/range_tab",
+  "spriteBorder": [
+    16,
+    16,
+    16,
+    16
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 400,
+  "tintable": false,
+  "nonEmptyTransparentPlaceholder": true,
+  "wrapMode": "Clamp",
+  "filterMode": "bilinear",
+  "sourceScript": "tools/unity_ui/draw_tab_range_normal_9s.py"
+}

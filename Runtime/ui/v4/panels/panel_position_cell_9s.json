@@ -1,0 +1,22 @@
+{
+  "id": "panel_position_cell_9s",
+  "file": "panel_position_cell_9s.png",
+  "width": 256,
+  "height": 128,
+  "category": "panels",
+  "spriteBorder": [
+    4,
+    4,
+    4,
+    4
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": true,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_panel_position_cell_9s.py"
+}

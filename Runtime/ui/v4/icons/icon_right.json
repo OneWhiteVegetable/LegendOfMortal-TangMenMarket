@@ -1,0 +1,22 @@
+{
+  "id": "icon_right",
+  "file": "icon_right.png",
+  "width": 256,
+  "height": 256,
+  "category": "icons",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 400,
+  "tintable": true,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_icon_right.py"
+}

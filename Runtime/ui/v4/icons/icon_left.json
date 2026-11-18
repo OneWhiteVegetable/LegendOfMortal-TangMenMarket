@@ -1,0 +1,22 @@
+{
+  "id": "icon_left",
+  "file": "icon_left.png",
+  "width": 256,
+  "height": 256,
+  "category": "icons",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": true,
+  "wrapMode": "Clamp",
+  "filterMode": "bilinear",
+  "sourceScript": "tools/unity_ui/draw_icon_left.py"
+}

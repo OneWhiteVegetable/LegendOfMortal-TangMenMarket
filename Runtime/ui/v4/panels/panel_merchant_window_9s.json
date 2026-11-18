@@ -1,0 +1,22 @@
+{
+  "id": "panel_merchant_window_9s",
+  "file": "panel_merchant_window_9s.png",
+  "width": 512,
+  "height": 512,
+  "category": "panels",
+  "spriteBorder": [
+    96,
+    96,
+    96,
+    96
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 400,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_panel_merchant_window_9s.py"
+}

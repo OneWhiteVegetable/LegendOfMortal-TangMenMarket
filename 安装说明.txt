@@ -1,0 +1,84 @@
+唐门行市（XingShangMod）安装说明
+================================
+
+一、运行依赖
+
+1. 《活侠传》游戏本体。
+2. BepInEx 6 Unity Mono 版本；已核对的宿主版本为 6.0.0-be.692。
+   不使用 IL2CPP 版本，也未以 BepInEx 5 作为目标。
+3. 本 ZIP 只包含插件，不包含 BepInEx 本体。请先独立安装 BepInEx。
+
+行情由随包历史快照与本地规则纯离线模拟，不连接真实行情或交易服务。
+仅供游戏娱乐，不构成投资建议，不可用于真实交易决策。
+
+二、安装（插件-only）
+
+1. 关闭游戏并备份重要存档。
+2. 将 XingShangMod-v<版本>.zip 解压到游戏根目录，即包含 Mortal.exe 和
+   BepInEx 文件夹的目录。
+3. 确认最终路径如下；不要再多套一层解压目录：
+
+游戏根目录/
+└── BepInEx/
+    └── plugins/
+        ├── XingShangMod.dll
+        └── XingShangMod/
+            └── Runtime/
+                ├── build_manifest.json
+                ├── items.json
+                ├── news.json
+                ├── selection_catalog.json
+                ├── data/
+                ├── items/
+                └── ui/
+
+本包不会也不应覆盖 BepInEx/core、BepInEx/config、游戏 DLL 或其他 Mod。
+不要把 DLL 单独放到其他目录，XingShangMod/Runtime 必须与 DLL 保持上述结构。
+
+三、升级
+
+关闭游戏，备份侧车，然后替换 XingShangMod.dll，并完整替换旧的
+XingShangMod/Runtime 目录。不要只更新部分资源，也不要动其他插件。
+
+四、侧车存档
+
+Mod 状态不写入原版 .dat，而是写入独立 JSON 侧车：
+
+<Unity Application.persistentDataPath>/XingShangMod/Sidecars/
+  p-<用户 Profile>/s-<存档槽位>/<GameSave.TimeTick>.json
+
+Windows 下 Application.persistentDataPath 通常位于：
+%USERPROFILE%/AppData/LocalLow/<发行商>/<游戏名>
+以游戏实际目录为准。侧车与原版存档共用同一持久化数据根目录，但文件独立。
+
+五、卸载
+
+1. 关闭游戏。
+2. 删除 BepInEx/plugins/XingShangMod.dll。
+3. 删除 BepInEx/plugins/XingShangMod/ 整个目录。
+
+卸载不影响原版 .dat 存档继续独立游玩，但原版不会显示或结算 Mod 行情和持仓。
+默认保留侧车，以便重新安装后识别对应存档。若确定不再使用，可备份后删除
+持久化数据目录中的 XingShangMod/Sidecars；此操作不需要也不应修改原版 .dat。
+
+六、日志诊断
+
+主要日志：游戏根目录/BepInEx/LogOutput.log
+
+反馈问题时请附游戏、BepInEx、Mod 版本，复现步骤，以及对应时段的日志摘录。
+可搜索 XingShangMod、Mod initialization failed、Patch class、Sidecar。
+侧车缺失或损坏时，请保留相关 JSON 与日志供诊断，不要改写原版 .dat。
+
+七、源码构建与发布打包（普通玩家无需执行）
+
+在项目根目录运行：
+
+& 'C:\allsoft\dotnet\dotnet.exe' build .\XingShangMod.csproj --configuration Release
+
+一键 Release 构建、资源清单校验及打包：
+
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pack.ps1 -DotnetPath 'C:\allsoft\dotnet\dotnet.exe'
+
+游戏不在默认目录时可追加 -GameRoot 'D:\Games\LegendOfMortal'。
+输出位于 dist/XingShangMod-v<版本>.zip，对应 SHA256 文件以 .zip.sha256 结尾。
+发布包不包含 bin、obj、tools、反编译文件、游戏 DLL 或其他 Mod。

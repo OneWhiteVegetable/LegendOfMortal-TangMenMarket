@@ -1,0 +1,22 @@
+{
+  "id": "mask_ticker_edge_fade",
+  "file": "mask_ticker_edge_fade.png",
+  "width": 512,
+  "height": 34,
+  "category": "masks",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_mask_ticker_edge_fade.py"
+}

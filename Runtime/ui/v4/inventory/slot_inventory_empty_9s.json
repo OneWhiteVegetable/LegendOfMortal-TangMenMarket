@@ -1,0 +1,22 @@
+{
+  "id": "slot_inventory_empty_9s",
+  "file": "slot_inventory_empty_9s.png",
+  "width": 384,
+  "height": 256,
+  "category": "inventory",
+  "spriteBorder": [
+    12,
+    12,
+    12,
+    12
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_slot_inventory_empty_9s.py"
+}

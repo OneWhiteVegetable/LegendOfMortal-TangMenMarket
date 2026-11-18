@@ -1,0 +1,22 @@
+{
+  "id": "card_goods_normal",
+  "file": "card_goods_normal.png",
+  "width": 512,
+  "height": 512,
+  "category": "cards",
+  "spriteBorder": [
+    24,
+    24,
+    24,
+    24
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_card_goods_normal.py"
+}

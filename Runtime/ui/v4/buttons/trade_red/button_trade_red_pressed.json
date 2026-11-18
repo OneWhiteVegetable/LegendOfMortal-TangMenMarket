@@ -1,0 +1,22 @@
+{
+  "id": "button_trade_red_pressed",
+  "file": "button_trade_red_pressed.png",
+  "width": 160,
+  "height": 144,
+  "category": "buttons/trade_red",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 400,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_button_trade_red_pressed.py"
+}

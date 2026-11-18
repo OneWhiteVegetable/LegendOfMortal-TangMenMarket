@@ -1,0 +1,22 @@
+{
+  "id": "panel_ticker_label",
+  "file": "panel_ticker_label.png",
+  "width": 256,
+  "height": 80,
+  "category": "panels",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "bilinear",
+  "sourceScript": "tools/unity_ui/draw_panel_ticker_label.py"
+}

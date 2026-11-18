@@ -1,0 +1,22 @@
+{
+  "id": "button_contract_green_normal_9s",
+  "file": "button_contract_green_normal_9s.png",
+  "width": 320,
+  "height": 160,
+  "category": "buttons/contract_green",
+  "spriteBorder": [
+    8,
+    20,
+    20,
+    8
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 400,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_button_contract_green_normal_9s.py"
+}

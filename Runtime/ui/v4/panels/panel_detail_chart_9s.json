@@ -1,0 +1,22 @@
+{
+  "id": "panel_detail_chart_9s",
+  "file": "panel_detail_chart_9s.png",
+  "width": 512,
+  "height": 512,
+  "category": "panels",
+  "spriteBorder": [
+    24,
+    24,
+    24,
+    24
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "bilinear",
+  "sourceScript": "tools/unity_ui/draw_panel_detail_chart_9s.py"
+}

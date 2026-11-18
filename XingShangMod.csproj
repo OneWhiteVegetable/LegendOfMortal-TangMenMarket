@@ -1,0 +1,85 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <AssemblyName>XingShangMod</AssemblyName>
+    <RootNamespace>XingShangMod</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GameRoot Condition="'$(GameRoot)' == ''">C:\allsoft\steam\steamapps\common\LegendOfMortal</GameRoot>
+    <ManagedPath Condition="'$(ManagedPath)' == ''">$(GameRoot)\Mortal_Data\Managed</ManagedPath>
+    <BepInExCorePath Condition="'$(BepInExCorePath)' == ''">$(GameRoot)\BepInEx\core</BepInExCorePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BepInEx.Core">
+      <HintPath>$(BepInExCorePath)\BepInEx.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BepInEx.Unity.Mono">
+      <HintPath>$(BepInExCorePath)\BepInEx.Unity.Mono.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExCorePath)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Mortal.Core">
+      <HintPath>$(ManagedPath)\Mortal.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Mortal.Free">
+      <HintPath>$(ManagedPath)\Mortal.Free.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Mortal.Story">
+      <HintPath>$(ManagedPath)\Mortal.Story.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(ManagedPath)\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(ManagedPath)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(ManagedPath)\UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(ManagedPath)\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(ManagedPath)\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(ManagedPath)\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>$(ManagedPath)\UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(ManagedPath)\UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(ManagedPath)\Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>$(ManagedPath)\DOTween.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="DOTween.Modules">
+      <HintPath>$(ManagedPath)\DOTween.Modules.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

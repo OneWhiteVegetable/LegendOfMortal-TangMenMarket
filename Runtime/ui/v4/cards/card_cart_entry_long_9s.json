@@ -1,0 +1,22 @@
+{
+  "id": "card_cart_entry_long_9s",
+  "file": "card_cart_entry_long_9s.png",
+  "width": 384,
+  "height": 192,
+  "category": "cards",
+  "spriteBorder": [
+    8,
+    24,
+    8,
+    24
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "bilinear",
+  "sourceScript": "tools/unity_ui/draw_card_cart_entry_long_9s.py"
+}

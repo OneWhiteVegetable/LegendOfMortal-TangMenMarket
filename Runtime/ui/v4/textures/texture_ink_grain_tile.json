@@ -1,0 +1,22 @@
+{
+  "id": "texture_ink_grain_tile",
+  "file": "texture_ink_grain_tile.png",
+  "width": 512,
+  "height": 512,
+  "category": "textures",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Repeat",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_texture_ink_grain_tile.py"
+}

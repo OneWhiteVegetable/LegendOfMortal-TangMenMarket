@@ -1,0 +1,22 @@
+{
+  "id": "mask_chart_drybrush_tile",
+  "file": "mask_chart_drybrush_tile.png",
+  "width": 256,
+  "height": 256,
+  "category": "masks",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Repeat",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_mask_chart_drybrush_tile.py"
+}

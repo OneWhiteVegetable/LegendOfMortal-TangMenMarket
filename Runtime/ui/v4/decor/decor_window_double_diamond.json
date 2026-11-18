@@ -1,0 +1,22 @@
+{
+  "id": "decor_window_double_diamond",
+  "file": "decor_window_double_diamond.png",
+  "width": 620,
+  "height": 620,
+  "category": "decor",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 200,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_decor_window_double_diamond.py"
+}
