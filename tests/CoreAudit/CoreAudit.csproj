@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <GameRoot Condition="'$(GameRoot)' == ''">C:\allsoft\steam\steamapps\common\LegendOfMortal</GameRoot>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <DefineConstants>$(DefineConstants);PRESENTATION_AUDIT;XINGSHANG_CHART_AUDIT;UI_MOTION_AUDIT</DefineConstants>
+    <NoWarn>$(NoWarn);SYSLIB0011</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/Domain/*.cs" LinkBase="Domain" />
+    <Compile Include="../../src/Market/*.cs" LinkBase="Market" />
+    <Compile Include="../../src/Trading/*.cs" LinkBase="Trading" />
+    <Compile Include="../../src/Persistence/*.cs" LinkBase="Persistence" />
+    <Compile Include="../../src/Data/*.cs" LinkBase="Data" />
+    <Compile Include="../../src/Progression/RunRandom.cs" Link="Progression/RunRandom.cs" />
+    <Compile Include="../../src/Progression/NewsService.cs" Link="Progression/NewsService.cs" />
+    <Compile Include="../../src/UI/Shared/MarketQuery.cs" Link="UI/Shared/MarketQuery.cs" />
+    <Compile Include="../../src/UI/Market/RankingOrdering.cs" Link="UI/Market/RankingOrdering.cs" />
+    <Compile Include="../../src/UI/Charting/WeeklyChartMode.cs" Link="UI/Charting/WeeklyChartMode.cs" />
+    <Compile Include="../../src/UI/Charting/WeeklyChartData.cs" Link="UI/Charting/WeeklyChartData.cs" />
+    <Compile Include="../../src/UI/Charting/WeeklyChartSegment.cs" Link="UI/Charting/WeeklyChartSegment.cs" />
+    <Compile Include="../../src/UI/Charting/WeeklyChartBrushGeometry.cs" Link="UI/Charting/WeeklyChartBrushGeometry.cs" />
+    <Compile Include="../../src/UI/Infrastructure/UiMotionEasing.cs" Link="UI/Infrastructure/UiMotionEasing.cs" />
+    <Compile Include="../../src/UI/Infrastructure/UiMotionKeyframes.cs" Link="UI/Infrastructure/UiMotionKeyframes.cs" />
+    <Compile Include="../../src/UI/Shared/NewsTickerMotion.cs" Link="UI/Shared/NewsTickerMotion.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>$(GameRoot)\BepInEx\core\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>$(GameRoot)\Mortal_Data\Managed\DOTween.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

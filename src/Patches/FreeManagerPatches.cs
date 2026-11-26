@@ -29,5 +29,26 @@ namespace XingShangMod.Patches
                 app.OnFreeFrame(__instance);
             });
         }
+
+        [HarmonyPatch(typeof(ModApplication), "Disable")]
+        [HarmonyPrefix]
+        private static void DisablePrefix()
+        {
+            DoorWorkSession.CloseActive(DoorWorkCloseReason.ModDisabled);
+        }
+
+        [HarmonyPatch(typeof(ModUserInterface), "Dispose")]
+        [HarmonyPrefix]
+        private static void DisposePrefix()
+        {
+            DoorWorkSession.CloseActive(DoorWorkCloseReason.UiDisposed);
+        }
+
+        [HarmonyPatch(typeof(Plugin), "OnDestroy")]
+        [HarmonyPrefix]
+        private static void PluginDestroyPrefix()
+        {
+            DoorWorkSession.CloseActive(DoorWorkCloseReason.PluginDestroyed);
+        }
     }
 }

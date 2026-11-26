@@ -29,7 +29,8 @@ namespace XingShangMod.Trading
         CapacityExceeded,
         InvalidItemWeight,
         CashOverflow,
-        WalletRejected
+        WalletRejected,
+        BorrowWindowClosed
     }
 
     public sealed class TradeOrder

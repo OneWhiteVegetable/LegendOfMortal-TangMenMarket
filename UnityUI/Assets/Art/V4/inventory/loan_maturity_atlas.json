@@ -1,0 +1,22 @@
+{
+  "id": "loan_maturity_atlas",
+  "file": "loan_maturity_atlas.png",
+  "width": 2048,
+  "height": 1024,
+  "category": "inventory",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": true,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "XingShangMod/tools/draw_loan_maturity_atlas.py"
+}

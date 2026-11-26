@@ -6,3 +6,4 @@ dist/
 *.suo
 __pycache__/
 *.py[cod]
+UnityUI/UserSettings/

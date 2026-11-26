@@ -38,10 +38,11 @@ namespace XingShangMod.Market
         private readonly AnnualIndexService _annualIndices;
         private readonly ElasticityStateMachine _elasticity;
         private readonly DelistingService _delisting;
+        private int _lastSettledWeek;
 
         public RunState State { get { return _state; } }
         public AnnualIndexService AnnualIndices { get { return _annualIndices; } }
-        public int PendingWeekCount { get { return Math.Max(0, _state.Clock.MarketWeekIndex - GetLastProcessedWeek()); } }
+        public int PendingWeekCount { get { return Math.Max(0, _state.Clock.MarketWeekIndex - _lastSettledWeek); } }
 
         public event Action<MarketWeekChange> WeekAdvanced;
 
@@ -90,6 +91,7 @@ namespace XingShangMod.Market
                 });
             }
 
+            _lastSettledWeek = LastSavedIndexWeek();
             var definitions = new Dictionary<string, ItemDefinition>(StringComparer.Ordinal);
             if (itemDefinitions != null)
             {
@@ -135,35 +137,102 @@ namespace XingShangMod.Market
                 return existing;
             }
 
-            int week = _state.Clock.MarketWeekIndex;
-            SecurityBinding binding = _selector.CreateSecurityBinding(definition, week);
+            int revealWeek = _state.Clock.MarketWeekIndex;
+            SecurityBinding binding = _selector.CreateSecurityBinding(definition, revealWeek);
+            List<WeeklyPoint> retained = _state.GetPriceHistory(binding.ItemId);
+            retained.RemoveAll(point => point.MarketWeekIndex > revealWeek);
+            if (retained.Count != 0)
+                return ReattachPublishedHistory(binding, retained, revealWeek);
+            var elasticity = new ElasticityState { ItemId = definition.ItemId, Multiplier = 1.0 };
+            List<WeeklyPoint> indexPath = SettledIndexPath(revealWeek);
+            WeeklyPoint first = indexPath[0];
+            var newPrices = new List<WeeklyPoint>(indexPath.Count);
+            _delisting.ApplyInitialRecord(binding, _repository.GetSecurity(binding.SecurityId), first.MarketWeekIndex);
+            newPrices.Add(new WeeklyPoint
+            {
+                ItemId = definition.ItemId,
+                MarketWeekIndex = first.MarketWeekIndex,
+                GameYear = first.GameYear,
+                GameMonth = first.GameMonth,
+                GameRound = first.GameRound,
+                SourceRecordIndex = binding.StartRecordIndex,
+                Price = RoundToWen(binding.LastPrice),
+                Observed = true,
+                DataExhausted = binding.IsDataExhausted,
+                Delisted = binding.IsDelisted
+            });
+            // A historical quote is not a past market event. Do not settle, publish news or
+            // capture player assets while catching up this newly revealed security.
+            for (int i = 1; i < indexPath.Count; i++)
+                newPrices.Add(AdvanceItem(binding, elasticity, indexPath[i]));
+
             _state.SecurityBindings.Add(binding);
+            _state.ElasticityStates.RemoveAll(old => old != null && old.ItemId == binding.ItemId);
+            _state.ElasticityStates.Add(elasticity);
+            _state.PriceHistory.AddRange(newPrices);
             if (!_state.HasItemAppeared(definition.ItemId))
                 _state.AppearedItemIds.Add(definition.ItemId);
-            EnsureElasticityState(definition.ItemId);
+            return binding;
+        }
 
+        // A damaged or early save may retain public prices but omit their binding. Never
+        // append a second opening series over amounts that could already be in the player's ledger.
+        private SecurityBinding ReattachPublishedHistory(SecurityBinding binding, List<WeeklyPoint> prices, int currentWeek)
+        {
+            prices.Sort((a, b) => a.MarketWeekIndex.CompareTo(b.MarketWeekIndex));
+            WeeklyPoint last = prices[prices.Count - 1];
             WeeklySecurity security = _repository.GetSecurity(binding.SecurityId);
-            _delisting.ApplyInitialRecord(binding, security, week);
-            if (!HasPricePoint(definition.ItemId, week))
+            binding.AppearedWeek = prices[0].MarketWeekIndex;
+            binding.LastPrice = last.Price;
+            if (last.SourceRecordIndex >= 0 && last.SourceRecordIndex < security.Count)
+                binding.NextRecordIndex = last.SourceRecordIndex + 1;
+            binding.IsDataExhausted = last.DataExhausted || binding.NextRecordIndex >= security.Count;
+            for (int i = 0; i < prices.Count; i++)
+            {
+                if (!prices[i].Delisted)
+                    continue;
+                binding.IsDelisted = binding.IsDataExhausted = true;
+                binding.DelistedWeek = prices[i].MarketWeekIndex;
+                break;
+            }
+            ElasticityState elasticity = EnsureElasticityState(binding.ItemId);
+            List<WeeklyPoint> newPrices = new List<WeeklyPoint>();
+            foreach (WeeklyPoint index in SettledIndexPath(currentWeek))
+            {
+                if (index.MarketWeekIndex > last.MarketWeekIndex)
+                    newPrices.Add(AdvanceItem(binding, elasticity, index));
+            }
+            _state.PriceHistory.AddRange(newPrices);
+            _state.SecurityBindings.Add(binding);
+            if (!_state.HasItemAppeared(binding.ItemId))
+                _state.AppearedItemIds.Add(binding.ItemId);
+            return binding;
+        }
+
+        private List<WeeklyPoint> SettledIndexPath(int throughWeek)
+        {
+            var sorted = new SortedDictionary<int, WeeklyPoint>();
+            foreach (WeeklyPoint index in _state.IndexHistory)
+            {
+                if (index != null && index.MarketWeekIndex >= 0 && index.MarketWeekIndex <= throughWeek &&
+                    index.MarketWeekIndex <= _lastSettledWeek)
+                    sorted[index.MarketWeekIndex] = index;
+            }
+            var path = new List<WeeklyPoint>(sorted.Count);
+            foreach (WeeklyPoint index in sorted.Values)
+            {
+                // A partial legacy index cannot justify invented returns across missing weeks.
+                if (path.Count > 0 && index.MarketWeekIndex - path[path.Count - 1].MarketWeekIndex != 1)
+                    path.Clear();
+                path.Add(index);
+            }
+            if (path.Count == 0)
             {
                 MarketTime time = GetCurrentTime();
-                _state.PriceHistory.Add(new WeeklyPoint
-                {
-                    ItemId = definition.ItemId,
-                    MarketWeekIndex = week,
-                    GameYear = time.Year,
-                    GameMonth = time.Month,
-                    GameRound = time.Round,
-                    SourceRecordIndex = binding.StartRecordIndex,
-                    Price = RoundToWen(binding.LastPrice),
-                    BaseReturn = 0.0,
-                    Return = 0.0,
-                    Observed = true,
-                    DataExhausted = binding.IsDataExhausted,
-                    Delisted = binding.IsDelisted
-                });
+                path.Add(new WeeklyPoint { MarketWeekIndex = throughWeek, GameYear = time.Year,
+                    GameMonth = time.Month, GameRound = time.Round });
             }
-            return binding;
+            return path;
         }
 
         public IList<MarketWeekChange> AdvanceWeeks(MarketClockAdvancement advancement)
@@ -176,7 +245,7 @@ namespace XingShangMod.Market
             if (advancement.EndWeekIndex > _state.Clock.MarketWeekIndex)
                 throw new InvalidOperationException("The clock has not advanced through all supplied weeks.");
 
-            int lastProcessed = GetLastProcessedWeek();
+            int lastProcessed = _lastSettledWeek;
             if (advancement.EndWeekIndex <= lastProcessed)
                 return changes;
 
@@ -206,7 +275,7 @@ namespace XingShangMod.Market
             if (weekCount == 0)
                 return new List<MarketWeekChange>();
 
-            int lastProcessed = GetLastProcessedWeek();
+            int lastProcessed = _lastSettledWeek;
             var times = new MarketTime[weekCount];
             for (int i = 0; i < weekCount; i++)
                 times[i] = time;
@@ -220,7 +289,7 @@ namespace XingShangMod.Market
         public double GetCurrentPrice(string itemId)
         {
             SecurityBinding binding = _state.FindSecurityBinding(itemId);
-            if (binding == null)
+            if (binding == null || !_state.IsItemVisibleAt(itemId, _state.Clock.MarketWeekIndex))
                 throw new KeyNotFoundException("Item '" + itemId + "' has not appeared.");
             return RoundToWen(binding.LastPrice);
         }
@@ -274,26 +343,28 @@ namespace XingShangMod.Market
                 SecurityBinding binding = _state.SecurityBindings[i];
                 if (binding == null
                     || !_state.HasItemAppeared(binding.ItemId)
-                    || binding.AppearedWeek > marketWeekIndex
+                    || (binding.AppearedWeek > marketWeekIndex && !HasPricePoint(binding.ItemId, marketWeekIndex - 1))
                     || HasPricePoint(binding.ItemId, marketWeekIndex))
                 {
                     continue;
                 }
-                WeeklyPoint point = AdvanceItem(binding, indexPoint, marketWeekIndex, time, newlyDelisted);
-                itemPoints.Add(point);
+                bool wasDelisted = binding.IsDelisted;
+                WeeklyPoint point = AdvanceItem(binding, EnsureElasticityState(binding.ItemId), indexPoint);
+                _state.PriceHistory.Add(point);
+                if (binding.AppearedWeek <= marketWeekIndex)
+                {
+                    itemPoints.Add(point);
+                    if (!wasDelisted && binding.IsDelisted)
+                        newlyDelisted.Add(binding.ItemId);
+                }
             }
 
+            _lastSettledWeek = marketWeekIndex;
             return new MarketWeekChange(marketWeekIndex, time, indexPoint, itemPoints, newlyDelisted);
         }
 
-        private WeeklyPoint AdvanceItem(
-            SecurityBinding binding,
-            WeeklyPoint indexPoint,
-            int marketWeekIndex,
-            MarketTime time,
-            List<string> newlyDelisted)
+        private WeeklyPoint AdvanceItem(SecurityBinding binding, ElasticityState elasticity, WeeklyPoint indexPoint)
         {
-            ElasticityState elasticity = EnsureElasticityState(binding.ItemId);
             PriceSeriesSample sample;
             double baseReturn;
             double finalReturn;
@@ -307,11 +378,18 @@ namespace XingShangMod.Market
             else
             {
                 WeeklySecurity security = _repository.GetSecurity(binding.SecurityId);
-                sample = PriceSeries.Advance(security, ref binding.NextRecordIndex, ref binding.IsDataExhausted);
-                double stockReturn = sample.HasRecord ? sample.BaseReturn : 0.0;
-                baseReturn = PriceSeries.ClampReturn(stockReturn + indexPoint.Return);
-                ElasticityResult elasticityResult = _elasticity.Apply(elasticity, baseReturn);
-                finalReturn = PriceSeries.ClampReturn(elasticityResult.Return);
+                sample = PriceSeries.Advance(security, ref binding.NextRecordIndex, ref binding.IsDataExhausted, binding.CanDelist);
+                if (sample.HasRecord && (!binding.CanDelist || sample.Observed))
+                {
+                    baseReturn = PriceSeries.ClampReturn(sample.BaseReturn + indexPoint.Return);
+                    ElasticityResult elasticityResult = _elasticity.Apply(elasticity, baseReturn);
+                    finalReturn = PriceSeries.ClampReturn(elasticityResult.Return);
+                }
+                else
+                {
+                    baseReturn = 0.0;
+                    finalReturn = 0.0;
+                }
             }
 
             double price = binding.LastPrice * (1.0 + finalReturn);
@@ -322,17 +400,16 @@ namespace XingShangMod.Market
             if (sample.HasRecord && sample.DelistingRecord)
             {
                 WeeklyRecord record = _repository.GetSecurity(binding.SecurityId).GetRecord(sample.SourceRecordIndex);
-                if (_delisting.ApplyRecord(binding, record, marketWeekIndex))
-                    newlyDelisted.Add(binding.ItemId);
+                _delisting.ApplyRecord(binding, record, indexPoint.MarketWeekIndex);
             }
 
             var point = new WeeklyPoint
             {
                 ItemId = binding.ItemId,
-                MarketWeekIndex = marketWeekIndex,
-                GameYear = time.Year,
-                GameMonth = time.Month,
-                GameRound = time.Round,
+                MarketWeekIndex = indexPoint.MarketWeekIndex,
+                GameYear = indexPoint.GameYear,
+                GameMonth = indexPoint.GameMonth,
+                GameRound = indexPoint.GameRound,
                 SourceRecordIndex = sample.SourceRecordIndex,
                 Price = RoundToWen(binding.LastPrice),
                 BaseReturn = baseReturn,
@@ -341,7 +418,6 @@ namespace XingShangMod.Market
                 DataExhausted = binding.IsDataExhausted,
                 Delisted = binding.IsDelisted
             };
-            _state.PriceHistory.Add(point);
             return point;
         }
 
@@ -355,13 +431,13 @@ namespace XingShangMod.Market
             return state;
         }
 
-        private int GetLastProcessedWeek()
+        private int LastSavedIndexWeek()
         {
             int last = -1;
             for (int i = 0; i < _state.IndexHistory.Count; i++)
             {
                 WeeklyPoint point = _state.IndexHistory[i];
-                if (point != null && point.MarketWeekIndex > last)
+                if (point != null && point.MarketWeekIndex <= _state.Clock.MarketWeekIndex && point.MarketWeekIndex > last)
                     last = point.MarketWeekIndex;
             }
             return last;

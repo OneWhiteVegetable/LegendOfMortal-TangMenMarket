@@ -9,7 +9,17 @@ from pathlib import Path, PurePosixPath
 
 ITEM_COUNT = 54
 NEWS_COUNT = 6329
-UI_SPRITE_COUNT = 164
+UI_BUNDLE_NAME = "xingshang_ui.bundle"
+UI_PREFAB_COUNT = 15
+UI_FONT_ASSETS = {
+    "regular": "NotoSansCJKsc-Regular",
+    "bold": "NotoSansCJKsc-Bold",
+    "serif": "NotoSerifSC-Regular",
+    "display": "BarlowCondensed-SemiBoldItalic",
+}
+UI_BUNDLE_RUNTIME_PATH = PurePosixPath("bundles") / UI_BUNDLE_NAME
+FONT_LICENSE_RUNTIME_PATH = PurePosixPath("licenses/OFL.txt")
+INSTALL_GUIDE_RUNTIME_PATH = PurePosixPath("docs/安装说明.txt")
 STOCK_WEEKLY_COUNT = 6024
 STOCK_DATA_FILE_COUNT = 6028
 SELECTION_STOCK_COUNT = 6008
@@ -393,36 +403,93 @@ def validate_stock_snapshot(stock_data_dir, manifest):
     return copies
 
 
-def validate_ui(ui_dir, art_dir, icon_names):
-    manifest_path = ui_dir / "manifest.json"
-    manifest = read_json(manifest_path)
-    assets = manifest.get("assets") or []
-    require(len(assets) == UI_SPRITE_COUNT and manifest.get("totalSpriteCount") == UI_SPRITE_COUNT,
-            "UI manifest must declare exactly 164 sprites")
-    asset_paths = set()
-    for asset in assets:
-        relative = safe_relative_path(asset.get("file"), "UI asset")
-        require(relative.suffix.casefold() == ".png", "UI asset is not PNG: " + relative.as_posix())
-        require(relative.as_posix() not in asset_paths, "Duplicate UI asset: " + relative.as_posix())
-        asset_paths.add(relative.as_posix())
-        source = ui_dir / Path(*relative.parts)
-        require(source.is_file(), "UI sprite is missing: " + relative.as_posix())
-        require(source.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n", "Invalid UI PNG: " + relative.as_posix())
-        require(sha256(source) == asset.get("sha256"), "UI sprite hash mismatch: " + relative.as_posix())
-    ui_item_assets = {PurePosixPath(asset["file"]).name for asset in assets if asset.get("category") == "items/final"}
-    require(ui_item_assets == set(icon_names), "UI final item sprites must match all 54 standard icons")
-    for icon_name in icon_names:
-        require(sha256(ui_dir / "items" / "final" / icon_name) == sha256(art_dir / icon_name),
-                "UI/standard icon hash mismatch: " + icon_name)
-    copies = source_files(ui_dir, {".png", ".json"})
-    png_paths = {relative.as_posix() for source, relative in copies if source.suffix.casefold() == ".png"}
-    require(png_paths == asset_paths, "Formal UI PNG files must exactly match the 164 manifest assets")
-    return copies, manifest
+def validate_shared_font_license(font_license_path):
+    text = read_text(font_license_path)
+    markers = (
+        "Noto Sans CJK SC Regular and Bold",
+        "Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'",
+        "Noto Serif SC Regular",
+        "(c) 2017-2024 Adobe (http://www.adobe.com/).",
+        "Copyright 2012 Google Inc. All Rights Reserved.",
+        "Barlow Condensed SemiBold Italic",
+        "Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)",
+    )
+    for marker in markers:
+        require(marker in text, "Shared font OFL is missing copyright/family marker: " + marker)
+    require(text.count("SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007") == 3,
+            "Shared font OFL must contain three complete OFL 1.1 texts")
+    for section in ("PREAMBLE", "DEFINITIONS", "PERMISSION & CONDITIONS", "TERMINATION", "DISCLAIMER"):
+        require(text.count(section) == 3, "Shared font OFL section must occur once per family: " + section)
 
 
-def copy_item_icons(art_dir, output_dir, icon_names):
-    copies = [(art_dir / name, PurePosixPath(name)) for name in icon_names]
-    return sync_files(output_dir / "items", copies)
+def validate_ui_bundle(bundle_path, binding_path, font_license_path, install_guide_path, icon_names):
+    require(bundle_path.is_file(), "UI bundle does not exist: " + str(bundle_path))
+    require(bundle_path.name == UI_BUNDLE_NAME, "Unexpected UI bundle name: " + bundle_path.name)
+    with bundle_path.open("rb") as stream:
+        require(stream.read(7) == b"UnityFS", "UI bundle is not a UnityFS AssetBundle")
+
+    binding = read_json(binding_path)
+    require(binding.get("schemaVersion") == 1, "Unsupported UI binding schema")
+    require(binding.get("bundleName") == UI_BUNDLE_NAME, "UI binding bundle name mismatch")
+    require(binding.get("unityVersion"), "UI binding Unity version is missing")
+
+    prefabs = binding.get("prefabs") or []
+    require(len(prefabs) == UI_PREFAB_COUNT,
+            "UI binding must declare exactly %d prefabs" % UI_PREFAB_COUNT)
+    require(all(row.get("name") and row.get("asset") and row.get("nodes") for row in prefabs),
+            "UI binding contains an incomplete prefab")
+    require(len({row["name"] for row in prefabs}) == len(prefabs), "Duplicate UI prefab name")
+    require(len({row["asset"] for row in prefabs}) == len(prefabs), "Duplicate UI prefab asset")
+    for prefab in prefabs:
+        keys = [node.get("key") for node in prefab["nodes"]]
+        require(all(keys) and len(set(keys)) == len(keys), "Invalid or duplicate node key in " + prefab["name"])
+
+    sprites = binding.get("sprites") or []
+    sprite_assets = [row.get("asset") for row in sprites]
+    require(sprite_assets and all(sprite_assets), "UI binding has no complete sprite assets")
+    require(len(set(sprite_assets)) == len(sprite_assets), "Duplicate UI sprite asset")
+    icon_assets = {PurePosixPath(name).stem for name in icon_names}
+    require(icon_assets <= set(sprite_assets), "UI binding does not contain all 54 item icons")
+
+    fonts = binding.get("fonts") or []
+    font_assets = [row.get("asset") for row in fonts]
+    font_map = {row.get("key"): row.get("asset") for row in fonts}
+    require(len(fonts) == len(UI_FONT_ASSETS) and font_map == UI_FONT_ASSETS,
+            "UI binding must declare regular, bold, serif and display with stable asset names")
+    require(len(font_assets) == len(UI_FONT_ASSETS) and all(font_assets) and
+            len(set(font_assets)) == len(UI_FONT_ASSETS),
+            "UI binding font assets are incomplete or duplicated")
+
+    bundle_manifest_path = bundle_path.with_name(bundle_path.name + ".manifest")
+    bundle_manifest = read_text(bundle_manifest_path)
+    require(re.search(r"(?m)^\s*TypeTreeHash:\s*$", bundle_manifest) is not None,
+            "UI bundle manifest has no TypeTree hash; rebuild without disabling TypeTree")
+    required_assets = {
+        "Assets/Binding/ui_map.json",
+        "Assets/Fonts/OFL.txt",
+        "Assets/Fonts/NotoSansCJKsc-Regular.otf",
+        "Assets/Fonts/NotoSansCJKsc-Bold.otf",
+        "Assets/Fonts/NotoSerifSC-Regular.ttf",
+        "Assets/Fonts/NotoSerifSC-OFL.txt",
+        "Assets/Fonts/BarlowCondensed-SemiBoldItalic.ttf",
+        "Assets/Fonts/BarlowCondensed-OFL.txt",
+    }
+    required_assets.update("Assets/Prefabs/" + row["asset"] + ".prefab" for row in prefabs)
+    for asset in sorted(required_assets):
+        require(asset in bundle_manifest, "UI bundle manifest is missing: " + asset)
+
+    validate_shared_font_license(font_license_path)
+    require(UI_BUNDLE_NAME in read_text(install_guide_path) and "Runtime" in read_text(install_guide_path),
+            "Install guide does not identify the Runtime UI bundle")
+    return binding
+
+
+def remove_legacy_runtime_assets(output_dir):
+    for name in ("items", "ui"):
+        path = output_dir / name
+        if path.exists():
+            require(path.is_dir(), "Legacy runtime path is not a directory: " + str(path))
+            shutil.rmtree(str(path))
 
 
 def runtime_file_manifest(output_dir):
@@ -462,13 +529,57 @@ def verify_runtime(output_dir):
         row = expected[relative]
         require(path.stat().st_size == row["bytes"], "Runtime file size mismatch: " + relative)
         require(sha256(path) == row["sha256"], "Runtime file hash mismatch: " + relative)
+
+    ui = manifest.get("ui") or {}
+    documents = manifest.get("documents") or {}
+    declared_files = (
+        (ui, "bundlePath", "bundleSha256", UI_BUNDLE_RUNTIME_PATH, "UI bundle"),
+        (ui, "fontLicensePath", "fontLicenseSha256", FONT_LICENSE_RUNTIME_PATH, "Font OFL"),
+        (documents, "installGuidePath", "installGuideSha256", INSTALL_GUIDE_RUNTIME_PATH, "Install guide"),
+    )
+    for owner, path_key, hash_key, expected_path, label in declared_files:
+        relative = safe_relative_path(owner.get(path_key), label).as_posix()
+        require(relative == expected_path.as_posix(), label + " must be installed at " + expected_path.as_posix())
+        require(relative in actual, label + " is missing: " + relative)
+        declared_hash = owner.get(hash_key)
+        require(isinstance(declared_hash, str) and re.fullmatch(r"[0-9a-f]{64}", declared_hash) is not None,
+                label + " has no valid SHA256 in the build manifest")
+        require(sha256(actual[relative]) == declared_hash, label + " SHA256 differs from its manifest field")
+    require(re.fullmatch(r"[0-9a-f]{64}", ui.get("bindingSha256") or "") is not None,
+            "UI binding SHA256 is missing from the build manifest")
+    with actual[UI_BUNDLE_RUNTIME_PATH.as_posix()].open("rb") as stream:
+        require(stream.read(7) == b"UnityFS", "Runtime UI bundle is not a UnityFS AssetBundle")
+    validate_shared_font_license(actual[FONT_LICENSE_RUNTIME_PATH.as_posix()])
+    require(UI_BUNDLE_NAME in read_text(actual[INSTALL_GUIDE_RUNTIME_PATH.as_posix()]),
+            "Runtime install guide does not name the UI bundle")
+
+    prefab_assets = ui.get("prefabs") or []
+    sprite_assets = ui.get("sprites") or []
+    font_assets = ui.get("fonts") or []
+    require(len(prefab_assets) == UI_PREFAB_COUNT and len(set(prefab_assets)) == UI_PREFAB_COUNT and all(prefab_assets),
+            "Runtime UI manifest must contain %d unique prefabs" % UI_PREFAB_COUNT)
+    require(sprite_assets and all(sprite_assets) and len(set(sprite_assets)) == len(sprite_assets),
+            "Runtime UI sprite assets are missing or duplicated")
+    require(len(font_assets) == len(UI_FONT_ASSETS) and all(font_assets) and
+            len(set(font_assets)) == len(UI_FONT_ASSETS) and set(font_assets) == set(UI_FONT_ASSETS.values()),
+            "Runtime UI manifest must contain the four registered font assets")
+    require(ui.get("unityVersion"), "Runtime UI Unity version is missing")
+    require(not any(path.startswith("ui/") or path.startswith("items/") for path in actual),
+            "Runtime must not contain legacy loose ui/items assets")
+    require(not any(path.casefold().endswith(".png") for path in actual),
+            "Runtime PNG assets must be embedded in the UI bundle")
+
     items = read_json(output_dir / "items.json")["items"]
     news_document = read_json(output_dir / "news.json")
     news = news_document["news"]
     catalog = read_json(output_dir / "selection_catalog.json")
     require({row["id"] for row in items} == set(range(1, ITEM_COUNT + 1)), "Runtime item IDs must be 1 through 54")
     require(len(items) == ITEM_COUNT and len({row["iconPath"] for row in items}) == ITEM_COUNT, "Runtime item count/icon mismatch")
-    require(all(row["iconPath"] in actual for row in items), "Runtime item icon path is missing")
+    icon_paths = [safe_relative_path(row.get("iconPath"), "Runtime item icon") for row in items]
+    require(all(len(path.parts) == 2 and path.parts[0] == "items" and path.suffix.casefold() == ".png"
+                for path in icon_paths), "Runtime item icon keys must retain the items/<name>.png convention")
+    icon_assets = [path.stem for path in icon_paths]
+    require(set(icon_assets) <= set(sprite_assets), "Runtime item icon is missing from the UI bundle binding")
     require(all(row["referencePrice"] > 0 and row["weight"] > 0 for row in items), "Runtime contains an invalid item price/weight")
     require(len(news) == NEWS_COUNT and len(news_document["periods"]) == len(PERIODS), "Runtime news/period count mismatch")
     require(len({(row["itemId"], row["period"]) for row in news}) == ITEM_COUNT * len(PERIODS),
@@ -482,10 +593,9 @@ def verify_runtime(output_dir):
     require(all("data/" + row["path"] in actual for row in catalog["stocks"] + catalog["indices"]),
             "Runtime selection path is missing")
     directions = Counter(row["direction"] for row in news)
-    ui_manifest = read_json(output_dir / "ui" / "v4" / "manifest.json")
     actual_counts = {
         "items": len(items),
-        "itemIcons": sum(path.startswith("items/") for path in actual),
+        "itemIcons": len(set(icon_assets)),
         "newsPeriodsPerItem": len(news_document["periods"]),
         "newsDocuments": len({(row["itemId"], row["period"]) for row in news}),
         "news": len(news),
@@ -495,8 +605,10 @@ def verify_runtime(output_dir):
         "selectionIndices": len(catalog["indices"]),
         "stockWeeklyFiles": sum(path.startswith("data/") and path.casefold().endswith(".wkg") for path in actual),
         "stockDataFiles": sum(path.startswith("data/") for path in actual),
-        "uiSprites": len(ui_manifest["assets"]),
-        "uiFiles": sum(path.startswith("ui/v4/") for path in actual),
+        "uiBundles": sum(path.startswith("bundles/") and path.casefold().endswith(".bundle") for path in actual),
+        "uiPrefabs": len(prefab_assets),
+        "uiSprites": len(sprite_assets),
+        "uiFonts": len(font_assets),
         "runtimePayloadFiles": len(actual),
     }
     require(manifest.get("counts") == actual_counts, "Build manifest counts differ from runtime contents")
@@ -517,13 +629,18 @@ def parse_args():
     parser.add_argument("--item-art-dir", type=Path)
     parser.add_argument("--news-dir", type=Path)
     parser.add_argument("--stock-data-dir", type=Path)
-    parser.add_argument("--ui-dir", type=Path)
+    parser.add_argument("--ui-bundle", type=Path)
+    parser.add_argument("--ui-map", type=Path)
+    parser.add_argument("--font-license", type=Path)
+    parser.add_argument("--install-guide", type=Path)
     parser.add_argument("--verify-only", action="store_true")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
+    script_dir = Path(__file__).resolve().parent
+    project_root = script_dir.parent
     workspace = args.workspace_root.resolve()
     output_dir = args.output_dir.resolve()
     if args.verify_only:
@@ -534,19 +651,24 @@ def main():
     art_dir = (args.item_art_dir or workspace / "art" / "final_items").resolve()
     news_dir = (args.news_dir or workspace / "text" / "glm").resolve()
     stock_data_dir = (args.stock_data_dir or workspace / "stock_market" / "data").resolve()
-    ui_dir = (args.ui_dir or workspace / "UI" / "unity_assets" / "v4").resolve()
+    ui_bundle = (args.ui_bundle or project_root / "UnityUI" / "Build" / UI_BUNDLE_NAME).resolve()
+    ui_map = (args.ui_map or project_root / "UnityUI" / "Assets" / "Binding" / "ui_map.json").resolve()
+    font_license = (args.font_license or project_root / "UnityUI" / "Assets" / "Fonts" / "OFL.txt").resolve()
+    install_guide = (args.install_guide or project_root / "安装说明.txt").resolve()
 
     items_document, icon_names, idea_hashes = build_items(ideas_dir, art_dir)
     item_names = {row["id"]: row["name"] for row in items_document["items"]}
     news_document, direction_counts, intensity_counts = build_news(news_dir, item_names)
     catalog, stock_manifest = build_selection_catalog(stock_data_dir)
     stock_copies = validate_stock_snapshot(stock_data_dir, stock_manifest)
-    ui_copies, ui_manifest = validate_ui(ui_dir, art_dir, icon_names)
+    binding = validate_ui_bundle(ui_bundle, ui_map, font_license, install_guide, icon_names)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     sync_files(output_dir / "data", stock_copies)
-    copy_item_icons(art_dir, output_dir, icon_names)
-    sync_files(output_dir / "ui" / "v4", ui_copies)
+    sync_files(output_dir / "bundles", [(ui_bundle, PurePosixPath(UI_BUNDLE_NAME))])
+    sync_files(output_dir / "licenses", [(font_license, PurePosixPath("OFL.txt"))])
+    sync_files(output_dir / "docs", [(install_guide, PurePosixPath("安装说明.txt"))])
+    remove_legacy_runtime_assets(output_dir)
     write_json(output_dir / "items.json", items_document)
     write_json(output_dir / "news.json", news_document)
     write_json(output_dir / "selection_catalog.json", catalog)
@@ -567,8 +689,10 @@ def main():
             "selectionIndices": len(catalog["indices"]),
             "stockWeeklyFiles": STOCK_WEEKLY_COUNT,
             "stockDataFiles": len(stock_copies),
-            "uiSprites": len(ui_manifest["assets"]),
-            "uiFiles": len(ui_copies),
+            "uiBundles": 1,
+            "uiPrefabs": len(binding["prefabs"]),
+            "uiSprites": len(binding["sprites"]),
+            "uiFonts": len(binding["fonts"]),
             "runtimePayloadFiles": len(files),
         },
         "checks": {
@@ -582,13 +706,33 @@ def main():
             "selectionExcludesSourceMissing": True,
             "selectionRequiresObserved": True,
             "sourceAndCopiedHashesMatch": True,
+            "uiBundleHashVerified": True,
+            "uiBindingComplete": True,
+            "uiTypeTreeRetained": True,
+            "fontOflIncluded": True,
+            "installGuideIncluded": True,
+            "looseUiAssetsExcluded": True,
             "forbiddenArtifactsExcluded": True,
             "buildManifestExcludedFromOwnHash": True,
         },
         "sources": {
             "stockManifestSha256": sha256(stock_data_dir / "manifest.json"),
-            "uiManifestSha256": sha256(ui_dir / "manifest.json"),
             "ideaFilesSha256": idea_hashes,
+        },
+        "ui": {
+            "bundlePath": UI_BUNDLE_RUNTIME_PATH.as_posix(),
+            "bundleSha256": sha256(output_dir / Path(*UI_BUNDLE_RUNTIME_PATH.parts)),
+            "bindingSha256": sha256(ui_map),
+            "unityVersion": binding["unityVersion"],
+            "prefabs": [row["asset"] for row in binding["prefabs"]],
+            "sprites": [row["asset"] for row in binding["sprites"]],
+            "fonts": [row["asset"] for row in binding["fonts"]],
+            "fontLicensePath": FONT_LICENSE_RUNTIME_PATH.as_posix(),
+            "fontLicenseSha256": sha256(output_dir / Path(*FONT_LICENSE_RUNTIME_PATH.parts)),
+        },
+        "documents": {
+            "installGuidePath": INSTALL_GUIDE_RUNTIME_PATH.as_posix(),
+            "installGuideSha256": sha256(output_dir / Path(*INSTALL_GUIDE_RUNTIME_PATH.parts)),
         },
         "newsIntensityLevels": dict(sorted(intensity_counts.items())),
         "files": files,
@@ -596,13 +740,13 @@ def main():
     write_json(output_dir / "build_manifest.json", build_manifest)
     verified = verify_runtime(output_dir)
     print(
-        "Built %d items, %d news entries, %d stocks, %d indices, %d UI sprites, %d WKG files."
+        "Built %d items, %d news entries, %d stocks, %d indices, one %d-prefab UI bundle, %d WKG files."
         % (
             len(items_document["items"]),
             len(news_document["news"]),
             len(catalog["stocks"]),
             len(catalog["indices"]),
-            len(ui_manifest["assets"]),
+            len(binding["prefabs"]),
             STOCK_WEEKLY_COUNT,
         )
     )

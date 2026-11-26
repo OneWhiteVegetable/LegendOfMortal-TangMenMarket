@@ -1,345 +1,440 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
+using XingShangMod.App;
 using XingShangMod.Domain;
 using XingShangMod.Persistence;
 using XingShangMod.Progression;
-using XingShangMod.UI.Charting;
 using XingShangMod.UI.Infrastructure;
+using XingShangMod.UI.Shared;
 
 namespace XingShangMod.UI.Market
 {
     internal sealed class MarketRankingPanel : IDisposable
     {
-        private static readonly Color Ink = new Color(0.16f, 0.13f, 0.10f, 1f);
-        private static readonly Color Muted = new Color(0.40f, 0.38f, 0.34f, 1f);
+        private const float RankingSpacing = 7f;
 
-        private readonly UiFactory _ui;
-        private readonly RunState _state;
-        private readonly ItemCatalog _items;
-        private readonly RectTransform _content;
-        private readonly Text _emptyText;
-        private readonly Button _backButton;
-        private readonly Button _sortButton;
-        private readonly List<RankingRow> _rows = new List<RankingRow>();
-        private bool _sortAscending;
+        private readonly UiFrontendServices _services;
+        private readonly RectTransform _root;
+        private readonly RectTransform _viewport;
+        private readonly RectTransform _rowContent;
+        private readonly ScrollRect _scroll;
+        private readonly VerticalLayoutGroup _rowLayout;
+        private readonly List<RankingRowView> _rows = new List<RankingRowView>();
+        private readonly RankingChrome _chrome;
+        private readonly RankingScrollInput _keyboard;
+        private bool _ascending;
+        private bool _compact;
+        private bool _disposed;
+        private ModApplication _lastApplication;
+        private RunState _lastState;
+        private ItemCatalog _lastCatalog;
 
-        internal event Action BackRequested;
-        internal event Action<string> DetailRequested;
-
-        internal MarketRankingPanel(Transform parent, UiFactory ui, RunState state, ItemCatalog items)
+        internal MarketRankingPanel(UiFrontendServices services, RectTransform content)
         {
-            _ui = ui;
-            _state = state;
-            _items = items;
-            Image root = ui.CreatePanel(
-                parent,
-                "RankingPanel",
-                "panel_merchant_window_9s",
+            if (content == null || content.parent == null)
+                throw new InvalidOperationException("Ranking requires a sibling surface beside GoodsGrid.");
+            _services = services;
+            _compact = IsCompact(content);
+            _root = RankingLayout.Rect("RankingRoot", content.parent);
+            RankingLayout.Stretch(_root);
+            VerticalLayoutGroup rootLayout = _root.gameObject.AddComponent<VerticalLayoutGroup>();
+            rootLayout.padding = new RectOffset(28, 28, 20, 15);
+            rootLayout.childAlignment = TextAnchor.UpperLeft;
+            rootLayout.childControlWidth = true;
+            rootLayout.childControlHeight = true;
+            rootLayout.childForceExpandWidth = true;
+            rootLayout.childForceExpandHeight = false;
+            rootLayout.spacing = 0f;
+
+            _chrome = new RankingChrome(services, _root, _compact, ToggleSort, RequestBack);
+
+            RectTransform viewport = RankingLayout.Rect("RankingViewport", _root);
+            _viewport = viewport;
+            LayoutElement viewportElement = RankingLayout.Layout(viewport, -1f, 0f, 1f, 1f);
+            viewportElement.minHeight = 0f;
+            Image hitArea = viewport.gameObject.AddComponent<Image>();
+            hitArea.color = Color.clear;
+            hitArea.raycastTarget = true;
+            viewport.gameObject.AddComponent<RectMask2D>();
+            _scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            _scroll.horizontal = false;
+            _scroll.vertical = true;
+            _scroll.movementType = ScrollRect.MovementType.Clamped;
+            _scroll.inertia = true;
+            _scroll.decelerationRate = 0.135f;
+            _scroll.scrollSensitivity = _compact ? 28f : 36f;
+            _scroll.viewport = viewport;
+
+            _rowContent = RankingLayout.Rect("Content", viewport);
+            _rowContent.anchorMin = new Vector2(0f, 1f);
+            _rowContent.anchorMax = new Vector2(1f, 1f);
+            _rowContent.pivot = new Vector2(0.5f, 1f);
+            _rowContent.offsetMin = Vector2.zero;
+            _rowContent.offsetMax = Vector2.zero;
+            _rowLayout = _rowContent.gameObject.AddComponent<VerticalLayoutGroup>();
+            _rowLayout.padding = new RectOffset(4, 16, 4, 4);
+            _rowLayout.spacing = RankingSpacing;
+            _rowLayout.childAlignment = TextAnchor.UpperLeft;
+            _rowLayout.childControlWidth = true;
+            _rowLayout.childControlHeight = true;
+            _rowLayout.childForceExpandWidth = true;
+            _rowLayout.childForceExpandHeight = false;
+            ContentSizeFitter fitter = _rowContent.gameObject.AddComponent<ContentSizeFitter>();
+            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            _scroll.content = _rowContent;
+
+            Image track = RankingLayout.Image(
+                "Scrollbar",
+                viewport,
                 null,
-                Color.white);
-            Root = root.rectTransform;
+                Color.clear);
+            track.raycastTarget = true;
+            RankingLayout.IgnoreLayout(track);
+            track.rectTransform.anchorMin = new Vector2(1f, 0f);
+            track.rectTransform.anchorMax = new Vector2(1f, 1f);
+            track.rectTransform.pivot = new Vector2(1f, 0.5f);
+            track.rectTransform.offsetMin = new Vector2(-14f, 4f);
+            track.rectTransform.offsetMax = new Vector2(0f, -4f);
+            Image rail = RankingLayout.Image("Rail", track.transform, null, RankingLayout.Alpha(UiFormatting.Ink, 0.13f));
+            RankingLayout.Stretch(rail.rectTransform, 10f, 0f, 0f, 0f);
+            Image handle = RankingLayout.Image("Handle", track.transform, null, Color.clear);
+            // Scrollbar drives the anchors, leaving default RectTransform sizeDelta untouched.
+            RankingLayout.Stretch(handle.rectTransform);
+            Image fill = RankingLayout.Image("Thumb", handle.transform, null, RankingLayout.Gold);
+            RankingLayout.Stretch(fill.rectTransform, 10f, 0f, 0f, 0f);
+            Scrollbar scrollbar = track.gameObject.AddComponent<Scrollbar>();
+            scrollbar.handleRect = handle.rectTransform;
+            scrollbar.targetGraphic = fill;
+            scrollbar.direction = Scrollbar.Direction.BottomToTop;
+            _scroll.verticalScrollbar = scrollbar;
+            _scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+            _scroll.verticalScrollbarSpacing = 0f;
 
-            _backButton = ui.CreateButton(
-                Root,
-                "Back",
-                "‹",
-                Back,
-                34,
-                new Vector2(50f, 48f),
-                "button_brush_arrow_normal",
-                "button_brush_arrow_hover",
-                "button_brush_arrow_pressed",
-                "button_brush_arrow_disabled");
-            UiFactory.SetTopLeft(_backButton.GetComponent<RectTransform>(), new Vector2(10f, -8f), new Vector2(50f, 48f));
-            Text title = ui.CreateText(
-                Root,
-                "Title",
-                "货物涨跌榜",
-                28,
-                Ink,
-                TextAnchor.MiddleLeft,
-                new Vector2(280f, 48f));
-            UiFactory.SetTopLeft(title.rectTransform, new Vector2(74f, -8f), new Vector2(280f, 48f));
-            Text period = ui.CreateText(
-                Root,
-                "Period",
-                "本周涨跌 · 仅列已出现商品",
-                15,
-                Muted,
-                TextAnchor.MiddleLeft,
-                new Vector2(320f, 32f));
-            UiFactory.SetTopLeft(period.rectTransform, new Vector2(360f, -16f), new Vector2(320f, 32f));
-            _sortButton = ui.CreateButton(
-                Root,
-                "Sort",
-                "涨幅优先",
-                ToggleSort,
-                18,
-                new Vector2(174f, 44f),
-                "button_sort_normal_9s",
-                "button_sort_hover_9s",
-                "button_sort_pressed_9s");
-            SetTopRight(_sortButton, new Vector2(-16f, -10f), new Vector2(174f, 44f));
-
-            ScrollRect scroll = ui.CreateScrollRect(Root, "RankingScroll", Vector2.zero, out _content);
-            UiFactory.Stretch(scroll.GetComponent<RectTransform>(), new Vector2(8f, 8f), new Vector2(-8f, -68f));
-            _emptyText = ui.CreateText(
-                Root,
-                "Empty",
-                "尚无已出现商品。",
-                23,
-                Muted,
-                TextAnchor.MiddleCenter,
-                new Vector2(480f, 80f));
-            _emptyText.gameObject.SetActive(false);
+            _keyboard = viewport.gameObject.AddComponent<RankingScrollInput>();
+            _keyboard.Owner = this;
+            _root.gameObject.SetActive(false);
         }
 
-        internal RectTransform Root { get; private set; }
+        internal event Action<string> DetailRequested;
+        internal event Action BackRequested;
+        internal bool Ascending { get { return _ascending; } }
 
-        internal void Refresh()
+        internal int Refresh(
+            ModApplication application,
+            RunState state,
+            ItemCatalog catalog)
         {
-            ClearRows();
-            List<RankingEntry> entries = new List<RankingEntry>();
-            List<ItemDefinition> appeared = MarketView.GetAppearedItems(_state, _items);
-            for (int i = 0; i < appeared.Count; i++)
+            if (_disposed)
+                return 0;
+            _lastApplication = application;
+            _lastState = state;
+            _lastCatalog = catalog;
+            UpdateLayoutProfile();
+            _root.gameObject.SetActive(true);
+            _chrome.Show();
+            _chrome.SetAscending(_ascending);
+
+            List<RankingEntry> entries = BuildEntries(application, state, catalog);
+            entries.Sort(CompareEntries);
+            _chrome.SetSortInteractable(entries.Count > 1);
+            _chrome.SetItemCount(entries.Count);
+            BindRows(entries);
+            return entries.Count;
+        }
+
+        internal void ToggleSort()
+        {
+            if (_disposed)
+                return;
+            if (_lastApplication == null)
             {
-                ItemDefinition item = appeared[i];
-                List<WeeklyPoint> history = MarketView.GetVisibleHistory(_state, item.ItemId);
-                entries.Add(new RankingEntry
+                _ascending = false;
+                _chrome.SetAscending(false);
+                return;
+            }
+            _ascending = !_ascending;
+            _chrome.SetAscending(_ascending);
+            Refresh(_lastApplication, _lastState, _lastCatalog);
+            ScrollToTop();
+        }
+
+        internal void Hide()
+        {
+            if (_disposed)
+                return;
+            _chrome.Hide();
+            for (int i = 0; i < _rows.Count; i++)
+                _rows[i].GameObject.SetActive(false);
+            _root.gameObject.SetActive(false);
+        }
+
+        private List<RankingEntry> BuildEntries(
+            ModApplication application,
+            RunState state,
+            ItemCatalog catalog)
+        {
+            List<ItemDefinition> items = MarketQuery.AppearedItems(state, catalog);
+            List<RankingEntry> result = new List<RankingEntry>(items.Count);
+            for (int i = 0; i < items.Count; i++)
+            {
+                ItemDefinition item = items[i];
+                List<WeeklyPoint> history = MarketQuery.ItemHistory(application, item.ItemId);
+                List<WeeklyPoint> sparkHistory = history;
+                if (history.Count > RankingRowView.SparkPointCount)
+                {
+                    sparkHistory = history.GetRange(
+                        history.Count - RankingRowView.SparkPointCount,
+                        RankingRowView.SparkPointCount);
+                }
+                result.Add(new RankingEntry
                 {
                     Item = item,
                     History = history,
+                    SparkHistory = sparkHistory,
                     Current = history.Count == 0 ? null : history[history.Count - 1],
-                    Delisted = MarketView.IsDelisted(_state, item.ItemId)
+                    TotalReturn = MarketQuery.TotalReturn(history),
+                    Delisted = MarketQuery.IsDelisted(application, state, item.ItemId),
+                    AppearanceOrder = i
                 });
             }
-            entries.Sort(CompareEntries);
-            _emptyText.gameObject.SetActive(entries.Count == 0);
-            _content.sizeDelta = new Vector2(0f, Math.Max(80f, entries.Count * 90f + 8f));
-            _content.anchoredPosition = Vector2.zero;
-
-            for (int i = 0; i < entries.Count; i++)
-                CreateRow(entries[i], i);
-            SetButtonLabel(_sortButton, _sortAscending ? "跌幅优先" : "涨幅优先");
-        }
-
-        public void Dispose()
-        {
-            _backButton.onClick.RemoveListener(Back);
-            _sortButton.onClick.RemoveListener(ToggleSort);
-            ClearRows();
-            BackRequested = null;
-            DetailRequested = null;
+            return result;
         }
 
         private int CompareEntries(RankingEntry left, RankingEntry right)
         {
-            double leftReturn = left.Current == null ? double.NegativeInfinity : left.Current.Return;
-            double rightReturn = right.Current == null ? double.NegativeInfinity : right.Current.Return;
-            if (double.IsNaN(leftReturn))
-                leftReturn = double.NegativeInfinity;
-            if (double.IsNaN(rightReturn))
-                rightReturn = double.NegativeInfinity;
-            int comparison = leftReturn.CompareTo(rightReturn);
-            if (!_sortAscending)
-                comparison = -comparison;
-            return comparison != 0
-                ? comparison
-                : string.Compare(left.Item.ItemId, right.Item.ItemId, StringComparison.Ordinal);
+            return RankingOrdering.Compare(
+                left.Current != null,
+                left.TotalReturn,
+                left.AppearanceOrder,
+                right.Current != null,
+                right.TotalReturn,
+                right.AppearanceOrder,
+                _ascending);
         }
 
-        private void CreateRow(RankingEntry entry, int index)
+        private void BindRows(List<RankingEntry> entries)
         {
-            Button button = _ui.CreateButton(
-                _content,
-                "Rank." + entry.Item.ItemId,
-                string.Empty,
-                null,
-                18,
-                null,
-                "row_ranking_normal_9s",
-                "row_ranking_hover_9s");
-            RectTransform rect = button.GetComponent<RectTransform>();
-            UiFactory.SetRect(
-                rect,
-                new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 1f),
-                new Vector2(0f, -index * 90f - 4f),
-                new Vector2(0f, 82f));
-
-            Text rank = _ui.CreateText(
-                rect,
-                "Rank",
-                (index + 1).ToString("00", CultureInfo.InvariantCulture),
-                25,
-                Ink,
-                TextAnchor.MiddleCenter,
-                new Vector2(58f, 60f));
-            UiFactory.SetTopLeft(rank.rectTransform, new Vector2(12f, -10f), new Vector2(58f, 60f));
-            Image icon = _ui.CreateImage(
-                rect,
-                "Icon",
-                MarketView.GetIconSpriteId(entry.Item),
-                new Vector2(62f, 62f),
-                true);
-            UiFactory.SetTopLeft(icon.rectTransform, new Vector2(78f, -10f), new Vector2(62f, 62f));
-            Text name = _ui.CreateText(
-                rect,
-                "Name",
-                entry.Item.Name,
-                21,
-                Ink,
-                TextAnchor.MiddleLeft,
-                new Vector2(300f, 36f));
-            UiFactory.SetTopLeft(name.rectTransform, new Vector2(152f, -8f), new Vector2(300f, 36f));
-            Text itemId = _ui.CreateText(
-                rect,
-                "ItemId",
-                "行货 · " + entry.Item.ItemId,
-                13,
-                Muted,
-                TextAnchor.MiddleLeft,
-                new Vector2(300f, 28f));
-            UiFactory.SetTopLeft(itemId.rectTransform, new Vector2(152f, -42f), new Vector2(300f, 28f));
-            Text price = _ui.CreateText(
-                rect,
-                "Price",
-                entry.Current == null ? "—" : MarketView.FormatNumber(entry.Current.Price) + " 文",
-                22,
-                Ink,
-                TextAnchor.MiddleRight,
-                new Vector2(200f, 56f));
-            SetMiddleRight(price, new Vector2(-470f, 0f), new Vector2(200f, 56f));
-            double weeklyReturn = entry.Current == null ? 0.0 : entry.Current.Return;
-            Text change = _ui.CreateText(
-                rect,
-                "Change",
-                entry.Current == null ? "—" : MarketView.FormatReturn(weeklyReturn),
-                21,
-                MarketView.GetTrendColor(weeklyReturn),
-                TextAnchor.MiddleRight,
-                new Vector2(170f, 56f));
-            SetMiddleRight(change, new Vector2(-282f, 0f), new Vector2(170f, 56f));
-
-            WeeklyChartGraphic chart = WeeklyChartGraphic.Create(rect, WeeklyChartMode.Card, _ui.GameFont);
-            chart.LineWidth = 1.8f;
-            chart.HorizontalGridLines = 0;
-            chart.SetPoints(entry.History);
-            SetMiddleRight(chart, new Vector2(-24f, 0f), new Vector2(220f, 64f));
-
-            Image wasted = _ui.CreateImage(
-                rect,
-                "DelistedWordmark",
-                "wasted_delist_wordmark",
-                new Vector2(140f, 72f),
-                true);
-            wasted.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -12f);
-            wasted.gameObject.SetActive(entry.Delisted);
-            if (entry.Delisted)
+            if (entries.Count == 0)
             {
-                button.image.color = new Color(0.65f, 0.67f, 0.66f, 1f);
-                icon.color = new Color(0.45f, 0.47f, 0.45f, 0.65f);
-                name.color = Muted;
-                price.color = Muted;
-                change.color = Muted;
-                chart.color = new Color(0.5f, 0.5f, 0.5f, 0.35f);
-                button.interactable = false;
+                if (_rows.Count == 0)
+                    _rows.Add(CreateRow());
+                for (int i = 0; i < _rows.Count; i++)
+                {
+                    bool active = i == 0;
+                    if (active)
+                    {
+                        _rows[i].BindEmpty();
+                        _rows[i].View.Root.SetSiblingIndex(0);
+                    }
+                    _rows[i].GameObject.SetActive(active);
+                }
+                return;
             }
 
-            RankingRow row = new RankingRow
-            {
-                Button = button,
-                Chart = chart,
-                ItemId = entry.Item.ItemId
-            };
-            row.ClickAction = delegate { OpenDetail(row.ItemId); };
-            button.onClick.AddListener(row.ClickAction);
-            _rows.Add(row);
-        }
-
-        private void OpenDetail(string itemId)
-        {
-            if (DetailRequested != null)
-                DetailRequested(itemId);
-        }
-
-        private void ToggleSort()
-        {
-            _sortAscending = !_sortAscending;
-            Refresh();
-        }
-
-        private void Back()
-        {
-            if (BackRequested != null)
-                BackRequested();
-        }
-
-        private void ClearRows()
-        {
+            Dictionary<string, RankingRowView> reusable =
+                new Dictionary<string, RankingRowView>(StringComparer.Ordinal);
             for (int i = 0; i < _rows.Count; i++)
             {
-                RankingRow row = _rows[i];
-                if (row.Button != null)
+                RankingRowView row = _rows[i];
+                if (!string.IsNullOrEmpty(row.ItemId) && !reusable.ContainsKey(row.ItemId))
+                    reusable.Add(row.ItemId, row);
+            }
+
+            RankingRowView[] ordered = new RankingRowView[entries.Count];
+            HashSet<RankingRowView> used = new HashSet<RankingRowView>();
+            for (int i = 0; i < entries.Count; i++)
+            {
+                string itemId = entries[i].Item.ItemId;
+                RankingRowView row;
+                if (!string.IsNullOrEmpty(itemId) && reusable.TryGetValue(itemId, out row))
                 {
-                    row.Button.onClick.RemoveListener(row.ClickAction);
-                    row.Button.gameObject.SetActive(false);
-                    UnityEngine.Object.Destroy(row.Button.gameObject);
+                    ordered[i] = row;
+                    used.Add(row);
                 }
-                if (row.Chart != null)
-                    row.Chart.ClearPoints();
+            }
+
+            int nextUnused = 0;
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (ordered[i] != null)
+                    continue;
+                while (nextUnused < _rows.Count && used.Contains(_rows[nextUnused]))
+                    nextUnused++;
+                RankingRowView row;
+                if (nextUnused < _rows.Count)
+                {
+                    row = _rows[nextUnused];
+                }
+                else
+                {
+                    row = CreateRow();
+                    _rows.Add(row);
+                }
+                ordered[i] = row;
+                used.Add(row);
+            }
+
+            for (int i = 0; i < ordered.Length; i++)
+            {
+                RankingRowView row = ordered[i];
+                row.Bind(entries[i], i + 1);
+                row.GameObject.SetActive(true);
+                row.View.Root.SetSiblingIndex(i);
+            }
+            for (int i = 0; i < _rows.Count; i++)
+            {
+                if (!used.Contains(_rows[i]))
+                    _rows[i].GameObject.SetActive(false);
+            }
+        }
+
+        private RankingRowView CreateRow()
+        {
+            UiPrefabInstance view = _services.Assets.Create("RankingRow", _rowContent);
+            RankingRowView row;
+            try
+            {
+                row = new RankingRowView(_services, view, _compact);
+            }
+            catch
+            {
+                view.Dispose();
+                throw;
+            }
+            RankingRowView captured = row;
+            row.OpenAction = delegate { RequestDetail(captured); };
+            view.Button("OpenButton").onClick.AddListener(row.OpenAction);
+            return row;
+        }
+
+        private void RequestBack()
+        {
+            if (_disposed)
+                return;
+            Action callback = BackRequested;
+            if (callback != null)
+                callback();
+        }
+
+        private void RequestDetail(RankingRowView row)
+        {
+            if (_disposed || row == null || string.IsNullOrEmpty(row.ItemId))
+                return;
+            Action<string> callback = DetailRequested;
+            if (callback != null)
+                callback(row.ItemId);
+        }
+
+        private void UpdateLayoutProfile()
+        {
+            bool compact = IsCompact(_root);
+            if (compact == _compact)
+                return;
+            _compact = compact;
+            _scroll.scrollSensitivity = compact ? 28f : 36f;
+            _chrome.SetCompact(compact);
+            for (int i = 0; i < _rows.Count; i++)
+                _rows[i].SetCompact(compact);
+        }
+
+        private static bool IsCompact(RectTransform content)
+        {
+            float height = content.rect.height;
+            return height > 0f ? height < 620f : Screen.height < 900;
+        }
+
+        private void ScrollRows(int direction)
+        {
+            float rowHeight = _compact ? 57f : 68f;
+            ScrollBy(direction * (rowHeight + RankingSpacing));
+        }
+
+        private void ScrollPage(int direction)
+        {
+            ScrollBy(direction * Mathf.Max(1f, _viewport.rect.height - 24f));
+        }
+
+        private void ScrollBy(float pixels)
+        {
+            float range = Mathf.Max(0f, _rowContent.rect.height - _viewport.rect.height);
+            if (range <= 0f)
+                return;
+            _scroll.StopMovement();
+            _scroll.verticalNormalizedPosition = Mathf.Clamp01(
+                _scroll.verticalNormalizedPosition + pixels / range);
+        }
+
+        private void ScrollToTop()
+        {
+            _scroll.StopMovement();
+            _scroll.verticalNormalizedPosition = 1f;
+        }
+
+        private void ScrollToBottom()
+        {
+            _scroll.StopMovement();
+            _scroll.verticalNormalizedPosition = 0f;
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+            _disposed = true;
+            if (_keyboard != null)
+                _keyboard.Owner = null;
+            for (int i = 0; i < _rows.Count; i++)
+            {
+                RankingRowView row = _rows[i];
+                if (row.View.IsAlive && row.OpenAction != null)
+                    row.View.Button("OpenButton").onClick.RemoveListener(row.OpenAction);
+                row.Dispose();
             }
             _rows.Clear();
+            _chrome.Dispose();
+            if (_root != null)
+            {
+                _root.gameObject.SetActive(false);
+                UnityEngine.Object.Destroy(_root.gameObject);
+            }
+            DetailRequested = null;
+            BackRequested = null;
+            _lastApplication = null;
+            _lastState = null;
+            _lastCatalog = null;
         }
 
-        private static void SetTopRight(Component component, Vector2 position, Vector2 size)
+        private sealed class RankingScrollInput : MonoBehaviour
         {
-            UiFactory.SetRect(
-                (RectTransform)component.transform,
-                new Vector2(1f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(1f, 1f),
-                position,
-                size);
-        }
+            internal MarketRankingPanel Owner;
 
-        private static void SetMiddleRight(Component component, Vector2 position, Vector2 size)
-        {
-            UiFactory.SetRect(
-                (RectTransform)component.transform,
-                new Vector2(1f, 0.5f),
-                new Vector2(1f, 0.5f),
-                new Vector2(1f, 0.5f),
-                position,
-                size);
-        }
-
-        private static void SetButtonLabel(Button button, string value)
-        {
-            Text label = button.GetComponentInChildren<Text>(true);
-            if (label != null)
-                label.text = value;
-        }
-
-        private sealed class RankingEntry
-        {
-            internal ItemDefinition Item;
-            internal List<WeeklyPoint> History;
-            internal WeeklyPoint Current;
-            internal bool Delisted;
-        }
-
-        private sealed class RankingRow
-        {
-            internal Button Button;
-            internal WeeklyChartGraphic Chart;
-            internal string ItemId;
-            internal UnityAction ClickAction;
+            private void Update()
+            {
+                MarketRankingPanel owner = Owner;
+                if (owner == null || owner._disposed)
+                    return;
+                if (Input.GetKeyDown(KeyCode.Home))
+                {
+                    owner.ScrollToTop();
+                    return;
+                }
+                if (Input.GetKeyDown(KeyCode.End))
+                {
+                    owner.ScrollToBottom();
+                    return;
+                }
+                if (Input.GetKeyDown(KeyCode.PageUp))
+                    owner.ScrollPage(1);
+                if (Input.GetKeyDown(KeyCode.PageDown))
+                    owner.ScrollPage(-1);
+                if (Input.GetKeyDown(KeyCode.UpArrow))
+                    owner.ScrollRows(1);
+                if (Input.GetKeyDown(KeyCode.DownArrow))
+                    owner.ScrollRows(-1);
+            }
         }
     }
 }

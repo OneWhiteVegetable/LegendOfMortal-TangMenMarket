@@ -45,6 +45,14 @@ namespace XingShangMod.Persistence
             return false;
         }
 
+        internal bool IsItemVisibleAt(string itemId, int marketWeek)
+        {
+            if (!HasItemAppeared(itemId))
+                return false;
+            SecurityBinding binding = FindSecurityBinding(itemId);
+            return binding == null || binding.AppearedWeek <= marketWeek;
+        }
+
         public SecurityBinding FindSecurityBinding(string itemId)
         {
             if (SecurityBindings == null)

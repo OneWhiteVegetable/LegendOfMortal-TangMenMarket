@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="384" viewBox="0 0 128 96">
+  <g id="rising-brush" fill="#B64036">
+    <path id="main-stroke" fill-rule="evenodd" d="M6 77 L33 49 L47 58 L79 31 L87 33 L51 67 L46 68 L34 59 L12 80 Z M22 67 L32 56 L34 57 L24 68 Z M55 58 L75 39 L77 39 L57 59 Z"/>
+    <path id="broken-arrowhead" d="M87 17 L102 19 L120 9 L116 27 L111 43 L105 40 L108 28 L96 36 L90 33 L105 23 L91 24 Z"/>
+    <path id="dry-brush-strand-a" d="M14 85 L39 63 L42 64 L19 85 Z"/>
+    <path id="dry-brush-strand-b" d="M60 72 L86 49 L90 49 L64 73 Z"/>
+  </g>
+</svg>

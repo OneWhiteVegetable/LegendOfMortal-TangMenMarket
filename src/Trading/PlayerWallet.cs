@@ -29,6 +29,8 @@ namespace XingShangMod.Trading
             _money = stats.Get(GameStatType.銀兩);
             if (_money == null)
                 throw new InvalidOperationException("The original silver stat is unavailable.");
+            if (_money.Value > MortalMoneyLimit.Maximum)
+                _money.SetValue(MortalMoneyLimit.Maximum);
         }
 
         public long Balance
@@ -38,31 +40,12 @@ namespace XingShangMod.Trading
 
         public bool CanSpend(long amount)
         {
-            long balance = Balance;
-            if (amount < 0 || amount > balance)
-                return false;
-
-            long target = balance - amount;
-            return target >= _money.Min && target <= _money.Max && amount <= int.MaxValue;
+            return amount >= 0 && amount <= Balance - MortalMoneyLimit.Minimum;
         }
 
         public bool CanDeposit(long amount)
         {
-            if (amount < 0)
-                return false;
-
-            long balance = Balance;
-            long target;
-            try
-            {
-                target = checked(balance + amount);
-            }
-            catch (OverflowException)
-            {
-                return false;
-            }
-
-            return target >= _money.Min && target <= _money.Max && amount <= int.MaxValue;
+            return amount >= 0 && amount <= MortalMoneyLimit.Maximum - Balance;
         }
 
         public bool TrySpend(long amount)
@@ -70,7 +53,7 @@ namespace XingShangMod.Trading
             if (!CanSpend(amount))
                 return false;
 
-            _money.AddValue(-(int)amount);
+            Add(-amount);
             return true;
         }
 
@@ -79,8 +62,17 @@ namespace XingShangMod.Trading
             if (!CanDeposit(amount))
                 return false;
 
-            _money.AddValue((int)amount);
+            Add(amount);
             return true;
+        }
+
+        private void Add(long delta)
+        {
+            // The full signed silver range is wider than one Int32 delta.
+            int first = (int)Math.Max(int.MinValue, Math.Min(int.MaxValue, delta));
+            _money.AddValue(first);
+            if (delta != first)
+                _money.AddValue((int)(delta - first));
         }
 
         private static PlayerStatData GetMortalStats()

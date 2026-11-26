@@ -40,9 +40,9 @@ namespace XingShangMod.UI.Charting
 
     public static class WeeklyChartSegmentBuilder
     {
-        public static readonly Color32 DefaultRisingColor = new Color32(181, 62, 49, 255);
-        public static readonly Color32 DefaultFallingColor = new Color32(55, 119, 82, 255);
-        public static readonly Color32 DefaultFlatColor = new Color32(105, 96, 82, 255);
+        public static readonly Color32 DefaultRisingColor = new Color32(182, 64, 54, 255);
+        public static readonly Color32 DefaultFallingColor = new Color32(63, 107, 88, 255);
+        public static readonly Color32 DefaultFlatColor = new Color32(116, 103, 84, 255);
 
         private static readonly ReadOnlyCollection<WeeklyChartSegment> EmptySegments =
             new ReadOnlyCollection<WeeklyChartSegment>(new WeeklyChartSegment[0]);
@@ -111,12 +111,18 @@ namespace XingShangMod.UI.Charting
             Validate(source, index);
             return new WeeklyPoint
             {
+                ItemId = source.ItemId,
                 MarketWeekIndex = source.MarketWeekIndex,
                 GameYear = source.GameYear,
                 GameMonth = source.GameMonth,
                 GameRound = source.GameRound,
+                SourceRecordIndex = source.SourceRecordIndex,
                 Price = source.Price,
-                Return = source.Return
+                BaseReturn = source.BaseReturn,
+                Return = source.Return,
+                Observed = source.Observed,
+                DataExhausted = source.DataExhausted,
+                Delisted = source.Delisted
             };
         }
 

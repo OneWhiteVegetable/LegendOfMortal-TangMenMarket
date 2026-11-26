@@ -1,1045 +1,643 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using XingShangMod.App;
 using XingShangMod.Domain;
 using XingShangMod.Persistence;
-using XingShangMod.Progression;
 using XingShangMod.Trading;
 using XingShangMod.UI.Charting;
 using XingShangMod.UI.Infrastructure;
+using XingShangMod.UI.Shared;
 
 namespace XingShangMod.UI.Market
 {
-    public sealed class MarketWindow : IDisposable
+    internal sealed class MarketWindow : UiScreen
     {
-        private static readonly Color Ink = new Color(0.16f, 0.13f, 0.10f, 1f);
-        private static readonly Color Paper = new Color(0.91f, 0.88f, 0.79f, 1f);
-
-        private readonly UiFactory _ui;
+        private readonly ModApplication _application;
         private readonly RunState _state;
-        private readonly ItemCatalog _items;
-        private readonly TradingService _trading;
-        private readonly Action _onChanged;
         private readonly Dictionary<string, ItemDefinition> _definitions;
         private readonly List<MarketItemCard> _cards = new List<MarketItemCard>(6);
-
-        private RectTransform _root;
-        private RectTransform _marketContent;
-        private RectTransform _marketView;
-        private Text _indexValue;
-        private Text _indexChange;
-        private Text _newsText;
-        private Text _pageText;
-        private WeeklyChartGraphic _indexChart;
-        private Button _previousButton;
-        private Button _nextButton;
-        private Button _rankingButton;
-        private Button _closeButton;
-        private MarketItemDetail _detail;
-        private MarketRankingPanel _ranking;
-        private MarketCartPanel _cart;
-        private UiModal _modal;
-        private UiToast _toast;
-        private UiTooltip _tooltip;
-        private Image _stamp;
-        private CanvasGroup _stampGroup;
-        private GameObject _previousSelected;
-        private int _pageIndex;
+        private readonly RectTransform[] _goodsRows = new RectTransform[2];
+        private readonly MarketRankingPanel _ranking;
+        private readonly MarketCartPanel _cart;
+        private readonly NewsTickerView _ticker;
+        private readonly WeeklyChartView _indexChart;
+        private readonly TradeConfirmation _confirmation;
+        private readonly MarketLayoutDriver _layoutDriver;
         private bool _showRanking;
-        private string _detailItemId;
-        private float _stampRemaining;
-        private bool _disposed;
+        private bool _narrowLayout;
+        private bool _wideLayout;
+        private bool _shortLayout;
+        private int _marketPage;
+        private Font _pageNumberFont;
 
-        public MarketWindow(
-            Transform parent,
-            UiFactory ui,
-            RunState state,
-            ItemCatalog items,
-            TradingService trading,
-            CapacityService capacity,
-            Action onChanged)
+        internal MarketWindow(
+            UiFrontendServices services,
+            ModApplication application,
+            TradeConfirmation confirmation)
+            : base(services, "MarketWindow", UiSorting.Market)
         {
-            if (parent == null)
-                throw new ArgumentNullException("parent");
-            if (ui == null)
-                throw new ArgumentNullException("ui");
-            if (state == null)
-                throw new ArgumentNullException("state");
-            if (items == null)
-                throw new ArgumentNullException("items");
-            if (trading == null)
-                throw new ArgumentNullException("trading");
-            if (capacity == null)
-                throw new ArgumentNullException("capacity");
+            _application = application;
+            _state = application.State;
+            _definitions = MarketQuery.BuildDefinitions(application.Items);
+            _confirmation = confirmation;
+            _cart = new MarketCartPanel(services, application, View);
+            _cart.OrdersChanged += RefreshDrafts;
+            for (int row = 0; row < 2; row++)
+            {
+                _goodsRows[row] = View.Get<HorizontalLayoutGroup>("GoodsRow" + row)
+                    .GetComponent<RectTransform>();
+                Transform rowRoot = _goodsRows[row];
+                for (int column = 0; column < rowRoot.childCount; column++)
+                {
+                    MarketItemCard card = new MarketItemCard(services, rowRoot.GetChild(column).gameObject, _cart);
+                    card.DetailRequested += OnDetailRequested;
+                    card.AddRequested += AddToCart;
+                    _cards.Add(card);
+                }
+            }
+            _ranking = new MarketRankingPanel(
+                services,
+                View.Get<VerticalLayoutGroup>("GoodsGrid").GetComponent<RectTransform>());
+            _ranking.DetailRequested += OnDetailRequested;
+            _ranking.BackRequested += ShowMarket;
+            ConfigureMarketHeading();
+            _cart.CheckoutRequested += ConfirmCart;
+            _ticker = new NewsTickerView(services, View.Rect("NewsTicker"), _application);
+            _indexChart = new WeeklyChartView(
+                View.Rect("IndexChartHost"),
+                WeeklyChartMode.Spark,
+                services.Assets.RegularFont,
+                services.Assets.DryBrushTexture);
 
-            _ui = ui;
-            _state = state;
-            _items = items;
-            _trading = trading;
-            _onChanged = onChanged;
-            _definitions = MarketView.BuildDefinitions(items);
-
-            ConfigureCanvas(parent);
-            Image window = ui.CreatePanel(
-                parent,
-                "XingShangMod.MarketWindow",
-                "panel_merchant_window_9s",
-                null,
-                Color.white);
-            _root = window.rectTransform;
-            UiFactory.Stretch(_root);
-            MarketWindowLifecycle lifecycle = window.gameObject.AddComponent<MarketWindowLifecycle>();
-            lifecycle.Owner = this;
-
-            BuildHeader();
-            BuildBody(capacity);
-
-            _modal = UiModal.Create(ui, _root);
-            _toast = UiToast.Create(ui, _root);
-            _tooltip = UiTooltip.Create(ui, _root);
-            _tooltip.Attach(_rankingButton.gameObject, "风云涨跌榜（只列入已出现商品）");
-            _tooltip.Attach(_closeButton.gameObject, "离开唐门行市");
-            _tooltip.Attach(_previousButton.gameObject, "上一页");
-            _tooltip.Attach(_nextButton.gameObject, "下一页");
-            BuildStamp();
-
-            _root.gameObject.SetActive(false);
+            View.Button("PreviousPageButton").onClick.AddListener(PreviousPage);
+            View.Button("NextPageButton").onClick.AddListener(NextPage);
+            MarketBrushArrow.Attach(View.Button("PreviousPageButton"), services.Motion);
+            MarketBrushArrow.Attach(View.Button("NextPageButton"), services.Motion, true);
+            View.Button("RankingButton").onClick.AddListener(ToggleRanking);
+            View.Button("InventoryButton").onClick.AddListener(RequestInventory);
+            View.Button("CloseButton").onClick.AddListener(Close);
+            View.Button("IndexButton").onClick.AddListener(RequestIndex);
+            View.Button("MotionButton").onClick.AddListener(ToggleMotion);
+            services.Overlays.AttachTooltip(
+                View.Button("RankingButton").gameObject,
+                "风云涨跌榜",
+                "按各货自首条行情至今的累计涨跌排列，只列本周目已出现商品。",
+                "再次点击返回今日货价");
+            services.Overlays.AttachTooltip(
+                View.Button("InventoryButton").gameObject,
+                "行商货囊",
+                "查看持货和借货；可平仓、全部平仓或跳转货物详情。",
+                "所有平仓仍需预览并确认");
+            _layoutDriver = View.Root.gameObject.AddComponent<MarketLayoutDriver>();
+            _layoutDriver.Owner = this;
+            ApplyLayoutProfile();
         }
 
-        public bool IsOpen
-        {
-            get { return !_disposed && _root != null && _root.gameObject.activeSelf; }
-        }
+        internal event Action<string> DetailRequested;
+        internal event Action IndexRequested;
+        internal event Action InventoryRequested;
+        internal event Action CloseRequested;
+        internal MarketCartPanel Cart { get { return _cart; } }
 
-        public void Show()
+        private void RefreshDrafts()
         {
-            if (_disposed || _root == null)
+            if (!IsOpen || _showRanking)
                 return;
-            if (!IsOpen && EventSystem.current != null)
-                _previousSelected = EventSystem.current.currentSelectedGameObject;
+            for (int i = 0; i < _cards.Count; i++)
+                if (_cards[i].GameObject.activeSelf)
+                    _cards[i].UpdateQuantity();
+        }
 
-            _root.gameObject.SetActive(true);
-            _root.SetAsLastSibling();
-            ShowMarketContent();
+        internal bool IsRanking { get { return _showRanking; } }
+
+        internal void Show()
+        {
+            Open();
+        }
+
+        internal void ShowMarket()
+        {
             _showRanking = false;
-            _marketView.gameObject.SetActive(true);
-            _ranking.Root.gameObject.SetActive(false);
-            SetButtonLabel(_rankingButton, "涨跌榜");
+            Open();
+        }
+
+        internal void ShowRanking()
+        {
+            _showRanking = true;
+            Open();
+        }
+
+        protected override void OnOpened()
+        {
+            ApplyLayoutProfile();
+            _cart.SetVisible(!_showRanking);
+            UiView.SetLabel(
+                View.Button("MotionButton"),
+                Services.Motion.ReducedMotion ? "动效已减弱" : "减少动效");
             Refresh();
         }
 
-        public void Hide()
+        internal override void Hide()
         {
-            if (_disposed || _root == null)
-                return;
-
-            _modal.Hide();
-            _tooltip.Hide();
-            _toast.Clear();
-            HideStamp();
-            _root.gameObject.SetActive(false);
-            RestoreSelection();
+            _cart.SetVisible(false);
+            base.Hide();
         }
 
-        public void Refresh()
+        internal void Refresh()
         {
-            if (_disposed || _root == null)
+            if (!IsOpen)
                 return;
-
-            RefreshHeader();
-            RefreshMarket();
-            _ranking.Refresh();
-            if (!string.IsNullOrEmpty(_detailItemId))
-            {
-                ItemDefinition item;
-                if (_state.HasItemAppeared(_detailItemId) && _items.TryGetItem(_detailItemId, out item))
-                    _detail.Bind(item);
-                else
-                    ShowMarketContent();
-            }
+            RefreshMasthead();
+            RectTransform ticker = View.Rect("NewsTicker");
+            bool hadTicker = ticker.gameObject.activeSelf;
+            if (_showRanking)
+                ticker.gameObject.SetActive(false);
+            else
+                _ticker.Bind(_state);
+            if (ticker.gameObject.activeSelf != hadTicker)
+                View.Root.GetComponent<UiWindowShell>().ApplyNow();
+            RefreshContent();
             _cart.Refresh();
+            View.Text("StatusText").text = _showRanking
+                ? "涨跌榜 · 累计涨跌 · 点击货签查看详情"
+                : "真实周目行情 / 契匣整份预览与结算 / 红涨绿跌";
         }
 
-        public void Dispose()
+        public override bool CancelFromInput()
         {
-            if (_disposed)
-                return;
-            _disposed = true;
-
-            for (int i = 0; i < _cards.Count; i++)
+            if (_showRanking)
             {
-                _cards[i].DetailRequested -= ShowDetail;
-                _cards[i].AddRequested -= AddToCart;
-                _cards[i].Dispose();
-            }
-            _cards.Clear();
-
-            if (_detail != null)
-            {
-                _detail.BackRequested -= ShowMarketContent;
-                _detail.AddRequested -= AddToCart;
-                _detail.Dispose();
-            }
-            if (_ranking != null)
-            {
-                _ranking.BackRequested -= ShowMarket;
-                _ranking.DetailRequested -= ShowDetail;
-                _ranking.Dispose();
-            }
-            if (_cart != null)
-            {
-                _cart.ConfirmRequested -= ConfirmCart;
-                _cart.Dispose();
-            }
-
-            if (_previousButton != null)
-                _previousButton.onClick.RemoveListener(PreviousPage);
-            if (_nextButton != null)
-                _nextButton.onClick.RemoveListener(NextPage);
-            if (_rankingButton != null)
-                _rankingButton.onClick.RemoveListener(ToggleRanking);
-            if (_closeButton != null)
-                _closeButton.onClick.RemoveListener(Hide);
-
-            if (_modal != null)
-                _modal.Hide();
-            if (_tooltip != null)
-                _tooltip.Hide();
-            if (_toast != null)
-                _toast.Clear();
-            if (_root != null)
-            {
-                SafeTween.Kill(_root.gameObject);
-                _root.gameObject.SetActive(false);
-                UnityEngine.Object.Destroy(_root.gameObject);
-                _root = null;
-            }
-            RestoreSelection();
-            _detailItemId = null;
-        }
-
-        private void ConfigureCanvas(Transform parent)
-        {
-            Canvas canvas = parent.GetComponentInParent<Canvas>();
-            if (canvas == null)
-                return;
-            CanvasScaler scaler = canvas.GetComponent<CanvasScaler>();
-            if (scaler == null)
-                scaler = canvas.gameObject.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0.5f;
-        }
-
-        private void BuildHeader()
-        {
-            Image masthead = _ui.CreatePanel(
-                _root,
-                "Masthead",
-                "panel_masthead_9s",
-                null,
-                Color.white);
-            UiFactory.SetRect(
-                masthead.rectTransform,
-                new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 1f),
-                new Vector2(0f, -16f),
-                new Vector2(-32f, 84f));
-
-            Image brandBlock = _ui.CreatePanel(
-                masthead.transform,
-                "Brand",
-                "panel_brand_block",
-                new Vector2(300f, 72f),
-                Color.white);
-            UiFactory.SetTopLeft(brandBlock.rectTransform, new Vector2(12f, -6f), new Vector2(300f, 72f));
-            Image brandMark = _ui.CreateImage(
-                brandBlock.transform,
-                "Seal",
-                "brand_shang_mark",
-                new Vector2(58f, 58f),
-                true);
-            UiFactory.SetTopLeft(brandMark.rectTransform, new Vector2(10f, -7f), new Vector2(58f, 58f));
-            Text brandTitle = _ui.CreateText(
-                brandBlock.transform,
-                "Title",
-                "唐门行市",
-                31,
-                Paper,
-                TextAnchor.MiddleLeft,
-                new Vector2(208f, 42f));
-            UiFactory.SetTopLeft(brandTitle.rectTransform, new Vector2(78f, -7f), new Vector2(208f, 42f));
-            Text brandSubtitle = _ui.CreateText(
-                brandBlock.transform,
-                "Subtitle",
-                "TANGMEN EXCHANGE",
-                12,
-                new Color(0.75f, 0.71f, 0.63f, 1f),
-                TextAnchor.UpperLeft,
-                new Vector2(208f, 22f));
-            UiFactory.SetTopLeft(brandSubtitle.rectTransform, new Vector2(80f, -47f), new Vector2(208f, 22f));
-
-            Text indexTitle = _ui.CreateText(
-                masthead.transform,
-                "IndexTitle",
-                "唐门指数",
-                16,
-                Paper,
-                TextAnchor.MiddleLeft,
-                new Vector2(150f, 24f));
-            UiFactory.SetTopLeft(indexTitle.rectTransform, new Vector2(332f, -9f), new Vector2(150f, 24f));
-            _indexValue = _ui.CreateText(
-                masthead.transform,
-                "IndexValue",
-                string.Empty,
-                30,
-                Paper,
-                TextAnchor.MiddleLeft,
-                new Vector2(174f, 42f));
-            UiFactory.SetTopLeft(_indexValue.rectTransform, new Vector2(330f, -32f), new Vector2(174f, 42f));
-            _indexChange = _ui.CreateText(
-                masthead.transform,
-                "IndexChange",
-                string.Empty,
-                16,
-                Paper,
-                TextAnchor.MiddleLeft,
-                new Vector2(130f, 32f));
-            UiFactory.SetTopLeft(_indexChange.rectTransform, new Vector2(488f, -38f), new Vector2(130f, 32f));
-            _indexChart = WeeklyChartGraphic.Create(masthead.transform, WeeklyChartMode.Card, _ui.GameFont);
-            _indexChart.HorizontalGridLines = 0;
-            _indexChart.LineWidth = 2.2f;
-            _indexChart.PlotPadding = new Vector4(2f, 4f, 2f, 4f);
-            UiFactory.SetTopLeft(_indexChart.rectTransform, new Vector2(620f, -12f), new Vector2(200f, 58f));
-
-            _closeButton = _ui.CreateButton(
-                masthead.transform,
-                "Close",
-                "离开",
-                Hide,
-                19,
-                new Vector2(82f, 58f),
-                "button_text_action_normal_9s",
-                "button_text_action_hover_9s",
-                null,
-                "button_text_action_disabled_9s");
-            SetTopRight(_closeButton, new Vector2(-16f, -13f), new Vector2(82f, 58f));
-            _rankingButton = _ui.CreateButton(
-                masthead.transform,
-                "Ranking",
-                "涨跌榜",
-                ToggleRanking,
-                19,
-                new Vector2(104f, 58f),
-                "button_text_action_normal_9s",
-                "button_text_action_hover_9s",
-                null,
-                "button_text_action_disabled_9s");
-            SetTopRight(_rankingButton, new Vector2(-108f, -13f), new Vector2(104f, 58f));
-
-            Image ticker = _ui.CreatePanel(
-                _root,
-                "LatestNews",
-                "panel_story_news_9s",
-                null,
-                Color.white);
-            UiFactory.SetRect(
-                ticker.rectTransform,
-                new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 1f),
-                new Vector2(0f, -104f),
-                new Vector2(-32f, 38f));
-            Text tickerLabel = _ui.CreateText(
-                ticker.transform,
-                "Label",
-                "最新快报",
-                17,
-                new Color(0.70f, 0.22f, 0.16f, 1f),
-                TextAnchor.MiddleCenter,
-                new Vector2(112f, 30f));
-            UiFactory.SetTopLeft(tickerLabel.rectTransform, new Vector2(8f, -4f), new Vector2(112f, 30f));
-            _newsText = _ui.CreateText(
-                ticker.transform,
-                "Text",
-                string.Empty,
-                17,
-                Ink,
-                TextAnchor.MiddleLeft);
-            _newsText.horizontalOverflow = HorizontalWrapMode.Overflow;
-            UiFactory.Stretch(_newsText.rectTransform, new Vector2(128f, 3f), new Vector2(-16f, -3f));
-        }
-
-        private void BuildBody(CapacityService capacity)
-        {
-            Image body = _ui.CreatePanel(
-                _root,
-                "Body",
-                null,
-                null,
-                new Color(0f, 0f, 0f, 0f));
-            body.raycastTarget = false;
-            UiFactory.Stretch(body.rectTransform, new Vector2(24f, 28f), new Vector2(-24f, -150f));
-
-            Image marketContent = _ui.CreatePanel(
-                body.transform,
-                "MarketContent",
-                null,
-                null,
-                new Color(0f, 0f, 0f, 0f));
-            marketContent.raycastTarget = false;
-            UiFactory.Stretch(marketContent.rectTransform);
-            _marketContent = marketContent.rectTransform;
-
-            Image goodsArea = _ui.CreatePanel(
-                _marketContent,
-                "GoodsArea",
-                null,
-                null,
-                new Color(0f, 0f, 0f, 0f));
-            goodsArea.raycastTarget = false;
-            UiFactory.Stretch(goodsArea.rectTransform, Vector2.zero, new Vector2(-366f, 0f));
-
-            Image marketView = _ui.CreatePanel(
-                goodsArea.transform,
-                "MarketView",
-                null,
-                null,
-                new Color(0f, 0f, 0f, 0f));
-            marketView.raycastTarget = false;
-            UiFactory.Stretch(marketView.rectTransform);
-            _marketView = marketView.rectTransform;
-
-            Text sectionTitle = _ui.CreateText(
-                _marketView,
-                "SectionTitle",
-                "今日货价",
-                26,
-                Ink,
-                TextAnchor.MiddleLeft,
-                new Vector2(180f, 48f));
-            UiFactory.SetTopLeft(sectionTitle.rectTransform, new Vector2(8f, -2f), new Vector2(180f, 48f));
-            Text sectionSubtitle = _ui.CreateText(
-                _marketView,
-                "SectionSubtitle",
-                "WEEKLY COMMODITIES",
-                12,
-                new Color(0.35f, 0.31f, 0.25f, 1f),
-                TextAnchor.MiddleLeft,
-                new Vector2(210f, 36f));
-            UiFactory.SetTopLeft(sectionSubtitle.rectTransform, new Vector2(160f, -8f), new Vector2(210f, 36f));
-
-            _nextButton = _ui.CreateButton(
-                _marketView,
-                "NextPage",
-                "›",
-                NextPage,
-                34,
-                new Vector2(48f, 44f),
-                "button_brush_arrow_normal",
-                "button_brush_arrow_hover",
-                "button_brush_arrow_pressed",
-                "button_brush_arrow_disabled");
-            SetTopRight(_nextButton, new Vector2(-4f, -2f), new Vector2(48f, 44f));
-            _previousButton = _ui.CreateButton(
-                _marketView,
-                "PreviousPage",
-                "‹",
-                PreviousPage,
-                34,
-                new Vector2(48f, 44f),
-                "button_brush_arrow_normal",
-                "button_brush_arrow_hover",
-                "button_brush_arrow_pressed",
-                "button_brush_arrow_disabled");
-            SetTopRight(_previousButton, new Vector2(-178f, -2f), new Vector2(48f, 44f));
-            _pageText = _ui.CreateText(
-                _marketView,
-                "PageCount",
-                string.Empty,
-                20,
-                Ink,
-                TextAnchor.MiddleCenter,
-                new Vector2(120f, 44f));
-            SetTopRight(_pageText, new Vector2(-54f, -2f), new Vector2(120f, 44f));
-
-            Image cardsRoot = _ui.CreatePanel(
-                _marketView,
-                "Cards",
-                null,
-                null,
-                new Color(0f, 0f, 0f, 0f));
-            cardsRoot.raycastTarget = false;
-            UiFactory.Stretch(cardsRoot.rectTransform, new Vector2(0f, 0f), new Vector2(0f, -54f));
-            for (int i = 0; i < 6; i++)
-            {
-                MarketItemCard card = new MarketItemCard(cardsRoot.transform, _ui);
-                card.Root.name = "GoodsCard." + i.ToString(CultureInfo.InvariantCulture);
-                int column = i % 3;
-                int row = i / 3;
-                float bottom = row == 0 ? 0.5f : 0f;
-                float top = row == 0 ? 1f : 0.5f;
-                card.Root.anchorMin = new Vector2(column / 3f, bottom);
-                card.Root.anchorMax = new Vector2((column + 1) / 3f, top);
-                card.Root.offsetMin = new Vector2(5f, 5f);
-                card.Root.offsetMax = new Vector2(-5f, -5f);
-                card.DetailRequested += ShowDetail;
-                card.AddRequested += AddToCart;
-                _cards.Add(card);
-            }
-
-            _ranking = new MarketRankingPanel(goodsArea.transform, _ui, _state, _items);
-            UiFactory.Stretch(_ranking.Root);
-            _ranking.BackRequested += ShowMarket;
-            _ranking.DetailRequested += ShowDetail;
-            _ranking.Root.gameObject.SetActive(false);
-
-            _cart = new MarketCartPanel(
-                _marketContent,
-                _ui,
-                _state,
-                _items,
-                _trading,
-                capacity,
-                _definitions);
-            UiFactory.SetRect(
-                _cart.Root,
-                new Vector2(1f, 0f),
-                new Vector2(1f, 1f),
-                new Vector2(1f, 0.5f),
-                Vector2.zero,
-                new Vector2(344f, 0f));
-            _cart.ConfirmRequested += ConfirmCart;
-
-            _detail = new MarketItemDetail(body.transform, _ui, _state);
-            UiFactory.Stretch(_detail.Root);
-            _detail.BackRequested += ShowMarketContent;
-            _detail.AddRequested += AddToCart;
-            _detail.Root.gameObject.SetActive(false);
-
-            Text footer = _ui.CreateText(
-                _root,
-                "Footer",
-                "红涨绿跌 · 买卖借还同匣原子结算 · 仅显示本周目已发生行情",
-                14,
-                new Color(0.33f, 0.29f, 0.23f, 1f),
-                TextAnchor.MiddleLeft,
-                new Vector2(920f, 22f));
-            UiFactory.SetRect(
-                footer.rectTransform,
-                new Vector2(0f, 0f),
-                new Vector2(0f, 0f),
-                new Vector2(0f, 0f),
-                new Vector2(28f, 4f),
-                new Vector2(920f, 22f));
-        }
-
-        private void BuildStamp()
-        {
-            _stamp = _ui.CreateImage(
-                _root,
-                "DealStamp",
-                "stamp_deal_chengjiao",
-                new Vector2(400f, 250f),
-                true);
-            _stamp.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -9f);
-            _stampGroup = _stamp.gameObject.AddComponent<CanvasGroup>();
-            _stampGroup.interactable = false;
-            _stampGroup.blocksRaycasts = false;
-            _stamp.gameObject.SetActive(false);
-        }
-
-        private void RefreshHeader()
-        {
-            List<WeeklyPoint> indexHistory = MarketView.GetVisibleIndexHistory(_state);
-            WeeklyPoint current = indexHistory.Count == 0 ? null : indexHistory[indexHistory.Count - 1];
-            double value = current == null ? _state.CurrentIndex : current.Price;
-            double weeklyReturn = current == null ? 0.0 : current.Return;
-            _indexValue.text = MarketView.FormatNumber(value, 2);
-            _indexValue.color = MarketView.GetTrendColor(weeklyReturn);
-            _indexChange.text = MarketView.FormatReturn(weeklyReturn);
-            _indexChange.color = MarketView.GetTrendColor(weeklyReturn);
-            if (indexHistory.Count > 24)
-                indexHistory = indexHistory.GetRange(indexHistory.Count - 24, 24);
-            _indexChart.SetPoints(indexHistory);
-
-            NewsRecord latest = MarketView.GetLatestNews(_state, null);
-            if (latest == null)
-            {
-                _newsText.text = "本周暂无异动快报。";
-                return;
-            }
-            ItemDefinition item;
-            string itemName = _items.TryGetItem(latest.ItemId, out item) ? item.Name : latest.ItemId;
-            _newsText.text = string.Format(
-                CultureInfo.InvariantCulture,
-                "{0} · {1} {2}　{3}",
-                latest.Direction >= 0 ? "利多" : "利空",
-                itemName,
-                MarketView.FormatReturn(latest.Return),
-                latest.Text);
-        }
-
-        private void RefreshMarket()
-        {
-            List<ItemDefinition> appeared = MarketView.GetAppearedItems(_state, _items);
-            int pageCount = (appeared.Count + 5) / 6;
-            if (pageCount <= 0)
-            {
-                _pageIndex = 0;
-                _pageText.text = "00 / 00";
+                ShowMarket();
             }
             else
             {
-                _pageIndex = Mathf.Clamp(_pageIndex, 0, pageCount - 1);
-                _pageText.text = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0:00} / {1:00}",
-                    _pageIndex + 1,
-                    pageCount);
+                Close();
             }
-            _previousButton.interactable = pageCount > 0 && _pageIndex > 0;
-            _nextButton.interactable = pageCount > 0 && _pageIndex < pageCount - 1;
+            return true;
+        }
 
-            for (int i = 0; i < _cards.Count; i++)
+        private void RefreshMasthead()
+        {
+            List<WeeklyPoint> history = MarketQuery.IndexHistory(_application);
+            WeeklyPoint current = history.Count == 0 ? null : history[history.Count - 1];
+            double weekly = MarketQuery.WeeklyReturn(history);
+            SetIndexQuote(current == null ? (double?)null : current.Price, weekly);
+            if (history.Count > 14)
+                history = history.GetRange(history.Count - 14, 14);
+            _indexChart.SetPoints(history);
+            SetWalletBalance(_application.Wallet == null ? (long?)null : _application.Wallet.Balance);
+        }
+
+        private void RefreshContent()
+        {
+            ApplyPageModeLayout();
+            Transform sectionHeader = View.Rect("GoodsArea").Find("SectionHeader");
+            if (sectionHeader != null)
+                sectionHeader.gameObject.SetActive(!_showRanking);
+            View.Rect("CartRail").gameObject.SetActive(!_showRanking);
+            _cart.SetVisible(!_showRanking);
+            for (int i = 0; i < _goodsRows.Length; i++)
+                _goodsRows[i].gameObject.SetActive(!_showRanking);
+            VerticalLayoutGroup grid = View.Get<VerticalLayoutGroup>("GoodsGrid");
+            grid.gameObject.SetActive(!_showRanking);
+            grid.childForceExpandHeight = true;
+            int itemCount;
+            int currentPage = 0;
+            if (_showRanking)
             {
-                int itemIndex = _pageIndex * 6 + i;
-                bool active = itemIndex < appeared.Count;
-                _cards[i].Root.gameObject.SetActive(active);
-                if (active)
-                    _cards[i].Bind(appeared[itemIndex], _state);
+                itemCount = _ranking.Refresh(_application, _state, _application.Items);
             }
+            else
+            {
+                _ranking.Hide();
+                List<ItemDefinition> items = MarketQuery.AppearedItems(_state, _application.Items);
+                itemCount = items.Count;
+                int pageCount = Math.Max(1, (items.Count + 5) / 6);
+                _marketPage = Mathf.Clamp(_marketPage, 0, pageCount - 1);
+                currentPage = _marketPage;
+                for (int i = 0; i < _cards.Count; i++)
+                {
+                    int itemIndex = _marketPage * 6 + i;
+                    if (items.Count == 0 && i == 0)
+                        _cards[i].BindEmpty();
+                    else if (items.Count > 0 && itemIndex < items.Count)
+                        _cards[i].Bind(_application, items[itemIndex], _state, itemIndex + 1);
+                    else
+                        _cards[i].GameObject.SetActive(false);
+                }
+            }
+            int pages = _showRanking ? 1 : Math.Max(1, (itemCount + 5) / 6);
+            string current = (currentPage + 1).ToString("00");
+            string total = pages.ToString("00");
+            View.Text("PageText").text = current + "  /  " + total;
+            View.Text("CurrentPageText").text = current;
+            View.Text("TotalPageText").text = "/ " + total;
+            View.Button("PreviousPageButton").interactable =
+                !_showRanking && itemCount > 0 && currentPage > 0;
+            View.Button("NextPageButton").interactable =
+                !_showRanking && itemCount > 0 && currentPage < pages - 1;
+            Transform pager = View.Rect("GoodsArea").Find("SectionHeader/Pager");
+            if (pager != null)
+                pager.gameObject.SetActive(!_showRanking);
+            if (!_showRanking)
+                SetSectionHeading("今日货价", "WEEKLY COMMODITIES");
+        }
+
+        private void ConfigureMarketHeading()
+        {
+            RectTransform section = View.Rect("GoodsArea").Find("SectionHeader") as RectTransform;
+            MarketLetterSpacing.Attach(section.Find("Title").GetComponent<Text>(), .1f);
+            MarketLetterSpacing.Attach(section.Find("Subtitle").GetComponent<Text>(), .21f);
+            Image slash = section.Find("Slash").GetComponent<Image>();
+            slash.rectTransform.localRotation = Quaternion.identity;
+            UiPaperShape.Attach(slash, 4f);
+            RectTransform pager = section.Find("Pager") as RectTransform;
+            pager.sizeDelta = new Vector2(198f, pager.sizeDelta.y);
+            PlaceHeading(View.Button("NextPageButton").GetComponent<RectTransform>(), 150f, 0f, 48f, 44f);
+            Text current = View.Text("CurrentPageText");
+            foreach (string installed in Font.GetOSInstalledFontNames())
+            {
+                if (!string.Equals(installed, "Impact", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                _pageNumberFont = Font.CreateDynamicFontFromOSFont(installed, 28);
+                if (_pageNumberFont != null)
+                    current.font = _pageNumberFont;
+                break;
+            }
+            current.fontStyle = _pageNumberFont == null ? FontStyle.Normal : FontStyle.Italic;
+            current.horizontalOverflow = HorizontalWrapMode.Overflow;
+            current.verticalOverflow = VerticalWrapMode.Overflow;
+            MarketLetterSpacing.Attach(current, 0f, Mathf.Tan(7f * Mathf.Deg2Rad));
+            PlaceHeading(current.rectTransform, 56f, 2f, 38f, 32f);
+            Image line = pager.Find("PageUnderline").GetComponent<Image>();
+            PlaceHeading(line.rectTransform, 55f, 35f, 39f, 4f);
+            UiPaperShape.Attach(line, .5f);
+            Image tag = pager.Find("TotalPageBack").GetComponent<Image>();
+            RectTransform back = tag.rectTransform;
+            back.anchorMin = back.anchorMax = new Vector2(0f, 1f);
+            back.pivot = new Vector2(.5f, .5f);
+            back.sizeDelta = new Vector2(32f, 20f);
+            back.anchoredPosition = new Vector2(117f, -26f);
+            back.localRotation = Quaternion.Euler(0f, 0f, -3f);
+            UiPaperShape.Attach(tag);
+            Text total = View.Text("TotalPageText");
+            total.font = Services.Assets.BoldFont;
+            total.fontSize = 12;
+            total.resizeTextForBestFit = false;
+            total.horizontalOverflow = HorizontalWrapMode.Overflow;
+            total.verticalOverflow = VerticalWrapMode.Overflow;
+            total.rectTransform.anchorMin = Vector2.zero;
+            total.rectTransform.anchorMax = Vector2.one;
+            total.rectTransform.offsetMin = total.rectTransform.offsetMax = Vector2.zero;
+        }
+
+        private static void PlaceHeading(RectTransform rect, float left, float top, float width, float height)
+        {
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(left, -top);
+            rect.sizeDelta = new Vector2(width, height);
+        }
+
+        private void SetSectionHeading(string title, string subtitle)
+        {
+            Transform goodsArea = View.Rect("GoodsArea");
+            Transform titleTransform = goodsArea.Find("SectionHeader/Title");
+            Transform subtitleTransform = goodsArea.Find("SectionHeader/Subtitle");
+            Text titleText = titleTransform == null ? null : titleTransform.GetComponent<Text>();
+            Text subtitleText = subtitleTransform == null ? null : subtitleTransform.GetComponent<Text>();
+            if (titleText != null)
+                titleText.text = title;
+            if (subtitleText != null)
+                subtitleText.text = subtitle;
         }
 
         private void PreviousPage()
         {
-            if (_pageIndex > 0)
-            {
-                _pageIndex--;
-                RefreshMarket();
-            }
+            if (_showRanking)
+                return;
+            _marketPage = Math.Max(0, _marketPage - 1);
+            RefreshContent();
         }
 
         private void NextPage()
         {
-            _pageIndex++;
-            RefreshMarket();
+            if (_showRanking)
+                return;
+            _marketPage++;
+            RefreshContent();
         }
 
         private void ToggleRanking()
         {
-            ShowMarketContent();
-            _showRanking = !_showRanking;
-            _marketView.gameObject.SetActive(!_showRanking);
-            _ranking.Root.gameObject.SetActive(_showRanking);
-            SetButtonLabel(_rankingButton, _showRanking ? "今日货价" : "涨跌榜");
             if (_showRanking)
-                _ranking.Refresh();
-        }
-
-        private void ShowMarket()
-        {
-            _showRanking = false;
-            ShowMarketContent();
-            _marketView.gameObject.SetActive(true);
-            _ranking.Root.gameObject.SetActive(false);
-            SetButtonLabel(_rankingButton, "涨跌榜");
-        }
-
-        private void ShowMarketContent()
-        {
-            _detailItemId = null;
-            if (_detail != null)
-                _detail.Root.gameObject.SetActive(false);
-            if (_marketContent != null)
-                _marketContent.gameObject.SetActive(true);
-        }
-
-        private void ShowDetail(string itemId)
-        {
-            if (_disposed || !_state.HasItemAppeared(itemId))
-                return;
-            ItemDefinition item;
-            if (!_items.TryGetItem(itemId, out item))
-                return;
-
-            _showRanking = false;
-            _marketView.gameObject.SetActive(true);
-            _ranking.Root.gameObject.SetActive(false);
-            SetButtonLabel(_rankingButton, "涨跌榜");
-            _detailItemId = itemId;
-            _marketContent.gameObject.SetActive(false);
-            _detail.Root.gameObject.SetActive(true);
-            _detail.Bind(item);
-        }
-
-        private void AddToCart(string itemId, TradeAction action, int quantity)
-        {
-            if (MarketView.IsDelisted(_state, itemId))
-            {
-                _toast.Show("商品已退市，仓位冻结，禁止交易与平仓。");
-                return;
-            }
-            _cart.Add(itemId, action, quantity);
-            ItemDefinition item;
-            string name = _items.TryGetItem(itemId, out item) ? item.Name : itemId;
-            _toast.Show(name + " · " + MarketView.GetActionName(action) + "已纳入契匣。");
-        }
-
-        private void ConfirmCart()
-        {
-            List<TradeOrder> orders = _cart.GetOrders();
-            TradeResult preview = _trading.Preview(orders);
-            _cart.Refresh();
-            if (!preview.Success)
-            {
-                _toast.Show(MarketView.GetErrorMessage(preview, _items), 3.5f);
-                return;
-            }
-
-            string message = _cart.BuildPreviewMessage(preview);
-            _modal.Show(
-                "确认立契",
-                message,
-                "确认成交",
-                delegate { ExecuteOrders(orders); },
-                "返回修改");
-        }
-
-        private void ExecuteOrders(List<TradeOrder> orders)
-        {
-            TradeResult result = _trading.Execute(orders);
-            if (!result.Success)
-            {
-                _cart.Refresh();
-                _toast.Show(MarketView.GetErrorMessage(result, _items), 4f);
-                return;
-            }
-
-            _cart.Clear();
-            Refresh();
-            ShowStamp();
-            _toast.Show("契匣已结算，货囊与银两账目已更新。", 2.2f);
-            if (_onChanged != null)
-                _onChanged();
-        }
-
-        private void ShowStamp()
-        {
-            HideStamp();
-            _stampRemaining = 1.8f;
-            _stampGroup.alpha = 1f;
-            _stamp.gameObject.SetActive(true);
-            _stamp.rectTransform.SetAsLastSibling();
-        }
-
-        private void HideStamp()
-        {
-            _stampRemaining = 0f;
-            if (_stamp != null)
-                _stamp.gameObject.SetActive(false);
-        }
-
-        internal void Tick()
-        {
-            if (_disposed)
-                return;
-            if (_stampRemaining > 0f)
-            {
-                _stampRemaining -= Time.unscaledDeltaTime;
-                if (_stampGroup != null)
-                    _stampGroup.alpha = Mathf.Clamp01(_stampRemaining / 0.25f);
-                if (_stampRemaining <= 0f)
-                    HideStamp();
-            }
-            if (!Input.GetKeyDown(KeyCode.Escape) || _modal.IsOpen)
-                return;
-            if (!string.IsNullOrEmpty(_detailItemId))
-                ShowMarketContent();
+                ShowMarket();
             else
-                Hide();
+                ShowRanking();
         }
 
-        private void RestoreSelection()
+        private void ApplyLayoutProfile()
         {
-            if (EventSystem.current != null && _previousSelected != null && _previousSelected.activeInHierarchy)
-                EventSystem.current.SetSelectedGameObject(_previousSelected);
-            _previousSelected = null;
-        }
+            float physicalWidth = Screen.width > 0 ? Screen.width : View.Root.rect.width;
+            float physicalHeight = Screen.height > 0 ? Screen.height : View.Root.rect.height;
+            if (physicalWidth <= 0f)
+                physicalWidth = 1920f;
+            if (physicalHeight <= 0f)
+                physicalHeight = 1080f;
+            float contentScale = MarketLayoutMetrics.ContentScale(physicalWidth, physicalHeight);
+            float viewportWidth = MarketLayoutMetrics.EffectiveSize(physicalWidth, contentScale);
+            float viewportHeight = MarketLayoutMetrics.EffectiveSize(physicalHeight, contentScale);
+            bool narrow = viewportWidth <= 1450f;
+            bool wide = viewportWidth >= 1700f;
+            bool compactHeight = viewportHeight <= 790f;
+            _narrowLayout = narrow;
+            _wideLayout = wide;
+            _shortLayout = compactHeight;
 
-        private static void SetTopRight(Component component, Vector2 position, Vector2 size)
-        {
-            UiFactory.SetRect(
-                (RectTransform)component.transform,
-                new Vector2(1f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(1f, 1f),
-                position,
-                size);
-        }
 
-        private static void SetButtonLabel(Button button, string value)
-        {
-            Text label = button.GetComponentInChildren<Text>(true);
-            if (label != null)
-                label.text = value;
-        }
-    }
+            float railWidth = narrow ? 294f : wide ? 360f : 330f;
+            RectTransform rail = View.Rect("CartRail");
+            rail.offsetMin = new Vector2(-railWidth, rail.offsetMin.y);
+            rail.offsetMax = new Vector2(0f, rail.offsetMax.y);
 
-    internal sealed class MarketWindowLifecycle : MonoBehaviour
-    {
-        internal MarketWindow Owner;
+            ApplyPageModeLayout();
 
-        private void Update()
-        {
-            if (Owner != null)
-                Owner.Tick();
-        }
-
-        private void OnDestroy()
-        {
-            if (Owner != null)
-                Owner.Dispose();
-            Owner = null;
-        }
-    }
-
-    internal static class MarketView
-    {
-        internal static Dictionary<string, ItemDefinition> BuildDefinitions(ItemCatalog catalog)
-        {
-            Dictionary<string, ItemDefinition> result = new Dictionary<string, ItemDefinition>(StringComparer.Ordinal);
-            for (int i = 0; i < catalog.Items.Count; i++)
+            float headerHeight = narrow ? 31f : 34f;
+            float headingBox = headerHeight - (compactHeight ? 7f : 10f);
+            RectTransform section = View.Rect("GoodsArea").Find("SectionHeader") as RectTransform;
+            if (section != null)
             {
-                ItemDefinition item = catalog.Items[i];
-                if (item != null && !result.ContainsKey(item.ItemId))
-                    result.Add(item.ItemId, item);
+                section.offsetMin = new Vector2(section.offsetMin.x, -headingBox);
+                section.offsetMax = new Vector2(section.offsetMax.x, 0f);
+                RectTransform title = section.Find("Title") as RectTransform;
+                if (title != null)
+                {
+                    title.anchoredPosition = new Vector2(31f, 0f);
+                    title.sizeDelta = new Vector2(88f, headingBox);
+                }
+                RectTransform subtitle = section.Find("Subtitle") as RectTransform;
+                if (subtitle != null)
+                {
+                    subtitle.anchoredPosition = new Vector2(127f, -(headingBox - 20f) * .5f - 3.5f);
+                    subtitle.sizeDelta = new Vector2(180f, 20f);
+                }
+                RectTransform slash = section.Find("Slash") as RectTransform;
+                if (slash != null)
+                    PlaceHeading(slash, -2f, headingBox * .5f - .7f, 26f, 9f);
+                RectTransform pager = section.Find("Pager") as RectTransform;
+                if (pager != null)
+                {
+                    float overflow = (44f - headingBox) * 0.5f;
+                    pager.offsetMin = new Vector2(pager.offsetMin.x, -overflow);
+                    pager.offsetMax = new Vector2(pager.offsetMax.x, overflow);
+                }
             }
-            return result;
-        }
 
-        internal static List<ItemDefinition> GetAppearedItems(RunState state, ItemCatalog catalog)
-        {
-            List<ItemDefinition> result = new List<ItemDefinition>();
-            HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
-            if (state.AppearedItemIds == null)
-                return result;
-            for (int i = 0; i < state.AppearedItemIds.Count; i++)
+            VerticalLayoutGroup grid = View.Get<VerticalLayoutGroup>("GoodsGrid");
+            grid.spacing = narrow ? 11f : wide ? 18f : 15f;
+            RectTransform gridRect = grid.GetComponent<RectTransform>();
+            gridRect.offsetMax = new Vector2(gridRect.offsetMax.x, -headerHeight);
+            for (int i = 0; i < _goodsRows.Length; i++)
             {
-                string itemId = state.AppearedItemIds[i];
-                ItemDefinition item;
-                if (!string.IsNullOrEmpty(itemId) && seen.Add(itemId) && catalog.TryGetItem(itemId, out item))
-                    result.Add(item);
+                HorizontalLayoutGroup row = _goodsRows[i].GetComponent<HorizontalLayoutGroup>();
+                if (row != null)
+                    row.spacing = narrow ? 12f : wide ? 20f : 16f;
             }
-            return result;
+
+            Transform cartTitleTransform = View.Rect("CartRail").Find("Title");
+            Text cartTitle = cartTitleTransform == null ? null : cartTitleTransform.GetComponent<Text>();
+            if (cartTitle != null)
+                cartTitle.fontSize = compactHeight ? 17 : 20;
+            for (int i = 0; i < _cards.Count; i++)
+                _cards[i].SetLayoutProfile(narrow, wide, compactHeight);
+            _cart.SetLayoutProfile(narrow, wide);
+            ApplyCartLayoutProfile(compactHeight);
         }
 
-        internal static List<WeeklyPoint> GetVisibleHistory(RunState state, string itemId)
+        private void ApplyCartLayoutProfile(bool compactHeight)
         {
-            List<WeeklyPoint> result = new List<WeeklyPoint>();
-            if (state.PriceHistory == null || !state.HasItemAppeared(itemId))
-                return result;
-            int currentWeek = GetCurrentWeek(state);
-            for (int i = 0; i < state.PriceHistory.Count; i++)
+            float footerHeight = MarketLayoutMetrics.CartFooterHeight(compactHeight);
+            float listTop = MarketLayoutMetrics.CartListTop(compactHeight);
+            float horizontal = compactHeight ? 12f : 15f;
+            RectTransform footer = View.Rect("CartRail").Find("CartFooter") as RectTransform;
+            RectTransform scroll = View.Scroll("CartListScroll").GetComponent<RectTransform>();
+            footer.offsetMin = new Vector2(footer.offsetMin.x, 0f);
+            footer.offsetMax = new Vector2(footer.offsetMax.x, footerHeight);
+            scroll.offsetMin = new Vector2(scroll.offsetMin.x, footerHeight);
+            _cart.SetListTop(listTop);
+
+            RectTransform rail = View.Rect("CartRail");
+            RectTransform tabs = rail.Find("CartTabs") as RectTransform;
+            float tabsTop = compactHeight ? 49f : 72f;
+            float tabsHeight = compactHeight ? 29f : 40f;
+            tabs.offsetMin = new Vector2(tabs.offsetMin.x, -tabsTop - tabsHeight);
+            tabs.offsetMax = new Vector2(tabs.offsetMax.x, -tabsTop);
+            SetTopAndHeight(rail.Find("Title") as RectTransform,
+                compactHeight ? 8f : 10f, compactHeight ? 22f : 32f);
+            SetTopAndHeight(rail.Find("Subtitle") as RectTransform,
+                compactHeight ? 32f : 41f, compactHeight ? 10f : 18f);
+
+            SetFooterLine(View.Text("BuyCaptionText").rectTransform, horizontal,
+                compactHeight ? 9f : 8f, compactHeight ? 20f : 26f);
+            SetFooterLine(View.Text("BuyTotalText").rectTransform, horizontal,
+                compactHeight ? 9f : 8f, compactHeight ? 20f : 26f);
+            SetFooterLine(View.Text("SellCaptionText").rectTransform, horizontal,
+                compactHeight ? 34f : 35f, compactHeight ? 20f : 26f);
+            SetFooterLine(View.Text("SellTotalText").rectTransform, horizontal,
+                compactHeight ? 34f : 35f, compactHeight ? 20f : 26f);
+            SetFooterLine(View.Text("CashCaptionText").rectTransform, horizontal,
+                compactHeight ? 67f : 70f, compactHeight ? 30f : 36f);
+            SetFooterLine(View.Text("CashDeltaText").rectTransform, horizontal,
+                compactHeight ? 67f : 66f, compactHeight ? 30f : 42f);
+
+            RectTransform divider = footer.Find("TotalDivider") as RectTransform;
+            float dividerTop = compactHeight ? 60f : 65f;
+            divider.offsetMin = new Vector2(horizontal, -dividerTop - 1f);
+            divider.offsetMax = new Vector2(-horizontal, -dividerTop);
+            Text note = View.Text("FooterNoteText");
+            note.gameObject.SetActive(!compactHeight);
+            note.rectTransform.offsetMin = new Vector2(horizontal, -190f);
+            note.rectTransform.offsetMax = new Vector2(-horizontal, -166f);
+            note.resizeTextForBestFit = false;
+            note.fontSize = 8;
+
+            RectTransform checkout = View.Button("CheckoutButton").GetComponent<RectTransform>();
+            float checkoutBottom = compactHeight ? 12f : 33f;
+            float checkoutHeight = compactHeight ? 36f : 43f;
+            checkout.offsetMin = new Vector2(horizontal, checkoutBottom);
+            checkout.offsetMax = new Vector2(-horizontal, checkoutBottom + checkoutHeight);
+        }
+
+        private static void SetFooterLine(RectTransform rect, float horizontal, float top, float height)
+        {
+            float x = rect.anchorMin.x >= 1f ? -horizontal : horizontal;
+            rect.anchoredPosition = new Vector2(x, -top);
+            rect.sizeDelta = new Vector2(rect.sizeDelta.x, height);
+        }
+
+        private static void SetTopAndHeight(RectTransform rect, float top, float height)
+        {
+            rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -top);
+            rect.sizeDelta = new Vector2(rect.sizeDelta.x, height);
+        }
+
+        private void ApplyPageModeLayout()
+        {
+            RectTransform goodsArea = View.Rect("GoodsArea");
+            if (_showRanking)
             {
-                WeeklyPoint point = state.PriceHistory[i];
-                if (point != null && point.MarketWeekIndex <= currentWeek &&
-                    string.Equals(point.ItemId, itemId, StringComparison.Ordinal) && IsFinite(point.Price))
-                    result.Add(point);
+                goodsArea.offsetMin = Vector2.zero;
+                goodsArea.offsetMax = Vector2.zero;
+                return;
             }
-            result.Sort(ComparePoints);
-            return result;
+            float railWidth = _narrowLayout ? 294f : _wideLayout ? 360f : 330f;
+            float rightPadding = _narrowLayout ? 13f : _wideLayout ? 23f : 18f;
+            goodsArea.offsetMin = new Vector2(
+                _narrowLayout ? 15f : _wideLayout ? 26f : 21f,
+                _narrowLayout ? 10f : _wideLayout ? 15f : 12f);
+            goodsArea.offsetMax = new Vector2(
+                -(railWidth + rightPadding),
+                -(_shortLayout ? 9f : _wideLayout ? 20f : 17f));
         }
 
-        internal static List<WeeklyPoint> GetVisibleIndexHistory(RunState state)
+        internal void AddFromDetail(string itemId, TradeAction action, int quantity)
         {
-            List<WeeklyPoint> result = new List<WeeklyPoint>();
-            if (state.IndexHistory == null)
-                return result;
-            int currentWeek = GetCurrentWeek(state);
-            for (int i = 0; i < state.IndexHistory.Count; i++)
+            AddToCart(itemId, action, quantity, null);
+        }
+
+        internal void AddFromDetail(string itemId, TradeAction action, int quantity, RectTransform sourceRect)
+        {
+            AddToCart(itemId, action, quantity, sourceRect);
+        }
+
+        private void AddToCart(string itemId, TradeAction action, int quantity, RectTransform sourceRect)
+        {
+            if (MarketQuery.IsDelisted(_application, _state, itemId))
             {
-                WeeklyPoint point = state.IndexHistory[i];
-                if (point != null && point.MarketWeekIndex <= currentWeek && IsFinite(point.Price))
-                    result.Add(point);
+                Services.Overlays.ShowToast("商品已退市，仓位冻结，禁止交易与平仓。", 2.8f, UiToastKind.Error);
+                return;
             }
-            result.Sort(ComparePoints);
-            return result;
-        }
+            if (!_cart.Add(itemId, action, quantity))
+                return;
 
-        internal static WeeklyPoint GetCurrentPoint(RunState state, string itemId)
-        {
-            List<WeeklyPoint> history = GetVisibleHistory(state, itemId);
-            return history.Count == 0 ? null : history[history.Count - 1];
-        }
-
-        internal static bool IsDelisted(RunState state, string itemId)
-        {
-            SecurityBinding binding = state.FindSecurityBinding(itemId);
-            if (binding != null && binding.IsDelisted)
-                return true;
-            WeeklyPoint point = GetCurrentPoint(state, itemId);
-            return point != null && point.Delisted;
-        }
-
-        internal static long GetShortQuantity(RunState state, string itemId)
-        {
-            long result = 0;
-            if (state.ShortBatches == null)
-                return result;
-            for (int i = 0; i < state.ShortBatches.Count; i++)
-            {
-                ShortBatch batch = state.ShortBatches[i];
-                if (batch != null && batch.Quantity > 0 &&
-                    string.Equals(batch.ItemId, itemId, StringComparison.Ordinal))
-                    result += batch.Quantity;
-            }
-            return result;
-        }
-
-        internal static int GetNearestDueWeek(RunState state, string itemId)
-        {
-            int result = int.MaxValue;
-            if (state.ShortBatches == null)
-                return -1;
-            for (int i = 0; i < state.ShortBatches.Count; i++)
-            {
-                ShortBatch batch = state.ShortBatches[i];
-                if (batch != null && batch.Quantity > 0 && batch.DueWeek < result &&
-                    string.Equals(batch.ItemId, itemId, StringComparison.Ordinal))
-                    result = batch.DueWeek;
-            }
-            return result == int.MaxValue ? -1 : result;
-        }
-
-        internal static NewsRecord GetLatestNews(RunState state, string itemId)
-        {
-            NewsRecord latest = null;
-            if (state.NewsHistory == null)
-                return null;
-            int currentWeek = GetCurrentWeek(state);
-            for (int i = 0; i < state.NewsHistory.Count; i++)
-            {
-                NewsRecord record = state.NewsHistory[i];
-                if (record == null || record.MarketWeekIndex > currentWeek ||
-                    !state.HasItemAppeared(record.ItemId) ||
-                    (!string.IsNullOrEmpty(itemId) && !string.Equals(record.ItemId, itemId, StringComparison.Ordinal)))
-                    continue;
-                if (latest == null || record.MarketWeekIndex >= latest.MarketWeekIndex)
-                    latest = record;
-            }
-            return latest;
-        }
-
-        internal static int GetCurrentWeek(RunState state)
-        {
-            return state.Clock == null ? 0 : state.Clock.MarketWeekIndex;
-        }
-
-        internal static string FormatNumber(double value, int decimals = 0)
-        {
-            if (!IsFinite(value))
-                return "—";
-            return value.ToString("N" + decimals.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
-        }
-
-        internal static string FormatReturn(double value)
-        {
-            if (!IsFinite(value))
-                return "—";
-            double percent = value * 100.0;
-            string arrow = percent > 0.0 ? "▲ " : percent < 0.0 ? "▼ " : "— ";
-            string sign = percent > 0.0 ? "+" : string.Empty;
-            return arrow + sign + percent.ToString("0.00", CultureInfo.InvariantCulture) + "%";
-        }
-
-        internal static Color GetTrendColor(double value)
-        {
-            if (IsFinite(value) && value > 0.0)
-                return new Color(0.70f, 0.20f, 0.14f, 1f);
-            if (IsFinite(value) && value < 0.0)
-                return new Color(0.18f, 0.43f, 0.28f, 1f);
-            return new Color(0.34f, 0.30f, 0.24f, 1f);
-        }
-
-        internal static string GetActionName(TradeAction action)
-        {
-            switch (action)
-            {
-                case TradeAction.Buy: return "买货";
-                case TradeAction.Sell: return "卖货";
-                case TradeAction.Borrow: return "借货";
-                case TradeAction.Return: return "还货";
-                default: return "交易";
-            }
-        }
-
-        internal static string GetRecordActionName(string action)
-        {
-            switch (action)
-            {
-                case TradeActionNames.Buy: return "买货";
-                case TradeActionNames.Sell: return "卖货";
-                case TradeActionNames.Borrow: return "借货";
-                case TradeActionNames.Return: return "还货";
-                case TradeActionNames.Expire: return "到期还货";
-                default: return action;
-            }
-        }
-
-        internal static string GetIconSpriteId(ItemDefinition item)
-        {
-            string path = item == null ? string.Empty : item.IconPath ?? string.Empty;
-            int slash = path.LastIndexOf('/');
-            if (slash >= 0)
-                path = path.Substring(slash + 1);
-            if (path.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-                path = path.Substring(0, path.Length - 4);
-            return path;
-        }
-
-        internal static string GetErrorMessage(TradeResult result, ItemCatalog catalog)
-        {
-            if (result == null)
-                return "交易未能完成，请重新预览。";
-            string message = string.IsNullOrEmpty(result.Message) ? "交易未能完成，请重新预览。" : result.Message;
             ItemDefinition item;
-            if (!string.IsNullOrEmpty(result.ItemId) && catalog.TryGetItem(result.ItemId, out item))
-                message = item.Name + "：" + message;
-            if (result.Error == TradeError.InsufficientCash)
+            string name = _definitions.TryGetValue(itemId, out item) && item != null ? item.Name : itemId;
+            Services.Overlays.ShowToast(
+                name + " · " + UiFormatting.ActionName(action) + "已纳入契匣。",
+                2.8f,
+                UiToastKind.Success);
+            if (sourceRect != null)
             {
-                message += string.Format(
-                    CultureInfo.InvariantCulture,
-                    "\n需付 {0} 文，可用 {1} 文。",
-                    result.RequiredAmount,
-                    result.AvailableAmount);
+                Services.Overlays.PlayAddToCart(
+                    sourceRect,
+                    IsOpen ? View.Rect("CartRail") : null,
+                    Services.Assets.GetSprite(MarketQuery.IconKey(item)));
             }
-            else if (result.Error == TradeError.InsufficientHolding ||
-                     result.Error == TradeError.InsufficientShortPosition)
-            {
-                message += string.Format(
-                    CultureInfo.InvariantCulture,
-                    "\n指令 {0} 件，可用 {1} 件。",
-                    result.RequiredAmount,
-                    result.AvailableAmount);
-            }
-            return message;
         }
 
-        private static int ComparePoints(WeeklyPoint left, WeeklyPoint right)
+        private void ConfirmCart(List<TradeOrder> orders)
         {
-            return left.MarketWeekIndex.CompareTo(right.MarketWeekIndex);
+            _confirmation.Present(orders, "立契结算", delegate
+            {
+                _cart.Clear();
+                if (IsOpen)
+                    Refresh();
+            });
         }
 
-        private static bool IsFinite(double value)
+        private void OnDetailRequested(string itemId)
         {
-            return !double.IsNaN(value) && !double.IsInfinity(value);
+            if (DetailRequested != null)
+                DetailRequested(itemId);
+        }
+
+        private void RequestIndex()
+        {
+            if (IndexRequested != null)
+                IndexRequested();
+        }
+
+        private void RequestInventory()
+        {
+            if (InventoryRequested != null)
+                InventoryRequested();
+        }
+
+        private void Close()
+        {
+            if (CloseRequested != null)
+                CloseRequested();
+        }
+
+        private void ToggleMotion()
+        {
+            Services.Motion.Toggle();
+            UiView.SetLabel(
+                View.Button("MotionButton"),
+                Services.Motion.ReducedMotion ? "动效已减弱" : "减少动效");
+        }
+
+        public override void Dispose()
+        {
+            if (View.IsAlive)
+            {
+                View.Button("PreviousPageButton").onClick.RemoveListener(PreviousPage);
+                View.Button("NextPageButton").onClick.RemoveListener(NextPage);
+                View.Button("RankingButton").onClick.RemoveListener(ToggleRanking);
+                View.Button("InventoryButton").onClick.RemoveListener(RequestInventory);
+                View.Button("CloseButton").onClick.RemoveListener(Close);
+                View.Button("IndexButton").onClick.RemoveListener(RequestIndex);
+                View.Button("MotionButton").onClick.RemoveListener(ToggleMotion);
+            }
+            for (int i = 0; i < _cards.Count; i++)
+            {
+                _cards[i].DetailRequested -= OnDetailRequested;
+                _cards[i].AddRequested -= AddToCart;
+                _cards[i].Dispose();
+            }
+            _cards.Clear();
+            _ranking.DetailRequested -= OnDetailRequested;
+            _ranking.BackRequested -= ShowMarket;
+            _ranking.Dispose();
+            _cart.OrdersChanged -= RefreshDrafts;
+            _cart.CheckoutRequested -= ConfirmCart;
+            _cart.Dispose();
+            if (_pageNumberFont != null)
+                UnityEngine.Object.Destroy(_pageNumberFont);
+            _indexChart.Dispose();
+            DetailRequested = null;
+            IndexRequested = null;
+            InventoryRequested = null;
+            CloseRequested = null;
+            if (_layoutDriver != null)
+            {
+                _layoutDriver.Owner = null;
+                _layoutDriver.enabled = false;
+                UnityEngine.Object.Destroy(_layoutDriver);
+            }
+            base.Dispose();
+        }
+
+        private sealed class MarketLayoutDriver : MonoBehaviour
+        {
+            internal MarketWindow Owner;
+            private int _width = -1;
+            private int _height = -1;
+
+            private void LateUpdate()
+            {
+                if (Owner == null)
+                {
+                    enabled = false;
+                    return;
+                }
+                if (Screen.width == _width && Screen.height == _height)
+                    return;
+                _width = Screen.width;
+                _height = Screen.height;
+                Owner.ApplyLayoutProfile();
+            }
         }
     }
 }

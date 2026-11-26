@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Mortal.Core;
+using UnityEngine;
 
 namespace XingShangMod.Persistence
 {
@@ -12,6 +13,8 @@ namespace XingShangMod.Persistence
         public string Profile { get; internal set; }
         public string Slot { get; internal set; }
         public string OriginalSaveId { get; internal set; }
+        public string OriginalSaveFingerprint { get; internal set; }
+        public bool IsRestore { get; internal set; }
     }
 
     public sealed class SaveCoordinator
@@ -22,7 +25,7 @@ namespace XingShangMod.Persistence
 
         private readonly Func<RunState> _currentStateProvider;
         private readonly Func<RunState> _newRunStateProvider;
-        private readonly Action<RunState> _stateApplier;
+        private readonly Action<RunState, GameSave> _stateApplier;
         private readonly Action<SaveMigrationRequest> _missingSidecarHandler;
         private bool _newRunPending;
 
@@ -35,6 +38,18 @@ namespace XingShangMod.Persistence
             Func<RunState> currentStateProvider,
             Func<RunState> newRunStateProvider,
             Action<RunState> stateApplier,
+            Action<SaveMigrationRequest> missingSidecarHandler)
+            : this(store, currentStateProvider, newRunStateProvider,
+                stateApplier == null ? null : (Action<RunState, GameSave>)((state, save) => stateApplier(state)),
+                missingSidecarHandler)
+        {
+        }
+
+        internal SaveCoordinator(
+            SidecarStore store,
+            Func<RunState> currentStateProvider,
+            Func<RunState> newRunStateProvider,
+            Action<RunState, GameSave> stateApplier,
             Action<SaveMigrationRequest> missingSidecarHandler)
         {
             if (store == null)
@@ -76,10 +91,56 @@ namespace XingShangMod.Persistence
                 RunState state = _newRunPending
                     ? _newRunStateProvider()
                     : _currentStateProvider();
-                if (!Store.CaptureMemorySnapshot(gameSave.TimeTick, state))
+                long restoreTimeTick = 0L;
+                string restoreSaveFingerprint = string.Empty;
+                RunState restoreState = null;
+                GameSave restoreSave = ReadRestoreSave(gameSave.RestoreData);
+                if (restoreSave != null && restoreSave.TimeTick > 0)
+                {
+                    restoreTimeTick = restoreSave.TimeTick;
+                    try
+                    {
+                        restoreSaveFingerprint = GameSaveFingerprint.Compute(restoreSave);
+                        Store.TryGetRestoreStateForSave(
+                            restoreTimeTick,
+                            restoreSaveFingerprint,
+                            out restoreState);
+                    }
+                    catch
+                    {
+                        restoreTimeTick = 0L;
+                        restoreSaveFingerprint = string.Empty;
+                        restoreState = null;
+                    }
+                }
+
+                if (!Store.CaptureMemorySnapshot(
+                    gameSave.TimeTick,
+                    state,
+                    restoreTimeTick,
+                    restoreSaveFingerprint,
+                    restoreState))
                     return Fail(Store.LastError);
 
                 _newRunPending = false;
+                return true;
+            }
+            catch (Exception exception)
+            {
+                return Fail(exception.Message);
+            }
+        }
+
+        public bool PrepareSaveData(string saveFile, object gameSave)
+        {
+            LastError = null;
+            try
+            {
+                SaveSidecarEnvelope envelope;
+                if (!TryCreateEnvelope(saveFile, gameSave, out envelope))
+                    return false;
+                if (!Store.Prepare(envelope))
+                    return Fail(Store.LastError);
                 return true;
             }
             catch (Exception exception)
@@ -102,14 +163,19 @@ namespace XingShangMod.Persistence
                 string originalSaveId;
                 if (!TryGetSaveIdentity(saveFile, out profile, out slot, out originalSaveId))
                     return Fail("The original save path is outside Application.persistentDataPath or invalid.");
-                if (!VerifyOriginalSave(saveFile, gameSave))
-                    return Fail("The original save was not verified; no sidecar was written.");
+                string originalSaveFingerprint = GameSaveFingerprint.Compute(innerSave);
+                if (!VerifyOriginalSave(saveFile, gameSave, originalSaveFingerprint))
+                    return Fail("The original save was not verified; no sidecar was committed.");
 
-                RunState state;
-                if (!Store.TryGetMemorySnapshot(innerSave.TimeTick, out state))
-                    return Fail("No CreateSaveData snapshot exists for this save version.");
+                if (Store.Commit(profile, slot, innerSave.TimeTick, originalSaveFingerprint))
+                    return true;
+                if (Store.LastLoadStatus != SidecarLoadStatus.Missing)
+                    return Fail(Store.LastError);
 
-                if (!Store.Persist(profile, slot, innerSave.TimeTick, originalSaveId, state))
+                SaveSidecarEnvelope envelope;
+                if (!TryCreateEnvelope(saveFile, gameSave, out envelope))
+                    return false;
+                if (!Store.Persist(envelope))
                     return Fail(Store.LastError);
                 return true;
             }
@@ -121,10 +187,25 @@ namespace XingShangMod.Persistence
 
         public bool ExecuteLoadGameData(GameSave gameSave)
         {
-            return ExecuteLoadGameData(null, null, gameSave);
+            return ExecuteLoadGameData(null, null, null, gameSave, false);
         }
 
         public bool ExecuteLoadGameData(string profile, string slot, GameSave gameSave)
+        {
+            return ExecuteLoadGameData(profile, slot, null, gameSave, false);
+        }
+
+        public bool ExecuteLoadGameData(string saveFile, GameSave gameSave, bool isRestore)
+        {
+            return ExecuteLoadGameData(null, null, saveFile, gameSave, isRestore);
+        }
+
+        private bool ExecuteLoadGameData(
+            string profile,
+            string slot,
+            string saveFile,
+            GameSave gameSave,
+            bool isRestore)
         {
             LastError = null;
             _newRunPending = false;
@@ -133,32 +214,59 @@ namespace XingShangMod.Persistence
                 if (gameSave == null || gameSave.TimeTick <= 0)
                     return Fail("ExecuteLoadGameData requires a GameSave with a positive TimeTick.");
 
+                string originalSaveId = null;
+                if (!string.IsNullOrWhiteSpace(saveFile) &&
+                    !TryGetSaveIdentity(saveFile, out profile, out slot, out originalSaveId))
+                    return Fail("The original load path is outside Application.persistentDataPath or invalid.");
+
                 bool hasLocation = !string.IsNullOrWhiteSpace(profile) &&
                     !string.IsNullOrWhiteSpace(slot);
+                if (hasLocation && string.IsNullOrWhiteSpace(originalSaveId))
+                    originalSaveId = profile + "/Save_" + slot + ".dat";
+                string originalSaveFingerprint = GameSaveFingerprint.Compute(gameSave);
                 RunState state = null;
-                bool restored = hasLocation
-                    ? Store.TryGetMemorySnapshot(profile, slot, gameSave.TimeTick, out state)
-                    : Store.TryGetMemorySnapshot(gameSave.TimeTick, out state);
+                bool restored = false;
 
-                if (!restored && hasLocation)
+                if (hasLocation && isRestore)
                 {
-                    restored = Store.TryLoadDisk(profile, slot, gameSave.TimeTick, out state);
-                    if (!restored && Store.LastLoadStatus != SidecarLoadStatus.Missing)
-                        return Fail(Store.LastError);
+                    restored = Store.TryLoadRestore(
+                        profile,
+                        slot,
+                        gameSave.TimeTick,
+                        originalSaveFingerprint,
+                        out state);
+                }
+                else if (hasLocation)
+                {
+                    restored = Store.TryGetMemorySnapshot(
+                        profile,
+                        slot,
+                        gameSave.TimeTick,
+                        originalSaveFingerprint,
+                        out state);
+                    if (!restored)
+                    {
+                        restored = Store.TryLoadDisk(
+                            profile,
+                            slot,
+                            gameSave.TimeTick,
+                            originalSaveFingerprint,
+                            out state);
+                    }
+                }
+                else if (isRestore)
+                {
+                    return Fail("The RestoreData checkpoint has no original save context.");
                 }
 
-                if (!restored)
-                {
-                    restored = Store.TryLoadDisk(gameSave.TimeTick, out state);
-                    if (!restored && Store.LastLoadStatus != SidecarLoadStatus.Missing)
-                        return Fail(Store.LastError);
-                }
+                if (!restored && hasLocation && Store.LastLoadStatus != SidecarLoadStatus.Missing)
+                    return Fail(Store.LastError);
 
                 if (restored)
                 {
                     if (state == null)
                         return Fail("The restored run state is null.");
-                    _stateApplier(state);
+                    _stateApplier(state, gameSave);
                     return true;
                 }
 
@@ -171,9 +279,9 @@ namespace XingShangMod.Persistence
                     TimeTick = gameSave.TimeTick,
                     Profile = profile ?? string.Empty,
                     Slot = slot ?? string.Empty,
-                    OriginalSaveId = hasLocation
-                        ? profile + "/Save_" + slot + ".dat"
-                        : string.Empty
+                    OriginalSaveId = originalSaveId ?? string.Empty,
+                    OriginalSaveFingerprint = originalSaveFingerprint,
+                    IsRestore = isRestore
                 });
                 return true;
             }
@@ -181,6 +289,32 @@ namespace XingShangMod.Persistence
             {
                 return Fail(exception.Message);
             }
+        }
+
+        private bool TryCreateEnvelope(
+            string saveFile,
+            object gameSave,
+            out SaveSidecarEnvelope envelope)
+        {
+            envelope = null;
+            GameSave innerSave = GetGameSave(gameSave);
+            if (innerSave == null || innerSave.TimeTick <= 0)
+                return Fail("A GameSave or AutoGameSave.GameSave with a positive TimeTick is required.");
+
+            string profile;
+            string slot;
+            string originalSaveId;
+            if (!TryGetSaveIdentity(saveFile, out profile, out slot, out originalSaveId))
+                return Fail("The original save path is outside Application.persistentDataPath or invalid.");
+            if (!Store.TryGetMemoryEnvelope(innerSave.TimeTick, out envelope))
+                return Fail("No CreateSaveData snapshot exists for this save version.");
+
+            envelope.SchemaVersion = SaveSidecarEnvelope.CurrentSchemaVersion;
+            envelope.Profile = profile;
+            envelope.Slot = slot;
+            envelope.OriginalSaveId = originalSaveId;
+            envelope.OriginalSaveFingerprint = GameSaveFingerprint.Compute(innerSave);
+            return true;
         }
 
         private bool TryGetSaveIdentity(
@@ -222,7 +356,10 @@ namespace XingShangMod.Persistence
             return true;
         }
 
-        private static bool VerifyOriginalSave(string saveFile, object expectedSave)
+        private static bool VerifyOriginalSave(
+            string saveFile,
+            object expectedSave,
+            string expectedFingerprint)
         {
             if (!File.Exists(saveFile))
                 return false;
@@ -233,10 +370,26 @@ namespace XingShangMod.Persistence
                 if (actualSave == null || expectedSave.GetType() != actualSave.GetType())
                     return false;
 
-                GameSave expectedInner = GetGameSave(expectedSave);
                 GameSave actualInner = GetGameSave(actualSave);
-                return expectedInner != null && actualInner != null &&
-                    expectedInner.TimeTick == actualInner.TimeTick;
+                return actualInner != null &&
+                    string.Equals(
+                        expectedFingerprint,
+                        GameSaveFingerprint.Compute(actualInner),
+                        StringComparison.Ordinal);
+            }
+        }
+
+        private static GameSave ReadRestoreSave(string restoreData)
+        {
+            if (string.IsNullOrWhiteSpace(restoreData))
+                return null;
+            try
+            {
+                return JsonUtility.FromJson<GameSave>(restoreData);
+            }
+            catch
+            {
+                return null;
             }
         }
 

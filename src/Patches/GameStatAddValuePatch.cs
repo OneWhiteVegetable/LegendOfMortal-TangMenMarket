@@ -14,10 +14,10 @@ namespace XingShangMod.Patches
 
         private static void Postfix(GameStat __instance, int value, int __state)
         {
-            int actualDelta = __instance.Value - __state;
+            long actualDelta = (long)__instance.Value - __state;
             if (__instance.StatType == GameStatType.行動次數 && value < 0 && actualDelta < 0)
             {
-                int spent = -actualDelta;
+                int spent = (int)System.Math.Min(int.MaxValue, -actualDelta);
                 PatchGuard.Run("GameStat.AddValue(action)", delegate(ModApplication app)
                 {
                     app.OnActionPointsSpent(spent);

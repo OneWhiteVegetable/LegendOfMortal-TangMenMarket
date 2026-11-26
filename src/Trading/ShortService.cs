@@ -1,13 +1,19 @@
 using System;
 using System.Collections.Generic;
 using XingShangMod.Domain;
+using XingShangMod.Market;
 using XingShangMod.Persistence;
 
 namespace XingShangMod.Trading
 {
     public sealed class ShortService
     {
-        public const int DurationWeeks = 24;
+        public const int DurationMonths = 6;
+        public const int DurationWeeks = DurationMonths * MarketClock.WeeksPerGameMonth;
+        // M7003_01 starts the final battle at year 4, month 3, upper stage.
+        internal const int FinalBattleMonth = (4 - 1) * 12 + 3;
+        internal const int FirstClosedMonth = FinalBattleMonth - DurationMonths;
+        internal const string ClosedMessage = "为预留还货期，第三年九月起停开新借契。旧契可提前归还，到期自动买回。";
 
         private readonly TradingService _tradingService;
         private readonly RunState _state;
@@ -69,12 +75,14 @@ namespace XingShangMod.Trading
 
             int currentWeek = _state.Clock.MarketWeekIndex;
             Dictionary<string, long> dueQuantities = new Dictionary<string, long>(StringComparer.Ordinal);
+            HashSet<string> overflowedItemIds = new HashSet<string>(StringComparer.Ordinal);
             if (_state.ShortBatches != null)
             {
                 for (int i = 0; i < _state.ShortBatches.Count; i++)
                 {
                     ShortBatch batch = _state.ShortBatches[i];
-                    if (batch == null || batch.Quantity <= 0 || batch.DueWeek > currentWeek)
+                    if (batch == null || batch.Quantity <= 0 || batch.DueWeek > currentWeek ||
+                        overflowedItemIds.Contains(batch.ItemId))
                         continue;
 
                     long quantity;
@@ -85,7 +93,8 @@ namespace XingShangMod.Trading
                     }
                     catch (OverflowException)
                     {
-                        results.Add(AutomaticFailure(TradeError.InvalidQuantity, batch.ItemId));
+                        dueQuantities.Remove(batch.ItemId);
+                        overflowedItemIds.Add(batch.ItemId);
                     }
                 }
             }
@@ -94,17 +103,74 @@ namespace XingShangMod.Trading
             itemIds.Sort(StringComparer.Ordinal);
             for (int i = 0; i < itemIds.Count; i++)
             {
-                string itemId = itemIds[i];
-                long quantity = dueQuantities[itemId];
-                if (quantity > int.MaxValue)
+                IReadOnlyList<TradeResult> itemResults = SettleInChunks(
+                    itemIds[i], dueQuantities[itemIds[i]], false);
+                for (int j = 0; j < itemResults.Count; j++)
+                    results.Add(itemResults[j]);
+            }
+
+            List<string> failedItemIds = new List<string>(overflowedItemIds);
+            failedItemIds.Sort(StringComparer.Ordinal);
+            for (int i = 0; i < failedItemIds.Count; i++)
+                results.Add(AutomaticFailure(TradeError.InvalidQuantity, failedItemIds[i]));
+            return results;
+        }
+
+        public IReadOnlyList<TradeResult> SettleDelistedBatches(string itemId)
+        {
+            List<TradeResult> results = new List<TradeResult>();
+            if (string.IsNullOrEmpty(itemId))
+            {
+                results.Add(AutomaticFailure(TradeError.InvalidRequest, itemId));
+                return results;
+            }
+            if (_state.Clock == null)
+            {
+                results.Add(AutomaticFailure(TradeError.InvalidState, itemId));
+                return results;
+            }
+
+            long quantity = 0;
+            if (_state.ShortBatches != null)
+            {
+                for (int i = 0; i < _state.ShortBatches.Count; i++)
                 {
-                    results.Add(AutomaticFailure(TradeError.InvalidQuantity, itemId));
-                    continue;
+                    ShortBatch batch = _state.ShortBatches[i];
+                    if (batch == null || batch.Quantity <= 0 ||
+                        !string.Equals(batch.ItemId, itemId, StringComparison.Ordinal))
+                        continue;
+                    try
+                    {
+                        quantity = checked(quantity + batch.Quantity);
+                    }
+                    catch (OverflowException)
+                    {
+                        results.Add(AutomaticFailure(TradeError.InvalidQuantity, itemId));
+                        return results;
+                    }
                 }
-                results.Add(_tradingService.ExecuteAutomatic(new[]
-                {
-                    new TradeOrder(TradeAction.Return, itemId, (int)quantity)
-                }));
+            }
+
+            return SettleInChunks(itemId, quantity, true);
+        }
+
+        private IReadOnlyList<TradeResult> SettleInChunks(string itemId, long quantity, bool delisted)
+        {
+            List<TradeResult> results = new List<TradeResult>();
+            long remaining = quantity;
+            while (remaining > 0)
+            {
+                int part = remaining > int.MaxValue ? int.MaxValue : (int)remaining;
+                TradeResult result = delisted
+                    ? _tradingService.ExecuteDelistedShort(itemId, part)
+                    : _tradingService.ExecuteAutomatic(new[]
+                    {
+                        new TradeOrder(TradeAction.Return, itemId, part)
+                    });
+                results.Add(result);
+                if (!result.Success)
+                    break;
+                remaining -= part;
             }
             return results;
         }
@@ -112,13 +178,15 @@ namespace XingShangMod.Trading
         public bool TryRepayDebtFromCash(out long repaid)
         {
             repaid = 0;
-            if (_state.Debt < 0 || _wallet.Balance < 0)
+            long balance = _wallet.Balance;
+            if (_state.Debt < 0 || balance < MortalMoneyLimit.Minimum)
                 return false;
 
-            long payment = Math.Min(_state.Debt, _wallet.Balance);
+            // Only an unrepresentably large pre-signed-wallet debt can remain here.
+            long payment = Math.Min(_state.Debt, balance - MortalMoneyLimit.Minimum);
             if (payment <= 0)
                 return true;
-            if (!_wallet.TrySpend(payment))
+            if (!WalletChange.TryApply(_wallet, balance, -payment))
                 return false;
 
             _state.Debt -= payment;
@@ -128,9 +196,12 @@ namespace XingShangMod.Trading
 
         private TradeResult AutomaticFailure(TradeError error, string itemId)
         {
-            TradeResult result = TradeResult.Fail(error,
-                error == TradeError.InvalidQuantity ? "到期借货数量超出可结算范围。" : "当前行市状态无效，暂不能自动平仓。",
-                itemId);
+            string message = "当前行市状态无效，暂不能自动平仓。";
+            if (error == TradeError.InvalidQuantity)
+                message = "到期借货数量超出可结算范围。";
+            else if (error == TradeError.InvalidRequest)
+                message = "退市结算请求无效。";
+            TradeResult result = TradeResult.Fail(error, message, itemId);
             result.CashAfter = _wallet.Balance;
             result.DebtAfter = _state.Debt;
             return result;

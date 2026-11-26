@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <g id="shang-glyph" fill="#F5F0E4">
+    <path id="top-dot" d="M58 6 L72 9 L68 25 L55 22 Z"/>
+    <path id="top-bar" d="M18 26 L108 20 L111 33 L20 39 Z"/>
+    <path id="upper-left" d="M30 39 L43 36 L49 49 L40 55 Z"/>
+    <path id="upper-right" d="M82 36 L95 33 L88 50 L76 54 Z"/>
+    <path id="left-wall" d="M25 51 L40 53 L35 113 L20 118 Z"/>
+    <path id="roof-and-right-wall" d="M39 46 L103 41 L110 48 L112 106 L105 115 L96 112 L99 101 L99 55 L43 60 Z"/>
+    <path id="inner-left" d="M49 59 L62 56 L58 71 L46 76 Z"/>
+    <path id="inner-right" d="M77 56 L90 59 L85 73 L73 69 Z"/>
+    <path id="inner-mouth" fill-rule="evenodd" d="M47 79 L87 76 L91 100 L44 104 Z M56 86 L56 95 L80 93 L79 85 Z"/>
+  </g>
+</svg>

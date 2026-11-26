@@ -4,7 +4,8 @@ namespace XingShangMod.UI.Charting
     {
         Card,
         Detail,
-        Assets
+        Assets,
+        Spark
     }
 
     public enum WeeklyChartDirection

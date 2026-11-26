@@ -1,0 +1,22 @@
+{
+  "id": "texture_celadon_halftone",
+  "file": "texture_celadon_halftone.png",
+  "width": 512,
+  "height": 512,
+  "category": "textures",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 400,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_texture_celadon_halftone.py"
+}

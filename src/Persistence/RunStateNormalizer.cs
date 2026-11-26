@@ -174,11 +174,16 @@ namespace XingShangMod.Persistence
             state.GameYear = NonNegative(state.GameYear);
             state.GameMonth = NonNegative(state.GameMonth);
             state.GameRound = NonNegative(state.GameRound);
-            state.Cash = NonNegative(state.Cash);
+            // The native wallet can owe money. Signed historical cash is meaningful.
             state.LongValue = NonNegative(state.LongValue, 0.0);
             state.ShortLiability = NonNegative(state.ShortLiability, 0.0);
             state.Debt = NonNegative(state.Debt);
             state.NetAssets = Finite(state.NetAssets);
+            if (double.IsNaN(state.TotalProfit) || double.IsInfinity(state.TotalProfit) ||
+                double.IsNaN(state.CapitalBasis) || double.IsInfinity(state.CapitalBasis) || state.CapitalBasis < 0)
+                state.HasProfitMetrics = false;
+            if (!state.HasProfitMetrics)
+                state.TotalProfit = state.CapitalBasis = 0;
         }
 
         private static void Normalize(NewsRecord state)

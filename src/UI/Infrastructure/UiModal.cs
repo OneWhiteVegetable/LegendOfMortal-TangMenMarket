@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,260 +7,341 @@ using UnityEngine.UI;
 
 namespace XingShangMod.UI.Infrastructure
 {
-    public sealed class UiModal : MonoBehaviour
+    internal sealed class UiModalLine
     {
-        private CanvasGroup _group;
-        private Tween _fade;
-        private Tween _scale;
-        private Action _onConfirm;
-        private Action _onCancel;
-        private GameObject _previousSelected;
+        internal string Label;
+        internal string Quantity;
+        internal string Amount;
+        internal Color? Accent;
+    }
 
-        public RectTransform Root { get; private set; }
-        public RectTransform Panel { get; private set; }
-        public Text TitleText { get; private set; }
-        public Text MessageText { get; private set; }
-        public Button ConfirmButton { get; private set; }
-        public Button CancelButton { get; private set; }
+    internal sealed class UiModalContent
+    {
+        internal string Title = "确认";
+        internal string Subtitle = string.Empty;
+        internal string Explanation = string.Empty;
+        internal string TotalCaption = "合计";
+        internal string Total = string.Empty;
+        internal string ConfirmLabel = "确认";
+        internal string CancelLabel = "取消";
+        internal readonly List<UiModalLine> Lines = new List<UiModalLine>();
+        internal Action Confirmed;
+    }
 
-        public bool IsOpen
+    internal sealed class UiModal : IUiCancelLayer, IDisposable
+    {
+        private const float DialogWidth = 600f;
+        private const float MaximumHeightFraction = 0.88f;
+
+        private readonly UiFrontendServices _services;
+        private readonly UiPrefabInstance _view;
+        private readonly List<RectTransform> _lines = new List<RectTransform>();
+        private readonly RectTransform _motion;
+        private readonly RectTransform _bodyContent;
+        private readonly RectTransform _explainPanel;
+        private readonly CanvasGroup _backdropGroup;
+        private readonly CanvasGroup _dialogGroup;
+        private readonly LayoutElement _bodyLayout;
+        private readonly LayoutElement _headerLayout;
+        private readonly LayoutElement _footerLayout;
+        private readonly VerticalLayoutGroup _dialogLayout;
+        private readonly GameObject _previousSelected;
+        private Action _confirmed;
+        private bool _closed;
+        private bool _layoutDirty = true;
+
+        internal UiModal(UiFrontendServices services, UiModalContent content)
         {
-            get { return Root != null && Root.gameObject.activeSelf; }
-        }
+            _services = services;
+            _view = services.Assets.Create("Modal");
+            Canvas canvas = _view.Root.GetComponent<Canvas>();
+            if (canvas == null)
+                throw new InvalidOperationException("Modal requires a root Canvas.");
+            UiCanvasDensity.Apply(_view.Root);
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = UiSorting.Modal;
+            GraphicRaycaster raycaster = _view.Root.GetComponent<GraphicRaycaster>();
+            if (raycaster == null)
+                raycaster = _view.Root.gameObject.AddComponent<GraphicRaycaster>();
+            raycaster.enabled = true;
 
-        public static UiModal Create(UiFactory factory, Transform parent)
-        {
-            if (factory == null)
+            _motion = _view.Rect("DialogMotion");
+            _bodyContent = _view.Get<VerticalLayoutGroup>("BodyContent").GetComponent<RectTransform>();
+            _explainPanel = _view.Rect("ExplainPanel");
+            _backdropGroup = _view.Get<CanvasGroup>("BackdropGroup");
+            _dialogGroup = _view.Get<CanvasGroup>("DialogGroup");
+            _bodyLayout = _view.Scroll("BodyScroll").GetComponent<LayoutElement>();
+            _dialogLayout = _view.Rect("Dialog").GetComponent<VerticalLayoutGroup>();
+            _headerLayout = _view.Rect("Dialog").Find("Header").GetComponent<LayoutElement>();
+            _footerLayout = _view.Rect("Dialog").Find("Footer").GetComponent<LayoutElement>();
+            _previousSelected = EventSystem.current == null ? null : EventSystem.current.currentSelectedGameObject;
+
+            Button blocker = _view.Button("Blocker");
+            blocker.interactable = true;
+            Image blockerImage = blocker.GetComponent<Image>();
+            blockerImage.raycastTarget = true;
+            blocker.targetGraphic = blockerImage;
+            blocker.onClick.AddListener(Cancel);
+            UiCloseInk.Attach(_view.Button("CloseButton"));
+            _view.Button("CloseButton").onClick.AddListener(Cancel);
+            _view.Button("CancelButton").onClick.AddListener(Cancel);
+            _view.Button("ConfirmButton").onClick.AddListener(Confirm);
+            foreach (string key in new[] { "CloseButton", "ConfirmButton", "CancelButton" })
             {
-                throw new ArgumentNullException("factory");
+                Button button = _view.Button(key);
+                if (button.transition == Selectable.Transition.ColorTint)
+                {
+                    ColorBlock colors = button.colors;
+                    colors.selectedColor = colors.highlightedColor;
+                    button.colors = colors;
+                }
+                button.gameObject.AddComponent<UiModalButtonMotion>().Configure(services.Motion);
             }
-            if (parent == null)
-            {
-                throw new ArgumentNullException("parent");
-            }
+            ConfigureNavigation();
 
-            Image overlay = factory.CreatePanel(
-                parent,
-                "XingShangMod.Modal",
-                null,
-                null,
-                new Color(0.03f, 0.025f, 0.02f, 0.76f));
-            UiFactory.Stretch(overlay.rectTransform);
-            UiModal modal = overlay.gameObject.AddComponent<UiModal>();
-            modal.Root = overlay.rectTransform;
-            modal._group = overlay.gameObject.AddComponent<CanvasGroup>();
-            modal._group.interactable = true;
-            modal._group.blocksRaycasts = true;
+            _view.Text("TitleText").text = content.Title ?? string.Empty;
+            _view.Text("SubtitleText").text = content.Subtitle ?? string.Empty;
+            _view.Text("ExplainText").text = content.Explanation ?? string.Empty;
+            _explainPanel.gameObject.SetActive(!string.IsNullOrEmpty(content.Explanation));
+            _view.Text("TotalCaptionText").text = content.TotalCaption ?? string.Empty;
+            _view.Text("TotalText").text = content.Total ?? string.Empty;
+            UiView.SetLabel(_view.Button("ConfirmButton"), content.ConfirmLabel);
+            UiView.SetLabel(_view.Button("CancelButton"), content.CancelLabel);
+            _confirmed = content.Confirmed;
+            BindLines(content.Lines);
 
-            Image panel = factory.CreatePanel(
-                overlay.transform,
-                "Panel",
-                "panel_contract_modal_9s",
-                new Vector2(680f, 420f));
-            modal.Panel = panel.rectTransform;
-            modal.TitleText = factory.CreateText(
-                panel.transform,
-                "Title",
-                string.Empty,
-                30,
-                new Color(0.16f, 0.11f, 0.075f, 1f),
-                TextAnchor.MiddleCenter);
-            UiFactory.SetRect(
-                modal.TitleText.rectTransform,
-                new Vector2(0f, 1f),
-                new Vector2(1f, 1f),
-                new Vector2(0.5f, 1f),
-                new Vector2(0f, -24f),
-                new Vector2(-64f, 56f));
-
-            modal.MessageText = factory.CreateText(
-                panel.transform,
-                "Message",
-                string.Empty,
-                24,
-                new Color(0.19f, 0.15f, 0.11f, 1f),
-                TextAnchor.UpperLeft);
-            modal.MessageText.verticalOverflow = VerticalWrapMode.Overflow;
-            UiFactory.Stretch(
-                modal.MessageText.rectTransform,
-                new Vector2(40f, 124f),
-                new Vector2(-40f, -96f));
-
-            modal.ConfirmButton = factory.CreateButton(
-                panel.transform,
-                "ConfirmButton",
-                "確定",
-                modal.Confirm,
-                24,
-                new Vector2(200f, 72f),
-                "button_modal_primary_normal_9s",
-                "button_modal_primary_hover_9s",
-                "button_modal_primary_pressed_9s");
-            UiFactory.SetRect(
-                modal.ConfirmButton.GetComponent<RectTransform>(),
-                new Vector2(1f, 0f),
-                new Vector2(1f, 0f),
-                new Vector2(1f, 0f),
-                new Vector2(-32f, 28f),
-                new Vector2(200f, 72f));
-
-            modal.CancelButton = factory.CreateButton(
-                panel.transform,
-                "CancelButton",
-                "取消",
-                modal.Cancel,
-                24,
-                new Vector2(200f, 72f),
-                "button_modal_neutral_normal_9s",
-                "button_modal_neutral_hover_9s",
-                "button_modal_neutral_pressed_9s");
-            UiFactory.SetRect(
-                modal.CancelButton.GetComponent<RectTransform>(),
-                new Vector2(1f, 0f),
-                new Vector2(1f, 0f),
-                new Vector2(1f, 0f),
-                new Vector2(-244f, 28f),
-                new Vector2(200f, 72f));
-
-            overlay.gameObject.SetActive(false);
-            return modal;
-        }
-
-        public void Show(
-            string title,
-            string message,
-            string confirmText,
-            Action onConfirm,
-            string cancelText = null,
-            Action onCancel = null)
-        {
-            if (Root == null)
-            {
-                return;
-            }
-            bool wasOpen = IsOpen;
-            if (!wasOpen && EventSystem.current != null)
-            {
-                _previousSelected = EventSystem.current.currentSelectedGameObject;
-            }
-
-            SafeTween.Kill(_fade);
-            SafeTween.Kill(_scale);
-            _fade = null;
-            _scale = null;
-            _onConfirm = onConfirm;
-            _onCancel = onCancel;
-            TitleText.text = title ?? string.Empty;
-            MessageText.text = message ?? string.Empty;
-            SetButtonLabel(ConfirmButton, string.IsNullOrEmpty(confirmText) ? "確定" : confirmText);
-            SetButtonLabel(CancelButton, string.IsNullOrEmpty(cancelText) ? "取消" : cancelText);
-            CancelButton.gameObject.SetActive(cancelText != null);
-
-            Root.gameObject.SetActive(true);
-            Root.SetAsLastSibling();
-            _group.alpha = 0f;
-            _group.interactable = true;
-            _group.blocksRaycasts = true;
-            Panel.localScale = new Vector3(0.98f, 0.98f, 1f);
-            _fade = DOTween.To(() => _group.alpha, value => _group.alpha = value, 1f, 0.12f)
-                .SetTarget(Root.gameObject)
-                .SetUpdate(true);
-            _scale = DOTween.To(() => Panel.localScale, value => Panel.localScale = value, Vector3.one, 0.12f)
-                .SetTarget(Panel.gameObject)
-                .SetEase(Ease.OutQuad)
-                .SetUpdate(true);
-
+            UiModalDriver driver = _view.Root.gameObject.AddComponent<UiModalDriver>();
+            driver.Owner = this;
+            _view.SetActive(true);
+            ApplyLayout(true);
+            _view.Scroll("BodyScroll").verticalNormalizedPosition = 1f;
+            _services.Input.Activate(this);
+            PlayOpenMotion();
             if (EventSystem.current != null)
             {
-                GameObject selected = CancelButton.gameObject.activeSelf
-                    ? CancelButton.gameObject
-                    : ConfirmButton.gameObject;
-                EventSystem.current.SetSelectedGameObject(selected);
+                EventSystem.current.SetSelectedGameObject(null);
+                UiFocusOrigin.Restore(EventSystem.current, _view.Button("CancelButton").gameObject);
             }
         }
 
-        public void ShowMessage(string title, string message, string buttonText = "確定", Action onClosed = null)
+        internal bool IsOpen { get { return !_closed && _view.IsAlive && _view.GameObject.activeSelf; } }
+        public bool IsCancelLayerActive { get { return IsOpen; } }
+        internal event Action Closed;
+
+        public bool CancelFromInput()
         {
-            Show(title, message, buttonText, onClosed);
+            Cancel();
+            return true;
         }
 
-        public void Confirm()
+        internal void Cancel()
         {
-            if (!IsOpen)
+            Close();
+        }
+
+        private void Confirm()
+        {
+            if (_closed)
+                return;
+            Action callback = _confirmed;
+            _confirmed = null;
+            Close();
+            if (callback != null)
+                callback();
+        }
+
+        private void Close()
+        {
+            if (_closed)
+                return;
+            _closed = true;
+            Action closed = Closed;
+            Dispose();
+            RestoreSelection();
+            if (closed != null)
+                closed();
+        }
+
+        private void ConfigureNavigation()
+        {
+            Button cancel = _view.Button("CancelButton");
+            Button confirm = _view.Button("ConfirmButton");
+            Button close = _view.Button("CloseButton");
+            Navigation cancelNavigation = cancel.navigation;
+            cancelNavigation.mode = Navigation.Mode.Explicit;
+            cancelNavigation.selectOnRight = confirm;
+            cancelNavigation.selectOnUp = close;
+            cancel.navigation = cancelNavigation;
+            Navigation confirmNavigation = confirm.navigation;
+            confirmNavigation.mode = Navigation.Mode.Explicit;
+            confirmNavigation.selectOnLeft = cancel;
+            confirmNavigation.selectOnUp = close;
+            confirm.navigation = confirmNavigation;
+            Navigation closeNavigation = close.navigation;
+            closeNavigation.mode = Navigation.Mode.Explicit;
+            closeNavigation.selectOnDown = cancel;
+            close.navigation = closeNavigation;
+        }
+
+        private void PlayOpenMotion()
+        {
+            _backdropGroup.alpha = 0f;
+            _dialogGroup.alpha = 0f;
+            if (_services.Motion.ReducedMotion)
             {
+                SetOpenFinalState();
                 return;
             }
-            Action callback = _onConfirm;
-            Hide();
-            if (callback != null)
+            _motion.anchoredPosition = new Vector2(0f, -30f);
+            _motion.localRotation = Quaternion.Euler(0f, 0f, 2f);
+            _motion.localScale = Vector3.one * 0.96f;
+            try
             {
-                callback();
+                _backdropGroup.DOFade(1f, 0.18f).SetUpdate(true).SetEase(UiMotionEasing.CssEaseOut).SetId(_backdropGroup.gameObject);
+                Sequence sequence = DOTween.Sequence();
+                sequence.SetId(_motion.gameObject).SetUpdate(true);
+                sequence.Join(_dialogGroup.DOFade(1f, 0.28f).SetEase(UiMotionEasing.PaperOut));
+                sequence.Join(_motion.DOAnchorPos(Vector2.zero, 0.28f).SetEase(UiMotionEasing.PaperOut));
+                sequence.Join(_motion.DORotate(Vector3.zero, 0.28f).SetEase(UiMotionEasing.PaperOut));
+                sequence.Join(_motion.DOScale(Vector3.one, 0.28f).SetEase(UiMotionEasing.PaperOut));
+            }
+            catch (Exception)
+            {
+                SetOpenFinalState();
             }
         }
 
-        public void Cancel()
+        internal void SettleForReducedMotion()
         {
-            if (!IsOpen)
+            if (_closed || !_view.IsAlive)
+                return;
+            _services.Motion.Kill(_backdropGroup.gameObject);
+            _services.Motion.Kill(_motion.gameObject);
+            SetOpenFinalState();
+        }
+
+        private void SetOpenFinalState()
+        {
+            _backdropGroup.alpha = 1f;
+            _dialogGroup.alpha = 1f;
+            _motion.anchoredPosition = Vector2.zero;
+            _motion.localRotation = Quaternion.identity;
+            _motion.localScale = Vector3.one;
+        }
+
+        private void BindLines(IList<UiModalLine> models)
+        {
+            RectTransform template = _view.Rect("LineTemplate");
+            _lines.Add(template);
+            while (_lines.Count < models.Count)
             {
+                GameObject clone = UnityEngine.Object.Instantiate(template.gameObject, _bodyContent, false);
+                clone.name = "ContractLine" + _lines.Count;
+                _lines.Add(clone.GetComponent<RectTransform>());
+            }
+            for (int i = 0; i < _lines.Count; i++)
+            {
+                bool active = i < models.Count;
+                _lines[i].gameObject.SetActive(active);
+                if (!active)
+                    continue;
+                UiModalLine model = models[i] ?? new UiModalLine();
+                SetLineText(_lines[i], "Label", model.Label);
+                SetLineText(_lines[i], "Quantity", model.Quantity);
+                SetLineText(_lines[i], "Amount", model.Amount);
+                Transform label = _lines[i].Find("Label");
+                Text text = label == null ? null : label.GetComponent<Text>();
+                if (text != null)
+                    text.color = model.Accent ?? new Color32(32, 35, 33, 255);
+            }
+            _explainPanel.SetAsLastSibling();
+            _layoutDirty = true;
+        }
+
+        internal void RequestLayout()
+        {
+            _layoutDirty = true;
+        }
+
+        internal void ApplyLayout(bool force)
+        {
+            if (_closed || (!_layoutDirty && !force))
+                return;
+            _layoutDirty = false;
+            UiCanvasDensity.Apply(_view.Root);
+            Rect rootRect = _view.Root.rect;
+            if (rootRect.width < 1f || rootRect.height < 1f)
+            {
+                _layoutDirty = true;
                 return;
             }
-            Action callback = _onCancel;
-            Hide();
-            if (callback != null)
-            {
-                callback();
-            }
+            Canvas.ForceUpdateCanvases();
+            float width = Mathf.Min(DialogWidth, Mathf.Max(280f, rootRect.width - 48f));
+            float maximumHeight = Mathf.Max(1f, rootRect.height * MaximumHeightFraction);
+            float contentHeight = Mathf.Max(36f, LayoutUtility.GetPreferredHeight(_bodyContent));
+            float chromeHeight = _dialogLayout.padding.top + _dialogLayout.padding.bottom +
+                _headerLayout.preferredHeight + _footerLayout.preferredHeight;
+            float height = Mathf.Min(maximumHeight, chromeHeight + contentHeight);
+            if (Mathf.Abs(_motion.sizeDelta.x - width) > 0.1f || Mathf.Abs(_motion.sizeDelta.y - height) > 0.1f)
+                _motion.sizeDelta = new Vector2(width, height);
+            _bodyLayout.preferredHeight = contentHeight;
+            Canvas.ForceUpdateCanvases();
         }
 
-        public void Hide()
+        private static void SetLineText(RectTransform line, string path, string value)
         {
-            SafeTween.Kill(_fade);
-            SafeTween.Kill(_scale);
-            _fade = null;
-            _scale = null;
-            _onConfirm = null;
-            _onCancel = null;
-            if (Panel != null)
-            {
-                Panel.localScale = Vector3.one;
-            }
-            if (Root != null)
-            {
-                Root.gameObject.SetActive(false);
-            }
-            if (EventSystem.current != null && _previousSelected != null &&
-                _previousSelected.activeInHierarchy)
-            {
-                EventSystem.current.SetSelectedGameObject(_previousSelected);
-            }
-            _previousSelected = null;
+            Transform target = line.Find(path);
+            Text text = target == null ? null : target.GetComponent<Text>();
+            if (text != null)
+                text.text = value ?? string.Empty;
         }
 
-        private void Update()
+        private void RestoreSelection()
         {
-            if (IsOpen && Input.GetKeyDown(KeyCode.Escape))
+            if (EventSystem.current != null && _previousSelected != null && _previousSelected.activeInHierarchy)
+                UiFocusOrigin.Restore(EventSystem.current, _previousSelected);
+        }
+
+        public void Dispose()
+        {
+            if (_closed && !_view.IsAlive)
+                return;
+            _closed = true;
+            _services.Input.Unregister(this);
+            if (_view.IsAlive)
             {
-                Cancel();
+                _services.Motion.Kill(_backdropGroup.gameObject);
+                _services.Motion.Kill(_motion.gameObject);
+                UiModalDriver driver = _view.Root.GetComponent<UiModalDriver>();
+                if (driver != null)
+                    driver.Owner = null;
             }
+            _view.Dispose();
+            _confirmed = null;
+            _lines.Clear();
+        }
+    }
+
+    internal sealed class UiModalDriver : MonoBehaviour
+    {
+        internal UiModal Owner;
+
+        private void LateUpdate()
+        {
+            if (Owner != null)
+                Owner.ApplyLayout(false);
+        }
+
+        private void OnRectTransformDimensionsChange()
+        {
+            if (Owner != null)
+                Owner.RequestLayout();
         }
 
         private void OnDestroy()
         {
-            SafeTween.Kill(_fade);
-            SafeTween.Kill(_scale);
-            _fade = null;
-            _scale = null;
-            _onConfirm = null;
-            _onCancel = null;
-        }
-
-        private static void SetButtonLabel(Button button, string label)
-        {
-            Text text = button.GetComponentInChildren<Text>(true);
-            if (text != null)
-            {
-                text.text = label;
-            }
+            Owner = null;
         }
     }
 }

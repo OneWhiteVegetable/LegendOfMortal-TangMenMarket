@@ -1,0 +1,22 @@
+{
+  "id": "button_modal_neutral_normal_9s",
+  "file": "button_modal_neutral_normal_9s.png",
+  "width": 320,
+  "height": 128,
+  "category": "buttons/modal_neutral",
+  "spriteBorder": [
+    12,
+    12,
+    12,
+    12
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 400,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "bilinear",
+  "sourceScript": "tools/unity_ui/draw_button_modal_neutral_normal_9s.py"
+}

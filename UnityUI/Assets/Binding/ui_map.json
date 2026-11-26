@@ -1,0 +1,2216 @@
+{
+    "schemaVersion": 1,
+    "bundleName": "xingshang_ui.bundle",
+    "unityVersion": "2020.3.49f1c1",
+    "referenceWidth": 1920,
+    "referenceHeight": 1080,
+    "matchWidthOrHeight": 0.5,
+    "pathConvention": "Slash-separated relative to the instantiated prefab root; empty is the root.",
+    "prefabs": [
+        {
+            "name": "GoodsCard",
+            "asset": "GoodsCard",
+            "nodes": [
+                {
+                    "key": "Background",
+                    "path": "",
+                    "type": "Image"
+                },
+                {
+                    "key": "BorrowButton",
+                    "path": "BorrowButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "BuyButton",
+                    "path": "BuyButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "CategorySkew",
+                    "path": "CategorySkew",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "CategoryText",
+                    "path": "CategorySkew/CategoryText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ChangeText",
+                    "path": "ChangeText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ChartHost",
+                    "path": "ChartHost",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "DelistedMark",
+                    "path": "DelistedMark",
+                    "type": "Image"
+                },
+                {
+                    "key": "DeltaText",
+                    "path": "DeltaText",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexText",
+                    "path": "GhostNumber",
+                    "type": "Text"
+                },
+                {
+                    "key": "ItemImage",
+                    "path": "ItemImage",
+                    "type": "Image"
+                },
+                {
+                    "key": "NameText",
+                    "path": "NameText",
+                    "type": "Text"
+                },
+                {
+                    "key": "OpenButton",
+                    "path": "",
+                    "type": "Button"
+                },
+                {
+                    "key": "PriceText",
+                    "path": "PriceText",
+                    "type": "Text"
+                },
+                {
+                    "key": "PriceUnitText",
+                    "path": "PriceUnitText",
+                    "type": "Text"
+                },
+                {
+                    "key": "QuantityDecrementButton",
+                    "path": "QuantityStepper/DecrementButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "QuantityIncrementButton",
+                    "path": "QuantityStepper/IncrementButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "QuantityText",
+                    "path": "QuantityStepper/QuantityText",
+                    "type": "Text"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                }
+            ]
+        },
+        {
+            "name": "CartEntry",
+            "asset": "CartEntry",
+            "nodes": [
+                {
+                    "key": "Background",
+                    "path": "Background",
+                    "type": "Image"
+                },
+                {
+                    "key": "ItemImage",
+                    "path": "ItemImage",
+                    "type": "Image"
+                },
+                {
+                    "key": "NameText",
+                    "path": "NameText",
+                    "type": "Text"
+                },
+                {
+                    "key": "QuantityDecrementButton",
+                    "path": "QuantityStepper/DecrementButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "QuantityIncrementButton",
+                    "path": "QuantityStepper/IncrementButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "QuantityText",
+                    "path": "QuantityStepper/QuantityText",
+                    "type": "Text"
+                },
+                {
+                    "key": "RemoveButton",
+                    "path": "RemoveButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "SettledText",
+                    "path": "SettledText",
+                    "type": "Text"
+                },
+                {
+                    "key": "SubtotalText",
+                    "path": "SubtotalText",
+                    "type": "Text"
+                },
+                {
+                    "key": "TypeText",
+                    "path": "TypeText",
+                    "type": "Text"
+                }
+            ]
+        },
+        {
+            "name": "InventorySlot",
+            "asset": "InventorySlot",
+            "nodes": [
+                {
+                    "key": "Actions",
+                    "path": "MotionPivot/CardClip/Actions",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "Background",
+                    "path": "MotionPivot/CardClip/Background",
+                    "type": "Image"
+                },
+                {
+                    "key": "CloseIcon",
+                    "path": "MotionPivot/CardClip/Actions/ClosePositionButton/CloseIcon",
+                    "type": "Image"
+                },
+                {
+                    "key": "ClosePositionButton",
+                    "path": "MotionPivot/CardClip/Actions/ClosePositionButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "CostText",
+                    "path": "MotionPivot/CardClip/FilledContent/CostText",
+                    "type": "Text"
+                },
+                {
+                    "key": "EmptyMark",
+                    "path": "MotionPivot/CardClip/EmptyMark",
+                    "type": "Text"
+                },
+                {
+                    "key": "FilledContent",
+                    "path": "MotionPivot/CardClip/FilledContent",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "FocusFrame",
+                    "path": "MotionPivot/FocusFrame",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "ItemImage",
+                    "path": "MotionPivot/CardClip/FilledContent/ItemImage",
+                    "type": "Image"
+                },
+                {
+                    "key": "MetaText",
+                    "path": "MotionPivot/CardClip/MetaText",
+                    "type": "Text"
+                },
+                {
+                    "key": "MotionPivot",
+                    "path": "MotionPivot",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "NameText",
+                    "path": "MotionPivot/CardClip/FilledContent/NameText",
+                    "type": "Text"
+                },
+                {
+                    "key": "OpenButton",
+                    "path": "",
+                    "type": "Button"
+                },
+                {
+                    "key": "ProfitText",
+                    "path": "MotionPivot/CardClip/FilledContent/ProfitText",
+                    "type": "Text"
+                },
+                {
+                    "key": "QuantityText",
+                    "path": "MotionPivot/CardClip/FilledContent/QuantityText",
+                    "type": "Text"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "ViewButton",
+                    "path": "MotionPivot/CardClip/Actions/ViewButton",
+                    "type": "Button"
+                }
+            ]
+        },
+        {
+            "name": "RankingRow",
+            "asset": "RankingRow",
+            "nodes": [
+                {
+                    "key": "ChangeText",
+                    "path": "ChangeText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ChartHost",
+                    "path": "ChartHost",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "ItemImage",
+                    "path": "ItemImage",
+                    "type": "Image"
+                },
+                {
+                    "key": "KeyText",
+                    "path": "KeyText",
+                    "type": "Text"
+                },
+                {
+                    "key": "NameText",
+                    "path": "NameText",
+                    "type": "Text"
+                },
+                {
+                    "key": "OpenButton",
+                    "path": "",
+                    "type": "Button"
+                },
+                {
+                    "key": "PriceText",
+                    "path": "PriceText",
+                    "type": "Text"
+                },
+                {
+                    "key": "RankText",
+                    "path": "RankText",
+                    "type": "Text"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                }
+            ]
+        },
+        {
+            "name": "ChartHost",
+            "asset": "ChartHost",
+            "nodes": [
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                }
+            ]
+        },
+        {
+            "name": "NewsTicker",
+            "asset": "NewsTicker",
+            "nodes": [
+                {
+                    "key": "Background",
+                    "path": "Background",
+                    "type": "Image"
+                },
+                {
+                    "key": "BodyText",
+                    "path": "Viewport/Track/GroupA/TickerItem/BodyText",
+                    "type": "Text"
+                },
+                {
+                    "key": "BodyTextB",
+                    "path": "Viewport/Track/GroupB/TickerItem/BodyText",
+                    "type": "Text"
+                },
+                {
+                    "key": "GroupA",
+                    "path": "Viewport/Track/GroupA",
+                    "type": "HorizontalLayoutGroup"
+                },
+                {
+                    "key": "GroupB",
+                    "path": "Viewport/Track/GroupB",
+                    "type": "HorizontalLayoutGroup"
+                },
+                {
+                    "key": "HeadlineText",
+                    "path": "Viewport/Track/GroupA/TickerItem/HeadlineText",
+                    "type": "Text"
+                },
+                {
+                    "key": "HeadlineTextB",
+                    "path": "Viewport/Track/GroupB/TickerItem/HeadlineText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ItemTemplateA",
+                    "path": "Viewport/Track/GroupA/TickerItem",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "ItemTemplateB",
+                    "path": "Viewport/Track/GroupB/TickerItem",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "Track",
+                    "path": "Viewport/Track",
+                    "type": "HorizontalLayoutGroup"
+                },
+                {
+                    "key": "Viewport",
+                    "path": "Viewport",
+                    "type": "RectTransform"
+                }
+            ]
+        },
+        {
+            "name": "Toast",
+            "asset": "Toast",
+            "nodes": [
+                {
+                    "key": "Background",
+                    "path": "Background",
+                    "type": "Image"
+                },
+                {
+                    "key": "CanvasGroup",
+                    "path": "",
+                    "type": "CanvasGroup"
+                },
+                {
+                    "key": "MessageText",
+                    "path": "MessageText",
+                    "type": "Text"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "StatusIcon",
+                    "path": "StatusIcon",
+                    "type": "Image"
+                },
+                {
+                    "key": "StatusStripe",
+                    "path": "StatusStripe",
+                    "type": "Image"
+                }
+            ]
+        },
+        {
+            "name": "Tooltip",
+            "asset": "Tooltip",
+            "nodes": [
+                {
+                    "key": "Background",
+                    "path": "Background",
+                    "type": "Image"
+                },
+                {
+                    "key": "BodyText",
+                    "path": "BodyText",
+                    "type": "Text"
+                },
+                {
+                    "key": "CanvasGroup",
+                    "path": "",
+                    "type": "CanvasGroup"
+                },
+                {
+                    "key": "HintText",
+                    "path": "HintText",
+                    "type": "Text"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "TitleText",
+                    "path": "TitleText",
+                    "type": "Text"
+                }
+            ]
+        },
+        {
+            "name": "Modal",
+            "asset": "Modal",
+            "nodes": [
+                {
+                    "key": "BackdropGroup",
+                    "path": "Blocker",
+                    "type": "CanvasGroup"
+                },
+                {
+                    "key": "Blocker",
+                    "path": "Blocker",
+                    "type": "Button"
+                },
+                {
+                    "key": "BodyContent",
+                    "path": "DialogMotion/Dialog/BodyScroll/Content",
+                    "type": "VerticalLayoutGroup"
+                },
+                {
+                    "key": "BodyScroll",
+                    "path": "DialogMotion/Dialog/BodyScroll",
+                    "type": "ScrollRect"
+                },
+                {
+                    "key": "CancelButton",
+                    "path": "DialogMotion/Dialog/Footer/CancelButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "CloseButton",
+                    "path": "DialogMotion/Dialog/Header/CloseButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "ConfirmButton",
+                    "path": "DialogMotion/Dialog/Footer/ConfirmButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "Dialog",
+                    "path": "DialogMotion/Dialog",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "DialogGroup",
+                    "path": "DialogMotion",
+                    "type": "CanvasGroup"
+                },
+                {
+                    "key": "DialogMotion",
+                    "path": "DialogMotion",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "ExplainPanel",
+                    "path": "DialogMotion/Dialog/BodyScroll/Content/ExplainPanel",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "ExplainText",
+                    "path": "DialogMotion/Dialog/BodyScroll/Content/ExplainPanel/ExplainText",
+                    "type": "Text"
+                },
+                {
+                    "key": "LineTemplate",
+                    "path": "DialogMotion/Dialog/BodyScroll/Content/ContractLineTemplate",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "SubtitleText",
+                    "path": "DialogMotion/Dialog/Header/SubtitleText",
+                    "type": "Text"
+                },
+                {
+                    "key": "TitleText",
+                    "path": "DialogMotion/Dialog/Header/TitleText",
+                    "type": "Text"
+                },
+                {
+                    "key": "TotalCaptionText",
+                    "path": "DialogMotion/Dialog/Footer/TotalCaptionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "TotalText",
+                    "path": "DialogMotion/Dialog/Footer/TotalText",
+                    "type": "Text"
+                }
+            ]
+        },
+        {
+            "name": "ItemDetail",
+            "asset": "ItemDetail",
+            "nodes": [
+                {
+                    "key": "BackButton",
+                    "path": "Window/DetailPage/ChartWorkspace/Heading/BackButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "Blocker",
+                    "path": "Blocker",
+                    "type": "Image"
+                },
+                {
+                    "key": "BorrowButton",
+                    "path": "Window/DetailPage/Sidebar/TradeSection/BorrowButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "BuyButton",
+                    "path": "Window/DetailPage/Sidebar/TradeSection/BuyButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "ChangeText",
+                    "path": "Window/DetailPage/ChartWorkspace/Heading/ChangeText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ChartCaptionText",
+                    "path": "Window/DetailPage/ChartWorkspace/ChartToolbar/ChartCaption",
+                    "type": "Text"
+                },
+                {
+                    "key": "ChartHintText",
+                    "path": "Window/DetailPage/ChartWorkspace/ChartHintText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ChartHost",
+                    "path": "Window/DetailPage/ChartWorkspace/ChartPanel/ChartHost",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "CloseButton",
+                    "path": "Window/Masthead/HeaderNav/CloseButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "ConstituentEmptyText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/ConstituentSection/ConstituentEmptyText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ConstituentList",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/ConstituentSection/ConstituentList",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "ConstituentRowTemplate",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/ConstituentSection/ConstituentList/ConstituentRowTemplate",
+                    "type": "Button"
+                },
+                {
+                    "key": "ConstituentSection",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/ConstituentSection",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "CoverButton",
+                    "path": "Window/DetailPage/Sidebar/TradeSection/CoverButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "DeltaText",
+                    "path": "Window/DetailPage/ChartWorkspace/Heading/DeltaText",
+                    "type": "Text"
+                },
+                {
+                    "key": "DescriptionSection",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/DescriptionSection",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "DescriptionText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/DescriptionSection/DescriptionScroll/Content/DescriptionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "DescriptionTitleText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/DescriptionSection/Title",
+                    "type": "Text"
+                },
+                {
+                    "key": "DetailPage",
+                    "path": "Window/DetailPage",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "EventTitleText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/NewsSection/EventTitleText",
+                    "type": "Text"
+                },
+                {
+                    "key": "GhostNumber",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/ItemStage/GhostNumber",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexButton",
+                    "path": "Window/Masthead/IndexButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "IndexChangeText",
+                    "path": "Window/Masthead/IndexButton/IndexChangeText",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexChartHost",
+                    "path": "Window/Masthead/IndexButton/IndexChartHost",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "IndexMetricsSection",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/IndexMetricsSection",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "IndexNameText",
+                    "path": "Window/Masthead/IndexButton/IndexNameText",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexPriceText",
+                    "path": "Window/Masthead/IndexButton/IndexPriceText",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexTotalText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/IndexMetricsSection/Total/Value",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexWeeklyText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/IndexMetricsSection/Weekly/Value",
+                    "type": "Text"
+                },
+                {
+                    "key": "InventoryButton",
+                    "path": "Window/Masthead/HeaderNav/InventoryButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "ItemImage",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/ItemStage/ItemImage",
+                    "type": "Image"
+                },
+                {
+                    "key": "ItemKeyText",
+                    "path": "Window/DetailPage/ChartWorkspace/Heading/ItemKeyText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ItemShadowImage",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/ItemStage/ItemShadowImage",
+                    "type": "Image"
+                },
+                {
+                    "key": "LongPositionText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/PositionSection/Long/Value",
+                    "type": "Text"
+                },
+                {
+                    "key": "Masthead",
+                    "path": "Window/Masthead",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "MoneyText",
+                    "path": "Window/Masthead/MoneyBlock/MoneyText",
+                    "type": "Text"
+                },
+                {
+                    "key": "MotionButton",
+                    "path": "Window/Statusbar/MotionButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "NameText",
+                    "path": "Window/DetailPage/ChartWorkspace/Heading/NameText",
+                    "type": "Text"
+                },
+                {
+                    "key": "NewsBodyText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/NewsSection/NewsBodyText",
+                    "type": "Text"
+                },
+                {
+                    "key": "NewsDirectionText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/NewsSection/NewsDirectionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "NewsSection",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/NewsSection",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "NewsTicker",
+                    "path": "Window/NewsTicker",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "PriceText",
+                    "path": "Window/DetailPage/ChartWorkspace/Heading/PriceText",
+                    "type": "Text"
+                },
+                {
+                    "key": "QuantityDecrementButton",
+                    "path": "Window/DetailPage/Sidebar/TradeSection/QuantityStepper/DecrementButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "QuantityIncrementButton",
+                    "path": "Window/DetailPage/Sidebar/TradeSection/QuantityStepper/IncrementButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "QuantityText",
+                    "path": "Window/DetailPage/Sidebar/TradeSection/QuantityStepper/QuantityText",
+                    "type": "Text"
+                },
+                {
+                    "key": "RangeAllButton",
+                    "path": "Window/DetailPage/ChartWorkspace/ChartToolbar/RangeAllButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "RangeHalfYearButton",
+                    "path": "Window/DetailPage/ChartWorkspace/ChartToolbar/RangeHalfYearButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "RangeMonthButton",
+                    "path": "Window/DetailPage/ChartWorkspace/ChartToolbar/RangeMonthButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "RangeYearButton",
+                    "path": "Window/DetailPage/ChartWorkspace/ChartToolbar/RangeYearButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "RankingButton",
+                    "path": "Window/Masthead/HeaderNav/RankingButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "ResetChartButton",
+                    "path": "Window/DetailPage/ChartWorkspace/ChartToolbar/ResetChartButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "SellButton",
+                    "path": "Window/DetailPage/Sidebar/TradeSection/SellButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "ShortPositionText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/PositionSection/Short/Value",
+                    "type": "Text"
+                },
+                {
+                    "key": "SidebarContent",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content",
+                    "type": "VerticalLayoutGroup"
+                },
+                {
+                    "key": "SidebarScroll",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll",
+                    "type": "ScrollRect"
+                },
+                {
+                    "key": "StatusText",
+                    "path": "Window/Statusbar/StatusText",
+                    "type": "Text"
+                },
+                {
+                    "key": "TotalPositionText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/PositionSection/Total/Value",
+                    "type": "Text"
+                },
+                {
+                    "key": "TradeSection",
+                    "path": "Window/DetailPage/Sidebar/TradeSection",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "TradeSpacer",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/TradeSpacer",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "TrendIcon",
+                    "path": "Window/DetailPage/ChartWorkspace/Heading/TrendIcon",
+                    "type": "Image"
+                },
+                {
+                    "key": "WeeklyPositionText",
+                    "path": "Window/DetailPage/Sidebar/SidebarScroll/Content/PositionSection/Weekly/Value",
+                    "type": "Text"
+                },
+                {
+                    "key": "Window",
+                    "path": "Window",
+                    "type": "RectTransform"
+                }
+            ]
+        },
+        {
+            "name": "AssetsPage",
+            "asset": "AssetsPage",
+            "nodes": [
+                {
+                    "key": "AssetCardsLayout",
+                    "path": "AssetCards",
+                    "type": "HorizontalLayoutGroup"
+                },
+                {
+                    "key": "AssetChartHost",
+                    "path": "ChartPanel/AssetChartHost",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "CashAccent",
+                    "path": "AssetCards/AssetCard0/Accent",
+                    "type": "Image"
+                },
+                {
+                    "key": "CashCaptionText",
+                    "path": "AssetCards/AssetCard0/CashCaptionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "CashText",
+                    "path": "AssetCards/AssetCard0/CashText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ChartHeader",
+                    "path": "ChartPanel/ChartHeader",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "ChartPanel",
+                    "path": "ChartPanel",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "ChartTitleText",
+                    "path": "ChartPanel/ChartHeader/Title",
+                    "type": "Text"
+                },
+                {
+                    "key": "DisclaimerText",
+                    "path": "DisclaimerText",
+                    "type": "Text"
+                },
+                {
+                    "key": "EquityAccent",
+                    "path": "AssetCards/AssetCard2/Accent",
+                    "type": "Image"
+                },
+                {
+                    "key": "EquityCaptionText",
+                    "path": "AssetCards/AssetCard2/EquityCaptionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "EquityText",
+                    "path": "AssetCards/AssetCard2/EquityText",
+                    "type": "Text"
+                },
+                {
+                    "key": "GoodsAccent",
+                    "path": "AssetCards/AssetCard1/Accent",
+                    "type": "Image"
+                },
+                {
+                    "key": "GoodsAxisHost",
+                    "path": "ChartPanel/AssetChartHost/GoodsAxisHost",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "GoodsCaptionText",
+                    "path": "AssetCards/AssetCard1/GoodsCaptionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "GoodsText",
+                    "path": "AssetCards/AssetCard1/GoodsText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ProfitAccent",
+                    "path": "AssetCards/AssetCard3/Accent",
+                    "type": "Image"
+                },
+                {
+                    "key": "ProfitCaptionText",
+                    "path": "AssetCards/AssetCard3/ProfitCaptionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ProfitText",
+                    "path": "AssetCards/AssetCard3/ProfitText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ResetChartButton",
+                    "path": "ChartPanel/ChartHeader/ResetChartButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "ReturnAccent",
+                    "path": "AssetCards/AssetCard4/Accent",
+                    "type": "Image"
+                },
+                {
+                    "key": "ReturnCaptionText",
+                    "path": "AssetCards/AssetCard4/ReturnCaptionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ReturnText",
+                    "path": "AssetCards/AssetCard4/ReturnText",
+                    "type": "Text"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                }
+            ]
+        },
+        {
+            "name": "InventoryWindow",
+            "asset": "InventoryWindow",
+            "nodes": [
+                {
+                    "key": "AssetsTabActiveLine",
+                    "path": "Window/ProfilePage/ProfileHeader/AssetsTabButton/ActiveLine",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "AssetsTabButton",
+                    "path": "Window/ProfilePage/ProfileHeader/AssetsTabButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "Blocker",
+                    "path": "Blocker",
+                    "type": "Image"
+                },
+                {
+                    "key": "CapacityCaptionText",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/CapacityCell/CapacityCaption",
+                    "type": "Text"
+                },
+                {
+                    "key": "CapacityText",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/CapacityCell/CapacityValueText",
+                    "type": "Text"
+                },
+                {
+                    "key": "CloseAllLongButton",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/LongSection/Header/CloseAllLongButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "CloseAllShortButton",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/ShortSection/Header/CloseAllShortButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "CloseButton",
+                    "path": "Window/Masthead/HeaderNav/CloseButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "GoodsValueText",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/GoodsCell/GoodsValueText",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexButton",
+                    "path": "Window/Masthead/IndexButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "IndexChangeText",
+                    "path": "Window/Masthead/IndexButton/IndexChangeText",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexChartHost",
+                    "path": "Window/Masthead/IndexButton/IndexChartHost",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "IndexNameText",
+                    "path": "Window/Masthead/IndexButton/IndexNameText",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexPriceText",
+                    "path": "Window/Masthead/IndexButton/IndexPriceText",
+                    "type": "Text"
+                },
+                {
+                    "key": "InventoryButton",
+                    "path": "Window/Masthead/HeaderNav/InventoryButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "InventoryTabActiveLine",
+                    "path": "Window/ProfilePage/ProfileHeader/InventoryTabButton/ActiveLine",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "InventoryTabButton",
+                    "path": "Window/ProfilePage/ProfileHeader/InventoryTabButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "LoansValueText",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/LoansCell/LoansValueText",
+                    "type": "Text"
+                },
+                {
+                    "key": "LongEmptyStateText",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/LongSection/LongGridScroll/LongEmptyState",
+                    "type": "Text"
+                },
+                {
+                    "key": "LongGridContent",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/LongSection/LongGridScroll/Content",
+                    "type": "GridLayoutGroup"
+                },
+                {
+                    "key": "LongGridScroll",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/LongSection/LongGridScroll",
+                    "type": "ScrollRect"
+                },
+                {
+                    "key": "LongProfitText",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/LongSection/Header/ProfitText",
+                    "type": "Text"
+                },
+                {
+                    "key": "LongSection",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/LongSection",
+                    "type": "LayoutElement"
+                },
+                {
+                    "key": "LongSummaryText",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/LongSection/Header/SummaryText",
+                    "type": "Text"
+                },
+                {
+                    "key": "Masthead",
+                    "path": "Window/Masthead",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "MoneyText",
+                    "path": "Window/Masthead/MoneyBlock/MoneyText",
+                    "type": "Text"
+                },
+                {
+                    "key": "MotionButton",
+                    "path": "Window/Statusbar/MotionButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "ProfileCloseButton",
+                    "path": "Window/ProfilePage/ProfileHeader/ProfileCloseButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "ProfileContent",
+                    "path": "Window/ProfilePage/ProfileContent",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "RankingButton",
+                    "path": "Window/Masthead/HeaderNav/RankingButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "ShortEmptyStateText",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/ShortSection/ShortGridScroll/ShortEmptyState",
+                    "type": "Text"
+                },
+                {
+                    "key": "ShortGridContent",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/ShortSection/ShortGridScroll/Content",
+                    "type": "GridLayoutGroup"
+                },
+                {
+                    "key": "ShortGridScroll",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/ShortSection/ShortGridScroll",
+                    "type": "ScrollRect"
+                },
+                {
+                    "key": "ShortProfitText",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/ShortSection/Header/ProfitText",
+                    "type": "Text"
+                },
+                {
+                    "key": "ShortSection",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/ShortSection",
+                    "type": "LayoutElement"
+                },
+                {
+                    "key": "ShortSummaryText",
+                    "path": "Window/ProfilePage/ProfileContent/Sections/ShortSection/Header/SummaryText",
+                    "type": "Text"
+                },
+                {
+                    "key": "StatusText",
+                    "path": "Window/Statusbar/StatusText",
+                    "type": "Text"
+                },
+                {
+                    "key": "SummaryCapacityCell",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/CapacityCell",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "SummaryGoodsCell",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/GoodsCell",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "SummaryLoansCell",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/LoansCell",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "SummaryTotalCell",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/TotalCell",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "SummaryWeeklyCell",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/WeeklyCell",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "SummaryWeightCell",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/WeightCell",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "TotalProfitText",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/TotalCell/TotalValueText",
+                    "type": "Text"
+                },
+                {
+                    "key": "WeeklyProfitText",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/WeeklyCell/WeeklyValueText",
+                    "type": "Text"
+                },
+                {
+                    "key": "WeightCaptionText",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/WeightCell/WeightCaption",
+                    "type": "Text"
+                },
+                {
+                    "key": "WeightText",
+                    "path": "Window/ProfilePage/ProfileContent/Summary/WeightCell/WeightValueText",
+                    "type": "Text"
+                },
+                {
+                    "key": "Window",
+                    "path": "Window",
+                    "type": "RectTransform"
+                }
+            ]
+        },
+        {
+            "name": "MarketWindow",
+            "asset": "MarketWindow",
+            "nodes": [
+                {
+                    "key": "Blocker",
+                    "path": "Blocker",
+                    "type": "Image"
+                },
+                {
+                    "key": "BuyCaptionText",
+                    "path": "Window/PageHost/CartRail/CartFooter/BuyCaptionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "BuyTotalText",
+                    "path": "Window/PageHost/CartRail/CartFooter/BuyTotalText",
+                    "type": "Text"
+                },
+                {
+                    "key": "CartClearButton",
+                    "path": "Window/PageHost/CartRail/CartClearButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "CartCountText",
+                    "path": "Window/PageHost/CartRail/CountBack/CartCountText",
+                    "type": "Text"
+                },
+                {
+                    "key": "CartListContent",
+                    "path": "Window/PageHost/CartRail/CartListScroll/Content",
+                    "type": "VerticalLayoutGroup"
+                },
+                {
+                    "key": "CartListScroll",
+                    "path": "Window/PageHost/CartRail/CartListScroll",
+                    "type": "ScrollRect"
+                },
+                {
+                    "key": "CartRail",
+                    "path": "Window/PageHost/CartRail",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "CashCaptionText",
+                    "path": "Window/PageHost/CartRail/CartFooter/CashCaptionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "CashDeltaText",
+                    "path": "Window/PageHost/CartRail/CartFooter/CashDeltaText",
+                    "type": "Text"
+                },
+                {
+                    "key": "CheckoutButton",
+                    "path": "Window/PageHost/CartRail/CartFooter/CheckoutButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "CloseButton",
+                    "path": "Window/Masthead/HeaderNav/CloseButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "CurrentPageText",
+                    "path": "Window/PageHost/GoodsArea/SectionHeader/Pager/CurrentPageText",
+                    "type": "Text"
+                },
+                {
+                    "key": "FooterNoteText",
+                    "path": "Window/PageHost/CartRail/CartFooter/FooterNoteText",
+                    "type": "Text"
+                },
+                {
+                    "key": "GoodsArea",
+                    "path": "Window/PageHost/GoodsArea",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "GoodsGrid",
+                    "path": "Window/PageHost/GoodsArea/GoodsGrid",
+                    "type": "VerticalLayoutGroup"
+                },
+                {
+                    "key": "GoodsRow0",
+                    "path": "Window/PageHost/GoodsArea/GoodsGrid/GoodsRow0",
+                    "type": "HorizontalLayoutGroup"
+                },
+                {
+                    "key": "GoodsRow1",
+                    "path": "Window/PageHost/GoodsArea/GoodsGrid/GoodsRow1",
+                    "type": "HorizontalLayoutGroup"
+                },
+                {
+                    "key": "IndexButton",
+                    "path": "Window/Masthead/IndexButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "IndexChangeText",
+                    "path": "Window/Masthead/IndexButton/IndexChangeText",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexChartHost",
+                    "path": "Window/Masthead/IndexButton/IndexChartHost",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "IndexNameText",
+                    "path": "Window/Masthead/IndexButton/IndexNameText",
+                    "type": "Text"
+                },
+                {
+                    "key": "IndexPriceText",
+                    "path": "Window/Masthead/IndexButton/IndexPriceText",
+                    "type": "Text"
+                },
+                {
+                    "key": "InventoryButton",
+                    "path": "Window/Masthead/HeaderNav/InventoryButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "Masthead",
+                    "path": "Window/Masthead",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "MoneyText",
+                    "path": "Window/Masthead/MoneyBlock/MoneyText",
+                    "type": "Text"
+                },
+                {
+                    "key": "MotionButton",
+                    "path": "Window/Statusbar/MotionButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "NewsTicker",
+                    "path": "Window/NewsTicker",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "NextPageButton",
+                    "path": "Window/PageHost/GoodsArea/SectionHeader/Pager/NextPageButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "PageHost",
+                    "path": "Window/PageHost",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "PageText",
+                    "path": "Window/PageHost/GoodsArea/SectionHeader/Pager/PageText",
+                    "type": "Text"
+                },
+                {
+                    "key": "PendingTabButton",
+                    "path": "Window/PageHost/CartRail/CartTabs/PendingTabButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "PreviousPageButton",
+                    "path": "Window/PageHost/GoodsArea/SectionHeader/Pager/PreviousPageButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "RankingButton",
+                    "path": "Window/Masthead/HeaderNav/RankingButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "SellCaptionText",
+                    "path": "Window/PageHost/CartRail/CartFooter/SellCaptionText",
+                    "type": "Text"
+                },
+                {
+                    "key": "SellTotalText",
+                    "path": "Window/PageHost/CartRail/CartFooter/SellTotalText",
+                    "type": "Text"
+                },
+                {
+                    "key": "SettledNextButton",
+                    "path": "Window/PageHost/CartRail/SettledNextButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "SettledPageText",
+                    "path": "Window/PageHost/CartRail/SettledPageText",
+                    "type": "Text"
+                },
+                {
+                    "key": "SettledPrevButton",
+                    "path": "Window/PageHost/CartRail/SettledPrevButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "SettledTabButton",
+                    "path": "Window/PageHost/CartRail/CartTabs/SettledTabButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "SortButton",
+                    "path": "Window/PageHost/GoodsArea/SectionHeader/SortButton",
+                    "type": "Button"
+                },
+                {
+                    "key": "StatusText",
+                    "path": "Window/Statusbar/StatusText",
+                    "type": "Text"
+                },
+                {
+                    "key": "TotalPageText",
+                    "path": "Window/PageHost/GoodsArea/SectionHeader/Pager/TotalPageBack/TotalPageText",
+                    "type": "Text"
+                },
+                {
+                    "key": "Window",
+                    "path": "Window",
+                    "type": "RectTransform"
+                }
+            ]
+        },
+        {
+            "name": "FlyToken",
+            "asset": "FlyToken",
+            "nodes": [
+                {
+                    "key": "CanvasGroup",
+                    "path": "",
+                    "type": "CanvasGroup"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "TokenImage",
+                    "path": "TokenImage",
+                    "type": "Image"
+                }
+            ]
+        },
+        {
+            "name": "DealStamp",
+            "asset": "DealStamp",
+            "nodes": [
+                {
+                    "key": "CanvasGroup",
+                    "path": "",
+                    "type": "CanvasGroup"
+                },
+                {
+                    "key": "Root",
+                    "path": "",
+                    "type": "RectTransform"
+                },
+                {
+                    "key": "StampImage",
+                    "path": "StampImage",
+                    "type": "Image"
+                }
+            ]
+        }
+    ],
+    "sprites": [
+        {
+            "key": "brand_shang_mark",
+            "asset": "brand_shang_mark"
+        },
+        {
+            "key": "money_coin_v3",
+            "asset": "money_coin_v3"
+        },
+        {
+            "key": "brush_arrow_hover_swash",
+            "asset": "brush_arrow_hover_swash"
+        },
+        {
+            "key": "brush_gold_long",
+            "asset": "brush_gold_long"
+        },
+        {
+            "key": "brush_ink_long",
+            "asset": "brush_ink_long"
+        },
+        {
+            "key": "brush_red_long",
+            "asset": "brush_red_long"
+        },
+        {
+            "key": "brush_red_short",
+            "asset": "brush_red_short"
+        },
+        {
+            "key": "detail_stage_gold_slash",
+            "asset": "detail_stage_gold_slash"
+        },
+        {
+            "key": "trend_down_brush",
+            "asset": "trend_down_brush"
+        },
+        {
+            "key": "trend_up_brush",
+            "asset": "trend_up_brush"
+        },
+        {
+            "key": "button_brush_arrow_disabled",
+            "asset": "button_brush_arrow_disabled"
+        },
+        {
+            "key": "button_brush_arrow_hover",
+            "asset": "button_brush_arrow_hover"
+        },
+        {
+            "key": "button_brush_arrow_normal",
+            "asset": "button_brush_arrow_normal"
+        },
+        {
+            "key": "button_brush_arrow_pressed",
+            "asset": "button_brush_arrow_pressed"
+        },
+        {
+            "key": "button_checkout_red_disabled_9s",
+            "asset": "button_checkout_red_disabled_9s"
+        },
+        {
+            "key": "button_checkout_red_hover_9s",
+            "asset": "button_checkout_red_hover_9s"
+        },
+        {
+            "key": "button_checkout_red_normal_9s",
+            "asset": "button_checkout_red_normal_9s"
+        },
+        {
+            "key": "button_checkout_red_pressed_9s",
+            "asset": "button_checkout_red_pressed_9s"
+        },
+        {
+            "key": "button_contract_green_disabled_9s",
+            "asset": "button_contract_green_disabled_9s"
+        },
+        {
+            "key": "button_contract_green_hover_9s",
+            "asset": "button_contract_green_hover_9s"
+        },
+        {
+            "key": "button_contract_green_normal_9s",
+            "asset": "button_contract_green_normal_9s"
+        },
+        {
+            "key": "button_contract_green_pressed_9s",
+            "asset": "button_contract_green_pressed_9s"
+        },
+        {
+            "key": "button_contract_red_disabled_9s",
+            "asset": "button_contract_red_disabled_9s"
+        },
+        {
+            "key": "button_contract_red_hover_9s",
+            "asset": "button_contract_red_hover_9s"
+        },
+        {
+            "key": "button_contract_red_normal_9s",
+            "asset": "button_contract_red_normal_9s"
+        },
+        {
+            "key": "button_contract_red_pressed_9s",
+            "asset": "button_contract_red_pressed_9s"
+        },
+        {
+            "key": "button_modal_neutral_hover_9s",
+            "asset": "button_modal_neutral_hover_9s"
+        },
+        {
+            "key": "button_modal_neutral_normal_9s",
+            "asset": "button_modal_neutral_normal_9s"
+        },
+        {
+            "key": "button_modal_neutral_pressed_9s",
+            "asset": "button_modal_neutral_pressed_9s"
+        },
+        {
+            "key": "button_modal_primary_hover_9s",
+            "asset": "button_modal_primary_hover_9s"
+        },
+        {
+            "key": "button_modal_primary_normal_9s",
+            "asset": "button_modal_primary_normal_9s"
+        },
+        {
+            "key": "button_modal_primary_pressed_9s",
+            "asset": "button_modal_primary_pressed_9s"
+        },
+        {
+            "key": "button_paper_icon_disabled",
+            "asset": "button_paper_icon_disabled"
+        },
+        {
+            "key": "button_paper_icon_hover",
+            "asset": "button_paper_icon_hover"
+        },
+        {
+            "key": "button_paper_icon_normal",
+            "asset": "button_paper_icon_normal"
+        },
+        {
+            "key": "button_paper_icon_pressed",
+            "asset": "button_paper_icon_pressed"
+        },
+        {
+            "key": "tab_range_active_9s",
+            "asset": "tab_range_active_9s"
+        },
+        {
+            "key": "tab_range_hover_9s",
+            "asset": "tab_range_hover_9s"
+        },
+        {
+            "key": "tab_range_normal_9s",
+            "asset": "tab_range_normal_9s"
+        },
+        {
+            "key": "button_sort_hover_9s",
+            "asset": "button_sort_hover_9s"
+        },
+        {
+            "key": "button_sort_normal_9s",
+            "asset": "button_sort_normal_9s"
+        },
+        {
+            "key": "button_sort_pressed_9s",
+            "asset": "button_sort_pressed_9s"
+        },
+        {
+            "key": "button_text_action_disabled_9s",
+            "asset": "button_text_action_disabled_9s"
+        },
+        {
+            "key": "button_text_action_hover_9s",
+            "asset": "button_text_action_hover_9s"
+        },
+        {
+            "key": "button_text_action_normal_9s",
+            "asset": "button_text_action_normal_9s"
+        },
+        {
+            "key": "button_trade_green_disabled",
+            "asset": "button_trade_green_disabled"
+        },
+        {
+            "key": "button_trade_green_hover",
+            "asset": "button_trade_green_hover"
+        },
+        {
+            "key": "button_trade_green_normal",
+            "asset": "button_trade_green_normal"
+        },
+        {
+            "key": "button_trade_green_pressed",
+            "asset": "button_trade_green_pressed"
+        },
+        {
+            "key": "button_trade_red_disabled",
+            "asset": "button_trade_red_disabled"
+        },
+        {
+            "key": "button_trade_red_hover",
+            "asset": "button_trade_red_hover"
+        },
+        {
+            "key": "button_trade_red_normal",
+            "asset": "button_trade_red_normal"
+        },
+        {
+            "key": "button_trade_red_pressed",
+            "asset": "button_trade_red_pressed"
+        },
+        {
+            "key": "card_asset_9s",
+            "asset": "card_asset_9s"
+        },
+        {
+            "key": "card_cart_entry_long_9s",
+            "asset": "card_cart_entry_long_9s"
+        },
+        {
+            "key": "card_cart_entry_short_9s",
+            "asset": "card_cart_entry_short_9s"
+        },
+        {
+            "key": "card_goods_delisted",
+            "asset": "card_goods_delisted"
+        },
+        {
+            "key": "card_goods_hover",
+            "asset": "card_goods_hover"
+        },
+        {
+            "key": "card_goods_normal",
+            "asset": "card_goods_normal"
+        },
+        {
+            "key": "decor_window_double_diamond",
+            "asset": "decor_window_double_diamond"
+        },
+        {
+            "key": "detail_stage_paper",
+            "asset": "detail_stage_paper"
+        },
+        {
+            "key": "detail_stage_red_shard",
+            "asset": "detail_stage_red_shard"
+        },
+        {
+            "key": "wasted_delist_wordmark",
+            "asset": "wasted_delist_wordmark"
+        },
+        {
+            "key": "icon_bag",
+            "asset": "icon_bag"
+        },
+        {
+            "key": "icon_cart",
+            "asset": "icon_cart"
+        },
+        {
+            "key": "icon_chart",
+            "asset": "icon_chart"
+        },
+        {
+            "key": "icon_check",
+            "asset": "icon_check"
+        },
+        {
+            "key": "icon_close",
+            "asset": "icon_close"
+        },
+        {
+            "key": "icon_coin",
+            "asset": "icon_coin"
+        },
+        {
+            "key": "icon_eye",
+            "asset": "icon_eye"
+        },
+        {
+            "key": "icon_info",
+            "asset": "icon_info"
+        },
+        {
+            "key": "icon_left",
+            "asset": "icon_left"
+        },
+        {
+            "key": "icon_minus",
+            "asset": "icon_minus"
+        },
+        {
+            "key": "icon_motion",
+            "asset": "icon_motion"
+        },
+        {
+            "key": "icon_plus",
+            "asset": "icon_plus"
+        },
+        {
+            "key": "icon_rank",
+            "asset": "icon_rank"
+        },
+        {
+            "key": "icon_reset",
+            "asset": "icon_reset"
+        },
+        {
+            "key": "icon_return",
+            "asset": "icon_return"
+        },
+        {
+            "key": "icon_right",
+            "asset": "icon_right"
+        },
+        {
+            "key": "icon_scroll",
+            "asset": "icon_scroll"
+        },
+        {
+            "key": "icon_sort",
+            "asset": "icon_sort"
+        },
+        {
+            "key": "icon_stamina",
+            "asset": "icon_stamina"
+        },
+        {
+            "key": "icon_trade",
+            "asset": "icon_trade"
+        },
+        {
+            "key": "icon_trash",
+            "asset": "icon_trash"
+        },
+        {
+            "key": "loan_maturity_atlas",
+            "asset": "loan_maturity_atlas"
+        },
+        {
+            "key": "slot_inventory_empty_9s",
+            "asset": "slot_inventory_empty_9s"
+        },
+        {
+            "key": "slot_inventory_long_9s",
+            "asset": "slot_inventory_long_9s"
+        },
+        {
+            "key": "slot_inventory_short_9s",
+            "asset": "slot_inventory_short_9s"
+        },
+        {
+            "key": "mask_chart_drybrush_tile",
+            "asset": "mask_chart_drybrush_tile"
+        },
+        {
+            "key": "mask_ticker_edge_fade",
+            "asset": "mask_ticker_edge_fade"
+        },
+        {
+            "key": "panel_brand_block",
+            "asset": "panel_brand_block"
+        },
+        {
+            "key": "panel_cart_rail_9s",
+            "asset": "panel_cart_rail_9s"
+        },
+        {
+            "key": "panel_contract_modal_9s",
+            "asset": "panel_contract_modal_9s"
+        },
+        {
+            "key": "panel_detail_chart_9s",
+            "asset": "panel_detail_chart_9s"
+        },
+        {
+            "key": "panel_masthead_9s",
+            "asset": "panel_masthead_9s"
+        },
+        {
+            "key": "panel_merchant_window_9s",
+            "asset": "panel_merchant_window_9s"
+        },
+        {
+            "key": "panel_paper_tooltip_9s",
+            "asset": "panel_paper_tooltip_9s"
+        },
+        {
+            "key": "panel_position_cell_9s",
+            "asset": "panel_position_cell_9s"
+        },
+        {
+            "key": "panel_story_news_9s",
+            "asset": "panel_story_news_9s"
+        },
+        {
+            "key": "panel_ticker_label",
+            "asset": "panel_ticker_label"
+        },
+        {
+            "key": "panel_toast_9s",
+            "asset": "panel_toast_9s"
+        },
+        {
+            "key": "tag_cart_count",
+            "asset": "tag_cart_count"
+        },
+        {
+            "key": "row_ranking_hover_9s",
+            "asset": "row_ranking_hover_9s"
+        },
+        {
+            "key": "row_ranking_normal_9s",
+            "asset": "row_ranking_normal_9s"
+        },
+        {
+            "key": "stamp_deal_chengjiao",
+            "asset": "stamp_deal_chengjiao"
+        },
+        {
+            "key": "stamp_deal_pingcang",
+            "asset": "stamp_deal_pingcang"
+        },
+        {
+            "key": "texture_celadon_halftone",
+            "asset": "texture_celadon_halftone"
+        },
+        {
+            "key": "texture_ink_diagonal_hatch_tile",
+            "asset": "texture_ink_diagonal_hatch_tile"
+        },
+        {
+            "key": "texture_ink_grain_tile",
+            "asset": "texture_ink_grain_tile"
+        },
+        {
+            "key": "texture_paper_grain_tile",
+            "asset": "texture_paper_grain_tile"
+        },
+        {
+            "key": "01_飞天门辟邪玉",
+            "asset": "01_飞天门辟邪玉"
+        },
+        {
+            "key": "02_藏宝图刺青拓样",
+            "asset": "02_藏宝图刺青拓样"
+        },
+        {
+            "key": "03_杂鱼收尸契",
+            "asset": "03_杂鱼收尸契"
+        },
+        {
+            "key": "04_铁拳暖食盒",
+            "asset": "04_铁拳暖食盒"
+        },
+        {
+            "key": "05_仿南宫尖肩甲",
+            "asset": "05_仿南宫尖肩甲"
+        },
+        {
+            "key": "06_飞石帮荣誉会员牌",
+            "asset": "06_飞石帮荣誉会员牌"
+        },
+        {
+            "key": "07_快报印花",
+            "asset": "07_快报印花"
+        },
+        {
+            "key": "08_海捕画影",
+            "asset": "08_海捕画影"
+        },
+        {
+            "key": "09_奇侠破奇冤戏本",
+            "asset": "09_奇侠破奇冤戏本"
+        },
+        {
+            "key": "10_装死槟榔",
+            "asset": "10_装死槟榔"
+        },
+        {
+            "key": "11_南宫润喉糖",
+            "asset": "11_南宫润喉糖"
+        },
+        {
+            "key": "12_断肠护花散",
+            "asset": "12_断肠护花散"
+        },
+        {
+            "key": "13_崆峒全加豆浆",
+            "asset": "13_崆峒全加豆浆"
+        },
+        {
+            "key": "14_纸夫人",
+            "asset": "14_纸夫人"
+        },
+        {
+            "key": "15_白鲨鱼脍",
+            "asset": "15_白鲨鱼脍"
+        },
+        {
+            "key": "16_正色布",
+            "asset": "16_正色布"
+        },
+        {
+            "key": "17_和事灰浆",
+            "asset": "17_和事灰浆"
+        },
+        {
+            "key": "18_崆峒发光菜",
+            "asset": "18_崆峒发光菜"
+        },
+        {
+            "key": "19_盆砂",
+            "asset": "19_盆砂"
+        },
+        {
+            "key": "20_地听瓮",
+            "asset": "20_地听瓮"
+        },
+        {
+            "key": "21_羊脬渡命环",
+            "asset": "21_羊脬渡命环"
+        },
+        {
+            "key": "22_传书雁",
+            "asset": "22_传书雁"
+        },
+        {
+            "key": "23_五色泥",
+            "asset": "23_五色泥"
+        },
+        {
+            "key": "24_防侠瓦",
+            "asset": "24_防侠瓦"
+        },
+        {
+            "key": "25_磁心投壶",
+            "asset": "25_磁心投壶"
+        },
+        {
+            "key": "26_遮颜斗笠",
+            "asset": "26_遮颜斗笠"
+        },
+        {
+            "key": "27_云南软铁锭",
+            "asset": "27_云南软铁锭"
+        },
+        {
+            "key": "28_蜡看菜",
+            "asset": "28_蜡看菜"
+        },
+        {
+            "key": "29_开锋血",
+            "asset": "29_开锋血"
+        },
+        {
+            "key": "30_断义袍",
+            "asset": "30_断义袍"
+        },
+        {
+            "key": "31_遮血褐衫",
+            "asset": "31_遮血褐衫"
+        },
+        {
+            "key": "32_点茶家什",
+            "asset": "32_点茶家什"
+        },
+        {
+            "key": "33_江湖路程图",
+            "asset": "33_江湖路程图"
+        },
+        {
+            "key": "34_孤狼衔草",
+            "asset": "34_孤狼衔草"
+        },
+        {
+            "key": "35_洗手金盆",
+            "asset": "35_洗手金盆"
+        },
+        {
+            "key": "36_嫁剑妆奁",
+            "asset": "36_嫁剑妆奁"
+        },
+        {
+            "key": "37_开山匾",
+            "asset": "37_开山匾"
+        },
+        {
+            "key": "38_威风诨号谱",
+            "asset": "38_威风诨号谱"
+        },
+        {
+            "key": "39_坐名旗",
+            "asset": "39_坐名旗"
+        },
+        {
+            "key": "40_太公直钩",
+            "asset": "40_太公直钩"
+        },
+        {
+            "key": "41_结善缘钵",
+            "asset": "41_结善缘钵"
+        },
+        {
+            "key": "42_百炼包袱",
+            "asset": "42_百炼包袱"
+        },
+        {
+            "key": "43_绿林切口抄",
+            "asset": "43_绿林切口抄"
+        },
+        {
+            "key": "44_袖蛇",
+            "asset": "44_袖蛇"
+        },
+        {
+            "key": "45_掩耳蜡",
+            "asset": "45_掩耳蜡"
+        },
+        {
+            "key": "46_凤仙染甲浆",
+            "asset": "46_凤仙染甲浆"
+        },
+        {
+            "key": "47_点苍松露膏",
+            "asset": "47_点苍松露膏"
+        },
+        {
+            "key": "48_叆叇镜",
+            "asset": "48_叆叇镜"
+        },
+        {
+            "key": "49_问亡圣筊",
+            "asset": "49_问亡圣筊"
+        },
+        {
+            "key": "50_七星晒衣竿",
+            "asset": "50_七星晒衣竿"
+        },
+        {
+            "key": "51_轻功铃",
+            "asset": "51_轻功铃"
+        },
+        {
+            "key": "52_唐门外堡宿舍",
+            "asset": "52_唐门外堡宿舍"
+        },
+        {
+            "key": "53_唐门谷底肉酱罐头",
+            "asset": "53_唐门谷底肉酱罐头"
+        },
+        {
+            "key": "54_奶娃布制玩偶",
+            "asset": "54_奶娃布制玩偶"
+        },
+        {
+            "key": "back_menu_screen_1__265",
+            "asset": "back_menu_screen_1__265"
+        }
+    ],
+    "fonts": [
+        {
+            "key": "regular",
+            "asset": "NotoSansCJKsc-Regular"
+        },
+        {
+            "key": "bold",
+            "asset": "NotoSansCJKsc-Bold"
+        },
+        {
+            "key": "serif",
+            "asset": "NotoSerifSC-Regular"
+        },
+        {
+            "key": "display",
+            "asset": "BarlowCondensed-SemiBoldItalic"
+        }
+    ]
+}

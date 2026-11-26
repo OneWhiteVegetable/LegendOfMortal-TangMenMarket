@@ -159,11 +159,10 @@ namespace XingShangMod.Market
         private List<MarketTime> CrossMonths(int gameRound, int gameMonth, bool story)
         {
             int oldMonth = _state.CurrentGameMonth;
-            int oldRound = _state.LastGameRound;
             int crossedMonths = gameMonth - oldMonth;
             var weeks = new List<MarketTime>();
 
-            AppendMonthCompletion(oldMonth, oldRound, weeks);
+            AppendMonthCompletion(oldMonth, weeks);
             for (int i = 1; i < crossedMonths; i++)
             {
                 int month = oldMonth + i;
@@ -187,10 +186,11 @@ namespace XingShangMod.Market
             return weeks;
         }
 
-        private void AppendMonthCompletion(int gameMonth, int gameRound, List<MarketTime> weeks)
+        private void AppendMonthCompletion(int gameMonth, List<MarketTime> weeks)
         {
             int completion = Math.Max(0, WeeksPerGameMonth - _state.WeeksThisGameMonth);
-            MarketTime time = MarketTime.FromAbsolute(gameRound, gameMonth);
+            int lowerRound = checked((gameMonth - 1) * RoundsPerGameMonth + RoundsPerGameMonth - 1);
+            MarketTime time = MarketTime.FromAbsolute(lowerRound, gameMonth);
             for (int i = 0; i < completion; i++)
                 weeks.Add(time);
             _state.WeeksThisGameMonth = Math.Max(_state.WeeksThisGameMonth, WeeksPerGameMonth);
@@ -210,6 +210,8 @@ namespace XingShangMod.Market
         private int CompleteBackward(int gameRound, int gameMonth)
         {
             SetBaseline(gameRound, gameMonth);
+            _state.Carry = 0;
+            _state.WeeksThisGameMonth = 0;
             LastAdvancement = Empty(true);
             return 0;
         }

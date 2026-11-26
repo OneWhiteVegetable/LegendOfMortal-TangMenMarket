@@ -1,21 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Security.Cryptography;
 using Mortal.Core;
 using Mortal.Free;
+using Mortal.Story;
 using XingShangMod.Data;
 using XingShangMod.Domain;
 using XingShangMod.Market;
+using XingShangMod.Patches;
 using XingShangMod.Persistence;
 using XingShangMod.Progression;
 using XingShangMod.Trading;
+using XingShangMod.UI;
 
 namespace XingShangMod.App
 {
     public sealed class ModApplication
     {
         private static readonly WeeklyPoint[] EmptyHistory = new WeeklyPoint[0];
+        private static readonly NewsRecord[] EmptyNews = new NewsRecord[0];
+        private static readonly AssetPoint[] EmptyAssets = new AssetPoint[0];
 
         private readonly Action<string> _logInfo;
         private readonly Action<string> _logWarning;
@@ -25,8 +31,6 @@ namespace XingShangMod.App
         private IModUserInterface _ui;
         private bool _initialized;
         private bool _progressionRefreshPending;
-        private bool _pendingMarket;
-        private bool _freeSceneStable;
         private int _walletMutationDepth;
         private int _clockMutationDepth;
 
@@ -102,27 +106,158 @@ namespace XingShangMod.App
                 return;
 
             if (!ReferenceEquals(_ui, ui) && _ui != null)
+            {
                 RunUi(_ui.CloseAll, "CloseAll");
+                DoorWorkSession.CloseActive();
+            }
             _ui = ui;
             if (_ui != null)
-            {
                 RunUi(_ui.Refresh, "Refresh");
-                TryOpenPendingMarket();
-            }
         }
 
         public IReadOnlyList<WeeklyPoint> GetIndexHistory()
         {
-            if (State == null || State.IndexHistory == null)
+            if (State == null || State.Clock == null)
                 return EmptyHistory;
-            return new ReadOnlyCollection<WeeklyPoint>(new List<WeeklyPoint>(State.IndexHistory));
+            return CreateVisibleSnapshot(
+                State.IndexHistory,
+                State.Clock.MarketWeekIndex,
+                point => point.MarketWeekIndex,
+                ClonePoint);
         }
 
         public IReadOnlyList<WeeklyPoint> GetItemHistory(string itemId)
         {
-            if (State == null || string.IsNullOrEmpty(itemId))
+            if (State == null || State.Clock == null ||
+                !State.IsItemVisibleAt(itemId, State.Clock.MarketWeekIndex))
                 return EmptyHistory;
-            return new ReadOnlyCollection<WeeklyPoint>(State.GetPriceHistory(itemId));
+
+            List<WeeklyPoint> history = new List<WeeklyPoint>();
+            if (State.PriceHistory != null)
+            {
+                for (int i = 0; i < State.PriceHistory.Count; i++)
+                {
+                    WeeklyPoint point = State.PriceHistory[i];
+                    if (point != null && string.Equals(point.ItemId, itemId, StringComparison.Ordinal))
+                        history.Add(point);
+                }
+            }
+            return CreateVisibleSnapshot(
+                history,
+                State.Clock.MarketWeekIndex,
+                point => point.MarketWeekIndex,
+                ClonePoint);
+        }
+
+        public IReadOnlyList<NewsRecord> GetNewsHistory()
+        {
+            if (State == null || State.Clock == null)
+                return EmptyNews;
+
+            List<NewsRecord> visible = new List<NewsRecord>();
+            if (State.NewsHistory != null)
+            {
+                int currentWeek = State.Clock.MarketWeekIndex;
+                for (int i = 0; i < State.NewsHistory.Count; i++)
+                {
+                    NewsRecord record = State.NewsHistory[i];
+                    if (record != null && record.MarketWeekIndex <= currentWeek &&
+                        State.IsItemVisibleAt(record.ItemId, record.MarketWeekIndex))
+                    {
+                        visible.Add(record);
+                    }
+                }
+            }
+            return CreateVisibleSnapshot(
+                visible,
+                State.Clock.MarketWeekIndex,
+                record => record.MarketWeekIndex,
+                CloneNews);
+        }
+
+        public IReadOnlyList<AssetPoint> GetAssetHistory()
+        {
+            if (State == null || State.Clock == null)
+                return EmptyAssets;
+            return CreateVisibleSnapshot(
+                State.AssetHistory,
+                State.Clock.MarketWeekIndex,
+                point => point.MarketWeekIndex,
+                CloneAsset);
+        }
+
+        private static IReadOnlyList<T> CreateVisibleSnapshot<T>(
+            IList<T> source,
+            int currentWeek,
+            Func<T, int> weekSelector,
+            Func<T, T> clone) where T : class
+        {
+            List<T> result = new List<T>();
+            if (source != null)
+            {
+                for (int i = 0; i < source.Count; i++)
+                {
+                    T value = source[i];
+                    if (value != null && weekSelector(value) <= currentWeek)
+                        result.Add(clone(value));
+                }
+            }
+
+            for (int i = 1; i < result.Count; i++)
+            {
+                T value = result[i];
+                int week = weekSelector(value);
+                int insertAt = i;
+                while (insertAt > 0 && weekSelector(result[insertAt - 1]) > week)
+                {
+                    result[insertAt] = result[insertAt - 1];
+                    insertAt--;
+                }
+                result[insertAt] = value;
+            }
+            return new ReadOnlyCollection<T>(result);
+        }
+
+        private static WeeklyPoint ClonePoint(WeeklyPoint source)
+        {
+            return new WeeklyPoint
+            {
+                ItemId = source.ItemId,
+                MarketWeekIndex = source.MarketWeekIndex,
+                GameYear = source.GameYear,
+                GameMonth = source.GameMonth,
+                GameRound = source.GameRound,
+                SourceRecordIndex = source.SourceRecordIndex,
+                Price = source.Price,
+                BaseReturn = source.BaseReturn,
+                Return = source.Return,
+                Observed = source.Observed,
+                DataExhausted = source.DataExhausted,
+                Delisted = source.Delisted
+            };
+        }
+
+        private static NewsRecord CloneNews(NewsRecord source)
+        {
+            return new NewsRecord
+            {
+                NewsId = source.NewsId,
+                ItemId = source.ItemId,
+                MarketWeekIndex = source.MarketWeekIndex,
+                GameYear = source.GameYear,
+                GameMonth = source.GameMonth,
+                GameRound = source.GameRound,
+                Direction = source.Direction,
+                Return = source.Return,
+                PoolId = source.PoolId,
+                SelectionIndex = source.SelectionIndex,
+                Text = source.Text
+            };
+        }
+
+        private static AssetPoint CloneAsset(AssetPoint source)
+        {
+            return source.Copy();
         }
 
         public TradeResult ExecuteTrade(TradeOrder order)
@@ -134,8 +269,6 @@ namespace XingShangMod.App
         {
             if (!IsEnabled || !EnsureState())
                 return IntegrationFailure();
-            if (orders == null)
-                return Trading.Execute((IEnumerable<TradeOrder>)null);
 
             try
             {
@@ -214,8 +347,9 @@ namespace XingShangMod.App
             _clockMutationDepth++;
             try
             {
+                int previousMonth = Clock.State.CurrentGameMonth;
                 update();
-                ProcessClockAdvancement();
+                ProcessClockAdvancement(previousMonth != Clock.State.CurrentGameMonth);
             }
             finally
             {
@@ -242,10 +376,9 @@ namespace XingShangMod.App
 
         internal void OnNewGamePending(bool newAct)
         {
+            DoorWorkSession.Cancel();
             if (!IsEnabled)
                 return;
-            _pendingMarket = false;
-            _freeSceneStable = false;
             if (newAct)
                 Saves.MarkNewActPending();
             else
@@ -262,33 +395,43 @@ namespace XingShangMod.App
                 _logWarning("Memory snapshot was not created: " + Saves.LastError);
         }
 
+        internal void OnExecuteSaveDataPending(string saveFile, object gameSave)
+        {
+            if (!IsEnabled)
+                return;
+            if (!Saves.PrepareSaveData(saveFile, gameSave))
+                _logWarning("Sidecar journal was not prepared: " + Saves.LastError);
+        }
+
         internal void OnExecuteSaveData(string saveFile, object gameSave)
         {
             if (!IsEnabled)
                 return;
             if (!Saves.ExecuteSaveData(saveFile, gameSave))
-                _logWarning("Sidecar was not written; the original save is unchanged: " + Saves.LastError);
+                _logWarning("Sidecar was not committed; the original save is unchanged: " + Saves.LastError);
         }
 
-        internal void OnExecuteLoadGameData(GameSave gameSave)
+        internal void OnExecuteLoadGameData(GameSave gameSave, string saveFile, bool isRestore)
         {
+            DoorWorkSession.Cancel();
             if (!IsEnabled || gameSave == null)
                 return;
-            if (Saves.ExecuteLoadGameData(gameSave))
+            if (string.IsNullOrWhiteSpace(saveFile))
+            {
+                Disable("Sidecar restore failed safely; the original save context is unavailable.");
+                return;
+            }
+            if (Saves.ExecuteLoadGameData(saveFile, gameSave, isRestore))
                 return;
 
-            _logWarning("Sidecar restore failed safely; initializing from the loaded original save: " + Saves.LastError);
-            MarketTime time;
-            if (!TryReadGameSaveTime(gameSave, out time) && !TryReadGameTime(out time))
-                throw new InvalidOperationException("The loaded original save has no valid game date.");
-            CreateAndActivateNewRun(time);
+            Disable("Sidecar restore failed safely; no new market run was initialized: " + Saves.LastError);
         }
 
         internal void OnFreeAwake()
         {
+            DoorWorkSession.Cancel();
             if (!IsEnabled)
                 return;
-            _freeSceneStable = false;
             _progressionRefreshPending = true;
         }
 
@@ -304,18 +447,40 @@ namespace XingShangMod.App
                 _progressionRefreshPending = false;
                 RefreshProgression();
             }
-
-            _freeSceneStable = manager.EnableHotKey && !manager.IsProcessing;
-            if (_freeSceneStable)
-                TryOpenPendingMarket();
         }
 
-        internal void MarkDoorWorkCompleted()
+        internal bool TryOpenMarketFromDoorWork(
+            LuaManager manager,
+            string name,
+            string key,
+            string nextScene)
         {
-            if (!IsEnabled)
-                return;
-            _pendingMarket = true;
-            _freeSceneStable = false;
+            if (!IsEnabled || manager == null || !EnsureState() || State == null ||
+                string.IsNullOrWhiteSpace(State.RunId))
+                return false;
+
+            ModUserInterface unityUi = _ui as ModUserInterface;
+            if (_ui == null || (unityUi != null && !unityUi.IsAlive))
+                AttachUI(new ModUserInterface(this));
+            if (_ui == null)
+                return false;
+
+            RefreshProgression();
+            if (!IsEnabled || _ui == null || State == null)
+                return false;
+
+            var session = new DoorWorkSession(manager, name, key, nextScene, State.RunId);
+            bool opened = _ui.TryOpenMarket(session.OnClosed);
+            if (!opened || !_ui.IsMarketOpen)
+            {
+                RunUi(_ui.CloseAll, "CloseAll");
+                return false;
+            }
+            if (session.Activate())
+                return true;
+
+            RunUi(_ui.CloseAll, "CloseAll");
+            return false;
         }
 
         internal void HandleIntegrationError(string source, Exception exception)
@@ -330,15 +495,15 @@ namespace XingShangMod.App
             _logError(LastError);
             if (_ui != null)
                 RunUi(_ui.CloseAll, "CloseAll");
+            DoorWorkSession.CloseActive();
         }
 
         internal void Shutdown()
         {
             if (_ui != null)
                 RunUi(_ui.CloseAll, "CloseAll");
+            DoorWorkSession.CloseActive();
             _ui = null;
-            _pendingMarket = false;
-            _freeSceneStable = false;
             IsEnabled = false;
             if (ReferenceEquals(Instance, this))
                 Instance = null;
@@ -368,17 +533,23 @@ namespace XingShangMod.App
 
         private RunState CreateAndActivateNewRun(MarketTime time)
         {
+            return CreateAndActivateNewRun(
+                time,
+                Guid.NewGuid().ToString("N"),
+                CreateRunSeed());
+        }
+
+        private RunState CreateAndActivateNewRun(MarketTime time, string runId, int runSeed)
+        {
             var state = new RunState
             {
-                RunId = Guid.NewGuid().ToString("N"),
-                RunSeed = CreateRunSeed(),
+                RunId = runId,
+                RunSeed = runSeed,
                 CurrentIndex = 1000.0,
                 CurrentGameYear = time.Year
             };
             new MarketClock(state.Clock).Initialize(time);
             RebuildServices(state, true);
-            _pendingMarket = false;
-            _freeSceneStable = false;
             bool changed;
             RefreshProgressionCore(out changed);
             if (State.AssetHistory.Count == 0)
@@ -389,11 +560,22 @@ namespace XingShangMod.App
             return State;
         }
 
-        private void ApplyLoadedState(RunState state)
+        private void ApplyLoadedState(RunState state, GameSave savedVersion)
         {
             RebuildServices(RunStateNormalizer.Normalize(state), false);
-            _pendingMarket = false;
-            _freeSceneStable = false;
+            if (state.Debt > 0)
+            {
+                long savedCash = Wallet.Balance;
+                if (savedVersion.Stats != null)
+                {
+                    foreach (StatSave stat in savedVersion.Stats)
+                    {
+                        if (stat != null && string.Equals(stat.Key, "money", StringComparison.OrdinalIgnoreCase))
+                            savedCash = stat.Value;
+                    }
+                }
+                RunWithWalletSuppressed(delegate { LegacySilverDebt.Restore(state, Wallet, savedCash); });
+            }
             bool changed;
             RefreshProgressionCore(out changed);
             if (State.AssetHistory.Count == 0)
@@ -404,26 +586,54 @@ namespace XingShangMod.App
 
         private void MigrateMissingSidecar(SaveMigrationRequest request)
         {
+            if (request == null)
+                throw new ArgumentNullException("request");
             MarketTime time;
-            if (request == null || !TryReadGameSaveTime(request.GameSave, out time))
+            if (!TryReadGameSaveTime(request.GameSave, out time))
             {
                 if (!TryReadGameTime(out time))
                     throw new InvalidOperationException("Cannot migrate a save without a valid game date.");
             }
+
+            string runId;
+            int runSeed;
+            CreateMigrationRunIdentity(request, out runId, out runSeed);
             _logWarning("No usable sidecar exists for TimeTick " +
-                (request == null ? 0L : request.TimeTick) + "; initialized a new market run from the original date.");
-            CreateAndActivateNewRun(time);
+                (request == null ? 0L : request.TimeTick) +
+                "; initialized a deterministic market run from the original save identity.");
+            CreateAndActivateNewRun(time, runId, runSeed);
+        }
+
+        private static void CreateMigrationRunIdentity(
+            SaveMigrationRequest request,
+            out string runId,
+            out int runSeed)
+        {
+            string identity = (request.IsRestore ? "RestoreData\n" : "GameSave\n") +
+                (request.OriginalSaveId ?? string.Empty) + "\n" +
+                request.TimeTick.ToString(CultureInfo.InvariantCulture) + "\n" +
+                (request.OriginalSaveFingerprint ?? string.Empty);
+            string hash = GameSaveFingerprint.ComputeText(identity);
+            runId = hash.Substring(0, 32);
+            runSeed = (int)(uint.Parse(
+                hash.Substring(32, 8),
+                NumberStyles.HexNumber,
+                CultureInfo.InvariantCulture) & 0x7fffffffU);
         }
 
         private void RebuildServices(RunState state, bool initializeRoster)
         {
             if (state == null)
                 throw new ArgumentNullException("state");
+            DoorWorkSession.Cancel();
             if (_ui != null)
                 RunUi(_ui.CloseAll, "CloseAll");
 
             State = state;
             Clock = new MarketClock(state.Clock);
+            MarketTime loadedTime;
+            if (!Clock.IsInitialized && TryReadGameTime(out loadedTime))
+                Clock.Initialize(loadedTime);
             Wallet = new MortalWallet();
             Capacity = new CapacityService();
             Roster = new RosterService(Items);
@@ -437,7 +647,7 @@ namespace XingShangMod.App
             Assets = new AssetService(state, Wallet, _itemDefinitions);
         }
 
-        private void ProcessClockAdvancement()
+        private void ProcessClockAdvancement(bool monthChanged)
         {
             MarketClockAdvancement advancement = Clock.LastAdvancement;
             if (advancement.WasBackward)
@@ -447,7 +657,11 @@ namespace XingShangMod.App
                 return;
             }
             if (advancement.WeekCount == 0)
+            {
+                if (monthChanged)
+                    NotifyChanged();
                 return;
+            }
 
             Market.AdvanceWeeks(advancement);
             NotifyChanged();
@@ -459,7 +673,29 @@ namespace XingShangMod.App
             try
             {
                 State.Clock.MarketWeekIndex = change.MarketWeekIndex;
-                RunWithWalletSuppressed(delegate { Shorts.SettleDueBatches(); });
+                HashSet<string> newlyDelistedItemIds = new HashSet<string>(StringComparer.Ordinal);
+                for (int i = 0; i < change.NewlyDelistedItemIds.Count; i++)
+                {
+                    string itemId = change.NewlyDelistedItemIds[i];
+                    if (!newlyDelistedItemIds.Add(itemId))
+                        continue;
+                    IReadOnlyList<TradeResult> results = null;
+                    RunWithWalletSuppressed(delegate { results = Shorts.SettleDelistedBatches(itemId); });
+                    RecordAutomaticSettlements("Delisted short settlement", itemId, results);
+                }
+
+                List<string> retryItemIds = GetOutstandingDelistedShortItemIds(newlyDelistedItemIds);
+                for (int i = 0; i < retryItemIds.Count; i++)
+                {
+                    string itemId = retryItemIds[i];
+                    IReadOnlyList<TradeResult> results = null;
+                    RunWithWalletSuppressed(delegate { results = Shorts.SettleDelistedBatches(itemId); });
+                    RecordAutomaticSettlements("Delisted short settlement retry", itemId, results);
+                }
+
+                IReadOnlyList<TradeResult> dueResults = null;
+                RunWithWalletSuppressed(delegate { dueResults = Shorts.SettleDueBatches(); });
+                RecordAutomaticSettlements("Due short settlement", string.Empty, dueResults);
                 for (int i = 0; i < change.Items.Count; i++)
                     News.Generate(State, change.Items[i]);
                 AssetPoint point = Assets.CaptureWeeklySnapshot();
@@ -473,12 +709,80 @@ namespace XingShangMod.App
             }
         }
 
+        private List<string> GetOutstandingDelistedShortItemIds(HashSet<string> excludedItemIds)
+        {
+            List<string> itemIds = new List<string>();
+            HashSet<string> seenItemIds = new HashSet<string>(StringComparer.Ordinal);
+            if (State.ShortBatches == null)
+                return itemIds;
+
+            for (int i = 0; i < State.ShortBatches.Count; i++)
+            {
+                ShortBatch batch = State.ShortBatches[i];
+                if (batch == null || batch.Quantity <= 0 ||
+                    excludedItemIds.Contains(batch.ItemId) || !seenItemIds.Add(batch.ItemId))
+                {
+                    continue;
+                }
+
+                SecurityBinding binding = State.FindSecurityBinding(batch.ItemId);
+                if (binding != null && binding.IsDelisted)
+                    itemIds.Add(batch.ItemId);
+            }
+            return itemIds;
+        }
+
+        private void RecordAutomaticSettlements(
+            string operation,
+            string fallbackItemId,
+            IReadOnlyList<TradeResult> results)
+        {
+            if (results == null)
+            {
+                _logWarning(operation + " returned no result for '" + (fallbackItemId ?? string.Empty) + "'.");
+                return;
+            }
+
+            for (int i = 0; i < results.Count; i++)
+            {
+                TradeResult result = results[i];
+                if (result == null)
+                {
+                    _logWarning(operation + " returned a null result for '" +
+                        (fallbackItemId ?? string.Empty) + "'.");
+                    continue;
+                }
+
+                string itemId = string.IsNullOrEmpty(result.ItemId) ? fallbackItemId : result.ItemId;
+                if (string.IsNullOrEmpty(itemId) && result.Records != null && result.Records.Count > 0 &&
+                    result.Records[0] != null)
+                {
+                    itemId = result.Records[0].ItemId;
+                }
+                string details = " item='" + (itemId ?? string.Empty) +
+                    "', cashDelta=" + result.CashDelta.ToString(CultureInfo.InvariantCulture) +
+                    ", debtDelta=" + result.DebtDelta.ToString(CultureInfo.InvariantCulture) +
+                    ", debtAfter=" + result.DebtAfter.ToString(CultureInfo.InvariantCulture) + ".";
+                if (result.Success)
+                    _logInfo(operation + " succeeded;" + details);
+                else
+                    _logWarning(operation + " failed (" + result.Error + "): " + result.Message + ";" + details);
+            }
+        }
+
         private void RefreshProgressionCore(out bool changed)
         {
             changed = false;
             PlayerStatManagerData manager = PlayerStatManagerData.Instance;
             if (manager == null || manager.Stats == null)
                 return;
+
+            if (!State.Item09Unlocked && manager.StoryKeyList != null &&
+                manager.StoryKeyList.Contains("Ch_2_2_5_1_001"))
+            {
+                State.Item09Unlocked = true;
+                changed = true;
+            }
 
             int homeLevel = manager.Stats.Get(GameStatType.門派規模).FinalValue;
             if (homeLevel >= 2)
@@ -498,36 +802,31 @@ namespace XingShangMod.App
                 }
             }
 
-            if (!State.Item09Unlocked && manager.StoryKeyList != null &&
-                manager.StoryKeyList.Contains("Ch_2_2_5_1_001"))
-            {
-                State.Item09Unlocked = true;
-                changed = true;
-            }
+            changed |= RegisterRevealedItems();
+        }
 
+        private bool RegisterRevealedItems()
+        {
+            bool changed = false;
             for (int i = 0; i < State.AppearedItemIds.Count; i++)
             {
                 string itemId = State.AppearedItemIds[i];
                 if (State.FindSecurityBinding(itemId) == null)
                 {
                     Market.RegisterAppearedItem(Items.GetItem(itemId));
+                    WeeklyPoint current = State.FindWeeklyPoint(itemId, State.Clock.MarketWeekIndex);
+                    if (current != null)
+                        News.Generate(State, current);
                     changed = true;
                 }
             }
+            return changed;
         }
 
         private bool UnlockPage(string sourceId)
         {
             PageUnlockState page = Roster.Unlock(State, sourceId, State.Clock.MarketWeekIndex);
             return page != null;
-        }
-
-        private void TryOpenPendingMarket()
-        {
-            if (!_pendingMarket || !_freeSceneStable || _ui == null || !IsEnabled)
-                return;
-            _pendingMarket = false;
-            RunUi(_ui.OpenMarket, "OpenMarket");
         }
 
         private void NotifyChanged()

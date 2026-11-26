@@ -4,18 +4,54 @@
 一、运行依赖
 
 1. 《活侠传》游戏本体。
-2. BepInEx 6 Unity Mono 版本；已核对的宿主版本为 6.0.0-be.692。
-   不使用 IL2CPP 版本，也未以 BepInEx 5 作为目标。
-3. 本 ZIP 只包含插件，不包含 BepInEx 本体。请先独立安装 BepInEx。
+2. Windows x64 版游戏使用 BepInEx 6 Unity Mono。当前安装器支持官方 #789（6.0.0-be.789+6cea286）。
+3. EXE 自带本版行市完整资源；ZIP 供已有加载器的玩家手动安装。
 
 行情由随包历史快照与本地规则纯离线模拟，不连接真实行情或交易服务。
 仅供游戏娱乐，不构成投资建议，不可用于真实交易决策。
 
-二、安装（插件-only）
+二、入口与操作边界
+
+1. 完成原版“行商”养成事件后进入市场。市场入口的货囊支持单个仓位平仓、
+   按多空方向全部平仓，以及跳转对应商品详情。
+2. 养成界面右上角“系统”里的“唐门行市”可查看货囊、资产和所持商品的只读行情。
+   在仓位上选择“看行情”可浏览该货物的走势，返回时回到货囊。交易与市场导航仅在行商事件中开放。
+3. 市场和系统两个入口均无体力调试控件。
+4. 借货期限为 24 个市场周，货囊左上角的数字是剩余周数。同格有多批时优先显示最近一批。
+   到期按当周价格自动买回。按正常主线最后的经营时段，第三年九月上旬起停止新增借契；已有借货仍可归还。
+5. 游戏原版钱包现在可显示和保存负银两，银两上限为 100,000,000 文。
+   借货到期时自动买回，余额不足会继续扣成负数；后续收入加回同一个钱包。
+   行市主动买入和手动还货仍需备足本次净支出。与上限突破同时安装时，银两使用行市规则。
+   2.0.2 及以前存档中的行市欠款在读取对应原档时折入银两，随后正常随原档保存。
+6. 资产分析默认显示总盈亏金额、总收益率。点击图表标题旁的切换按钮可查看“行商资产留痕”。
+   总盈亏包含已实现与持仓浮盈，总收益率以累计买入成本与借货实收为分母。
+   总收益率是连续的墨笔线，正值红色，负值绿色，零值中性。点击标题旁的斜方形图标切换。
+7. 门派升级、设施开发后新出现的商品沿本周目已发生的指数和自身历史回放到揭示周；解锁前保持隐藏。
+   旧档此前公开的历史报价保留。退市股跳过无成交周，复牌按前次实际收盘价延续，真正退市后冻结。
+8. 界面使用 15 个纯原生 uGUI prefab；字体、物品图标和界面美术均在
+   xingshang_ui.bundle 内，不需要额外的 V4 散图或物品 PNG。
+
+三、安装器与手动安装
+
+推荐双击 XingShangMod-Setup-v2.2.0.exe。确认“游戏目录”是含 Mortal.exe 的文件夹，
+退出游戏后点“安装 / 更新”。安装器会查 Steam 库；若未找到，可点“选择…”手选。
+
+已装咖啡伴侣或其他 Mod，且检测显示“6 · Unity Mono x64”时，可直接离线安装。
+全新游戏可勾选同时安装官方前置，联网下载固定版本并校验 SHA256；也可点“选择本地前置 ZIP”
+使用原封不动的 BepInEx-Unity.Mono-win-x64-6.0.0-be.789+6cea286.zip。前置构建目录：
+https://builds.bepinex.dev/projects/bepinex_be 。官方安装说明：
+https://docs.bepinex.dev/master/articles/user_guide/installation/unity_mono.html 。
+
+“卸载行市”处理本 Mod 文件。备份放在游戏根目录的 .XingShangModInstaller 中，保留上次被换下的
+文件及操作清单。点“还原上次更改”可还原行市版本。共享加载器、其他 Mod、设置与存档继续保留。
+
+手动安装 ZIP
 
 1. 关闭游戏并备份重要存档。
 2. 将 XingShangMod-v<版本>.zip 解压到游戏根目录，即包含 Mortal.exe 和
-   BepInEx 文件夹的目录。
+   BepInEx 文件夹的目录。刚在本机成功执行发布打包时，也可复制
+   dist/pkg/BepInEx 到该目录；只有本次 pack.ps1 报告成功后才能使用，
+   失败时 dist/pkg 可能仍是上一版。
 3. 确认最终路径如下；不要再多套一层解压目录：
 
 游戏根目录/
@@ -29,18 +65,32 @@
                 ├── news.json
                 ├── selection_catalog.json
                 ├── data/
-                ├── items/
-                └── ui/
+                ├── bundles/
+                │   └── xingshang_ui.bundle
+                ├── licenses/
+                │   └── OFL.txt
+                └── docs/
+                    └── 安装说明.txt
+
+UI bundle 必须位于：
+BepInEx/plugins/XingShangMod/Runtime/bundles/xingshang_ui.bundle
+Runtime/licenses/OFL.txt 是随字体重分发的 SIL Open Font License 1.1。
+本说明在包内的副本位于 Runtime/docs/安装说明.txt。
 
 本包不会也不应覆盖 BepInEx/core、BepInEx/config、游戏 DLL 或其他 Mod。
 不要把 DLL 单独放到其他目录，XingShangMod/Runtime 必须与 DLL 保持上述结构。
+运行资源不需要也不应再放置散装 UI 目录或物品 PNG。
 
-三、升级
+四、升级
 
-关闭游戏，备份侧车，然后替换 XingShangMod.dll，并完整替换旧的
+安装器升级可直接使用“安装 / 更新”。如手动升级：关闭游戏，备份侧车，然后替换 XingShangMod.dll，并完整替换旧的
 XingShangMod/Runtime 目录。不要只更新部分资源，也不要动其他插件。
 
-四、侧车存档
+v2 新写入的侧车使用 schema 2，读取兼容既有 schema 1 和 schema 2。
+本次 UI bundle 化不要求删除或手工迁移旧侧车，也不要修改原版 .dat。
+侧车仍须匹配对应原版存档的身份与校验信息，不可随意跨槽位复制。
+
+五、侧车存档
 
 Mod 状态不写入原版 .dat，而是写入独立 JSON 侧车：
 
@@ -51,17 +101,18 @@ Windows 下 Application.persistentDataPath 通常位于：
 %USERPROFILE%/AppData/LocalLow/<发行商>/<游戏名>
 以游戏实际目录为准。侧车与原版存档共用同一持久化数据根目录，但文件独立。
 
-五、卸载
+六、卸载
 
 1. 关闭游戏。
 2. 删除 BepInEx/plugins/XingShangMod.dll。
 3. 删除 BepInEx/plugins/XingShangMod/ 整个目录。
 
 卸载不影响原版 .dat 存档继续独立游玩，但原版不会显示或结算 Mod 行情和持仓。
+原版读取银两时使用当时生效的上下限。停用行市和其他银两解限后，负数或高于 99,999 文的原档余额会在读取时被原版截回，重新保存后会写入截回后的值。
 默认保留侧车，以便重新安装后识别对应存档。若确定不再使用，可备份后删除
 持久化数据目录中的 XingShangMod/Sidecars；此操作不需要也不应修改原版 .dat。
 
-六、日志诊断
+七、日志诊断
 
 主要日志：游戏根目录/BepInEx/LogOutput.log
 
@@ -69,9 +120,25 @@ Windows 下 Application.persistentDataPath 通常位于：
 可搜索 XingShangMod、Mod initialization failed、Patch class、Sidecar。
 侧车缺失或损坏时，请保留相关 JSON 与日志供诊断，不要改写原版 .dat。
 
-七、源码构建与发布打包（普通玩家无需执行）
+八、源码构建与发布打包（普通玩家无需执行）
 
-在项目根目录运行：
+在 XingShangMod 项目根目录运行。Unity 工程版本为 2020.3.49f1c1，
+先将 <Unity.exe 路径> 换成本机路径，再重新生成 15 个 prefab、绑定表和 bundle：
+
+$unity = '<Unity.exe 路径>'
+& $unity -batchmode -quit -projectPath (Resolve-Path .\UnityUI).Path -executeMethod XingShang.UI.Authoring.UiBuilder.BatchGenerate -logFile -
+
+Unity 输出为 UnityUI/Build/xingshang_ui.bundle。构建保留 TypeTree；
+不要添加 DisableTypeTree。随后重建 Runtime，使 bundle、ui_map 哈希、OFL 和
+本安装说明进入清单，并移除旧散装 UI 与物品图标输出：
+
+python .\tools\build_runtime_data.py
+
+此步骤不会删除 UnityUI 源资源。只校验现有 Runtime 可运行：
+
+python .\tools\build_runtime_data.py --verify-only
+
+插件构建（C# 7.3 / .NET Standard 2.0）：
 
 & 'C:\allsoft\dotnet\dotnet.exe' build .\XingShangMod.csproj --configuration Release
 
@@ -80,5 +147,10 @@ Windows 下 Application.persistentDataPath 通常位于：
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pack.ps1 -DotnetPath 'C:\allsoft\dotnet\dotnet.exe'
 
 游戏不在默认目录时可追加 -GameRoot 'D:\Games\LegendOfMortal'。
+打包脚本不重新生成 Unity bundle 或 Runtime；请先执行上述资源步骤。
 输出位于 dist/XingShangMod-v<版本>.zip，对应 SHA256 文件以 .zip.sha256 结尾。
+新 ZIP 通过校验后才原子替换旧 ZIP；构建或校验失败会保留上一版正式 ZIP。
+全部 ZIP 校验成功后，同一已验证 staging 会安全刷新为 dist/pkg，内容与最终
+ZIP 一致；构建或 ZIP 校验失败不会改动旧 pkg，目录切换失败会恢复旧目录。
+只有本次命令成功后才能从 dist/pkg/BepInEx 安装，失败保留的旧目录不能充当新包。
 发布包不包含 bin、obj、tools、反编译文件、游戏 DLL 或其他 Mod。

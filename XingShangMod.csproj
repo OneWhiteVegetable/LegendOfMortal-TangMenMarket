@@ -2,7 +2,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>7.3</LangVersion>
+    <Version>2.2.0</Version>
     <AssemblyName>XingShangMod</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <RootNamespace>XingShangMod</RootNamespace>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -11,6 +13,10 @@
     <ManagedPath Condition="'$(ManagedPath)' == ''">$(GameRoot)\Mortal_Data\Managed</ManagedPath>
     <BepInExCorePath Condition="'$(BepInExCorePath)' == ''">$(GameRoot)\BepInEx\core</BepInExCorePath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="src/**/*.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="BepInEx.Core">
@@ -43,6 +49,10 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(ManagedPath)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>$(ManagedPath)\UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UIModule">

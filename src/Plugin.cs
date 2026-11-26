@@ -11,11 +11,12 @@ using XingShangMod.UI;
 namespace XingShangMod
 {
     [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
+    [BepInDependency(Trading.MortalMoneyLimit.UncapPluginId, BepInDependency.DependencyFlags.SoftDependency)]
     public sealed class Plugin : BaseUnityPlugin
     {
         public const string PluginGuid = "com.xingshang.tangmenmarket";
         public const string PluginName = "唐门行市";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "2.2.0";
 
         private static readonly object QueueLock = new object();
         private static readonly Queue<Action> MainThreadActions = new Queue<Action>();
@@ -30,9 +31,12 @@ namespace XingShangMod
         {
             Current = this;
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
+            _harmony = new Harmony(PluginGuid);
             ModApplication app = null;
             try
             {
+                _harmony.PatchAll(typeof(SilverStatPatches));
+                SilverStatPatches.InstallUncapCompatibility(_harmony);
                 app = new ModApplication(Logger.LogInfo, Logger.LogWarning, Logger.LogError);
                 app.Initialize();
             }
@@ -43,10 +47,10 @@ namespace XingShangMod
                     app.Disable("Initialization failed: " + exception.Message);
             }
 
-            _harmony = new Harmony(PluginGuid);
             Type[] patchTypes =
             {
                 typeof(GameStatAddValuePatch),
+                typeof(NativeMoneyHudPatch),
                 typeof(NaturalTimePatch),
                 typeof(StoryTimePatches),
                 typeof(SaveSystemPatches),
@@ -101,7 +105,9 @@ namespace XingShangMod
             {
                 if (app.State == null)
                     app.EnsureState();
-                if (_ui == null && app.State != null && Mortal.Free.FreeManager.Instance != null)
+                if (_ui == null && app.UI is ModUserInterface)
+                    _ui = (ModUserInterface)app.UI;
+                if (_ui == null && app.UI == null && app.State != null && Mortal.Free.FreeManager.Instance != null)
                 {
                     _ui = new ModUserInterface(app);
                     app.AttachUI(_ui);

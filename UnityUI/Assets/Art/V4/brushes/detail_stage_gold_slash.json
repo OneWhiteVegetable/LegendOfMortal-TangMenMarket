@@ -1,0 +1,22 @@
+{
+  "id": "detail_stage_gold_slash",
+  "file": "detail_stage_gold_slash.png",
+  "width": 512,
+  "height": 64,
+  "category": "brushes",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_detail_stage_gold_slash.py"
+}

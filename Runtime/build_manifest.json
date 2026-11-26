@@ -12,9 +12,11 @@
     "selectionIndices": 11,
     "stockWeeklyFiles": 6024,
     "stockDataFiles": 6028,
-    "uiSprites": 164,
-    "uiFiles": 274,
-    "runtimePayloadFiles": 6359
+    "uiBundles": 1,
+    "uiPrefabs": 15,
+    "uiSprites": 165,
+    "uiFonts": 4,
+    "runtimePayloadFiles": 6034
   },
   "checks": {
     "itemPricesFromOfficialIdeas": true,
@@ -27,12 +29,17 @@
     "selectionExcludesSourceMissing": true,
     "selectionRequiresObserved": true,
     "sourceAndCopiedHashesMatch": true,
+    "uiBundleHashVerified": true,
+    "uiBindingComplete": true,
+    "uiTypeTreeRetained": true,
+    "fontOflIncluded": true,
+    "installGuideIncluded": true,
+    "looseUiAssetsExcluded": true,
     "forbiddenArtifactsExcluded": true,
     "buildManifestExcludedFromOwnHash": true
   },
   "sources": {
     "stockManifestSha256": "45583b364f9c0be8189ef90c649a9ddaed145e9a5620c3033681ef02cd34518b",
-    "uiManifestSha256": "401f989019281ec924e019a6027765f358f8db88e8ff6e3627a4f2a6536c7288",
     "ideaFilesSha256": {
       "创意01_飞天门辟邪玉.md": "726d0c32a53e5f76a6b3a2adcb1953565430441dec69df58999461066debb968",
       "创意02_藏宝图刺青拓样.md": "23d1516250af2db43c8a0e24b4e245aab9d5730cafd8c76838cb3740a485d3ce",
@@ -90,12 +97,219 @@
       "选定创意54_奶娃布制玩偶.md": "52339ffb0fb504d325ef90432acdd775e3204d1c97ac6aec599191064fcad510"
     }
   },
+  "ui": {
+    "bundlePath": "bundles/xingshang_ui.bundle",
+    "bundleSha256": "421f795820db98cb13cec54473b990f2326e0e9d0ba9c90b2ee5f5cd89b33a54",
+    "bindingSha256": "ccb0aec33beaadde5b786e339761ccd442060b645abc4b1bb83a4cd3c3863815",
+    "unityVersion": "2020.3.49f1c1",
+    "prefabs": [
+      "GoodsCard",
+      "CartEntry",
+      "InventorySlot",
+      "RankingRow",
+      "ChartHost",
+      "NewsTicker",
+      "Toast",
+      "Tooltip",
+      "Modal",
+      "ItemDetail",
+      "AssetsPage",
+      "InventoryWindow",
+      "MarketWindow",
+      "FlyToken",
+      "DealStamp"
+    ],
+    "sprites": [
+      "brand_shang_mark",
+      "money_coin_v3",
+      "brush_arrow_hover_swash",
+      "brush_gold_long",
+      "brush_ink_long",
+      "brush_red_long",
+      "brush_red_short",
+      "detail_stage_gold_slash",
+      "trend_down_brush",
+      "trend_up_brush",
+      "button_brush_arrow_disabled",
+      "button_brush_arrow_hover",
+      "button_brush_arrow_normal",
+      "button_brush_arrow_pressed",
+      "button_checkout_red_disabled_9s",
+      "button_checkout_red_hover_9s",
+      "button_checkout_red_normal_9s",
+      "button_checkout_red_pressed_9s",
+      "button_contract_green_disabled_9s",
+      "button_contract_green_hover_9s",
+      "button_contract_green_normal_9s",
+      "button_contract_green_pressed_9s",
+      "button_contract_red_disabled_9s",
+      "button_contract_red_hover_9s",
+      "button_contract_red_normal_9s",
+      "button_contract_red_pressed_9s",
+      "button_modal_neutral_hover_9s",
+      "button_modal_neutral_normal_9s",
+      "button_modal_neutral_pressed_9s",
+      "button_modal_primary_hover_9s",
+      "button_modal_primary_normal_9s",
+      "button_modal_primary_pressed_9s",
+      "button_paper_icon_disabled",
+      "button_paper_icon_hover",
+      "button_paper_icon_normal",
+      "button_paper_icon_pressed",
+      "tab_range_active_9s",
+      "tab_range_hover_9s",
+      "tab_range_normal_9s",
+      "button_sort_hover_9s",
+      "button_sort_normal_9s",
+      "button_sort_pressed_9s",
+      "button_text_action_disabled_9s",
+      "button_text_action_hover_9s",
+      "button_text_action_normal_9s",
+      "button_trade_green_disabled",
+      "button_trade_green_hover",
+      "button_trade_green_normal",
+      "button_trade_green_pressed",
+      "button_trade_red_disabled",
+      "button_trade_red_hover",
+      "button_trade_red_normal",
+      "button_trade_red_pressed",
+      "card_asset_9s",
+      "card_cart_entry_long_9s",
+      "card_cart_entry_short_9s",
+      "card_goods_delisted",
+      "card_goods_hover",
+      "card_goods_normal",
+      "decor_window_double_diamond",
+      "detail_stage_paper",
+      "detail_stage_red_shard",
+      "wasted_delist_wordmark",
+      "icon_bag",
+      "icon_cart",
+      "icon_chart",
+      "icon_check",
+      "icon_close",
+      "icon_coin",
+      "icon_eye",
+      "icon_info",
+      "icon_left",
+      "icon_minus",
+      "icon_motion",
+      "icon_plus",
+      "icon_rank",
+      "icon_reset",
+      "icon_return",
+      "icon_right",
+      "icon_scroll",
+      "icon_sort",
+      "icon_stamina",
+      "icon_trade",
+      "icon_trash",
+      "loan_maturity_atlas",
+      "slot_inventory_empty_9s",
+      "slot_inventory_long_9s",
+      "slot_inventory_short_9s",
+      "mask_chart_drybrush_tile",
+      "mask_ticker_edge_fade",
+      "panel_brand_block",
+      "panel_cart_rail_9s",
+      "panel_contract_modal_9s",
+      "panel_detail_chart_9s",
+      "panel_masthead_9s",
+      "panel_merchant_window_9s",
+      "panel_paper_tooltip_9s",
+      "panel_position_cell_9s",
+      "panel_story_news_9s",
+      "panel_ticker_label",
+      "panel_toast_9s",
+      "tag_cart_count",
+      "row_ranking_hover_9s",
+      "row_ranking_normal_9s",
+      "stamp_deal_chengjiao",
+      "stamp_deal_pingcang",
+      "texture_celadon_halftone",
+      "texture_ink_diagonal_hatch_tile",
+      "texture_ink_grain_tile",
+      "texture_paper_grain_tile",
+      "01_飞天门辟邪玉",
+      "02_藏宝图刺青拓样",
+      "03_杂鱼收尸契",
+      "04_铁拳暖食盒",
+      "05_仿南宫尖肩甲",
+      "06_飞石帮荣誉会员牌",
+      "07_快报印花",
+      "08_海捕画影",
+      "09_奇侠破奇冤戏本",
+      "10_装死槟榔",
+      "11_南宫润喉糖",
+      "12_断肠护花散",
+      "13_崆峒全加豆浆",
+      "14_纸夫人",
+      "15_白鲨鱼脍",
+      "16_正色布",
+      "17_和事灰浆",
+      "18_崆峒发光菜",
+      "19_盆砂",
+      "20_地听瓮",
+      "21_羊脬渡命环",
+      "22_传书雁",
+      "23_五色泥",
+      "24_防侠瓦",
+      "25_磁心投壶",
+      "26_遮颜斗笠",
+      "27_云南软铁锭",
+      "28_蜡看菜",
+      "29_开锋血",
+      "30_断义袍",
+      "31_遮血褐衫",
+      "32_点茶家什",
+      "33_江湖路程图",
+      "34_孤狼衔草",
+      "35_洗手金盆",
+      "36_嫁剑妆奁",
+      "37_开山匾",
+      "38_威风诨号谱",
+      "39_坐名旗",
+      "40_太公直钩",
+      "41_结善缘钵",
+      "42_百炼包袱",
+      "43_绿林切口抄",
+      "44_袖蛇",
+      "45_掩耳蜡",
+      "46_凤仙染甲浆",
+      "47_点苍松露膏",
+      "48_叆叇镜",
+      "49_问亡圣筊",
+      "50_七星晒衣竿",
+      "51_轻功铃",
+      "52_唐门外堡宿舍",
+      "53_唐门谷底肉酱罐头",
+      "54_奶娃布制玩偶",
+      "back_menu_screen_1__265"
+    ],
+    "fonts": [
+      "NotoSansCJKsc-Regular",
+      "NotoSansCJKsc-Bold",
+      "NotoSerifSC-Regular",
+      "BarlowCondensed-SemiBoldItalic"
+    ],
+    "fontLicensePath": "licenses/OFL.txt",
+    "fontLicenseSha256": "4609412e8a1e44e7188adc824aa168787b5208f825aa4ae9984f9105be4058a5"
+  },
+  "documents": {
+    "installGuidePath": "docs/安装说明.txt",
+    "installGuideSha256": "0fc31e84509a880d70237307efec077f653ff9299400ea1e6ef3469642b911a1"
+  },
   "newsIntensityLevels": {
     "中": 2728,
     "强": 1791,
     "轻": 1810
   },
   "files": [
+    {
+      "path": "bundles/xingshang_ui.bundle",
+      "bytes": 47540577,
+      "sha256": "421f795820db98cb13cec54473b990f2326e0e9d0ba9c90b2ee5f5cd89b33a54"
+    },
     {
       "path": "data/calendars/a_share.json",
       "bytes": 129116,
@@ -30237,279 +30451,19 @@
       "sha256": "7aa86a1af4e903fee5c13bfa6bf64acd7d8895b2b6156a556e67245848f58ac5"
     },
     {
+      "path": "docs/安装说明.txt",
+      "bytes": 9128,
+      "sha256": "0fc31e84509a880d70237307efec077f653ff9299400ea1e6ef3469642b911a1"
+    },
+    {
       "path": "items.json",
       "bytes": 30895,
       "sha256": "1d78e68db5da80026d96594fef0e2833c396f3ec2309d1b023f02ffb695746cf"
     },
     {
-      "path": "items/01_飞天门辟邪玉.png",
-      "bytes": 51847,
-      "sha256": "59bbd591641ada0cb0af02a403b6ef167cec850c8d27add250a4ac35f18b90a9"
-    },
-    {
-      "path": "items/02_藏宝图刺青拓样.png",
-      "bytes": 75348,
-      "sha256": "91d34178d5941193f1587ceda54b1979dc9aba75e449ef73c1f3e9af3cfbb28b"
-    },
-    {
-      "path": "items/03_杂鱼收尸契.png",
-      "bytes": 62487,
-      "sha256": "efa5e7fea10039cb07572af1aaa527dee15890dc67f579ba8ae62b0e840827ea"
-    },
-    {
-      "path": "items/04_铁拳暖食盒.png",
-      "bytes": 63061,
-      "sha256": "c9781d3ba11435e75e6b81624f53d0922cabfb9ac6090351dd90bf22f1a7b6eb"
-    },
-    {
-      "path": "items/05_仿南宫尖肩甲.png",
-      "bytes": 51842,
-      "sha256": "a7eb065f08b2f4317a34e68f758cd979b4f62907c251bb16f41f4261fd725fe5"
-    },
-    {
-      "path": "items/06_飞石帮荣誉会员牌.png",
-      "bytes": 44058,
-      "sha256": "fd90cb5640160456057506f6356d92d34fd52e62c7fe9faaa24c9f08d87a0f93"
-    },
-    {
-      "path": "items/07_快报印花.png",
-      "bytes": 55707,
-      "sha256": "a5c7ddea43c1ce9cceabc218894dbaf840edd5d570079346a25cc66840e5dae4"
-    },
-    {
-      "path": "items/08_海捕画影.png",
-      "bytes": 72320,
-      "sha256": "affc494d9a6ec8616833220ad4a03c776394362cf8002c13cddb0216d56e7e42"
-    },
-    {
-      "path": "items/09_奇侠破奇冤戏本.png",
-      "bytes": 68684,
-      "sha256": "4ce23cd6ccc5b5258daa59acb3fd63198bf140b112cba16f5d768422d25ba6ce"
-    },
-    {
-      "path": "items/10_装死槟榔.png",
-      "bytes": 63446,
-      "sha256": "0ecc79ae3ffac863bc9e0c4b21b976e216a57589fe90fda7567c1898d57321c6"
-    },
-    {
-      "path": "items/11_南宫润喉糖.png",
-      "bytes": 53128,
-      "sha256": "6afdc17b459183ef54dc89aa51e93c843042b9eaced0c73d9838a6a6a49f2da8"
-    },
-    {
-      "path": "items/12_断肠护花散.png",
-      "bytes": 56680,
-      "sha256": "ad64f3c9cbe552f9003e587a168650ed16bf64da25e7c5e9a7d076646ddc8784"
-    },
-    {
-      "path": "items/13_崆峒全加豆浆.png",
-      "bytes": 81077,
-      "sha256": "b0438a365e01cc8b9e3f449a97387ea2e26786e265ef188d0b5a1286b267bfa0"
-    },
-    {
-      "path": "items/14_纸夫人.png",
-      "bytes": 68484,
-      "sha256": "5c3a8acdfac01d2a5ede8e88a210c32f38633c9e68ea69fbbdafa4cb03225f99"
-    },
-    {
-      "path": "items/15_白鲨鱼脍.png",
-      "bytes": 40628,
-      "sha256": "b4a20783101a9425b47f3a19d30e3fd2f836762f789e5fe5da4e4b858f5125bf"
-    },
-    {
-      "path": "items/16_正色布.png",
-      "bytes": 67007,
-      "sha256": "62fc2a63ffd47e5c08411b64585f0974b4c95d671f7686950275f26a482b380a"
-    },
-    {
-      "path": "items/17_和事灰浆.png",
-      "bytes": 61607,
-      "sha256": "ee4967194213513ca0d8061073fe169082f393b5321c2aa399858c05ea1b52e2"
-    },
-    {
-      "path": "items/18_崆峒发光菜.png",
-      "bytes": 57991,
-      "sha256": "60a219a0006019465a6510409ebac0290122ba346e472d33cac1f1ece9b7db34"
-    },
-    {
-      "path": "items/19_盆砂.png",
-      "bytes": 52065,
-      "sha256": "5b745eff25cb42b8b950c7f2fd3e0b4f00f272a0b786f9992dd0031766ab4e6a"
-    },
-    {
-      "path": "items/20_地听瓮.png",
-      "bytes": 65424,
-      "sha256": "62786448451eda032049cbc2c52b338e2e62d04fbf584f03fc41405379140d19"
-    },
-    {
-      "path": "items/21_羊脬渡命环.png",
-      "bytes": 53348,
-      "sha256": "b2559b7ef84d9487aa1b5d85b303ff9f7edc29a1dba9951181225189f6b834e9"
-    },
-    {
-      "path": "items/22_传书雁.png",
-      "bytes": 46403,
-      "sha256": "d0af9ef25a45130aad7b63cab0c5a481f64d432bff269af73859d19d3b17bae4"
-    },
-    {
-      "path": "items/23_五色泥.png",
-      "bytes": 75698,
-      "sha256": "33bcf1604c0df3b242399ee72b8ca20f0160fe3cc3d277f4ad4b733736bbcd38"
-    },
-    {
-      "path": "items/24_防侠瓦.png",
-      "bytes": 53929,
-      "sha256": "29314b60be10b8d28bd136921d31da4fd42fac1394ce60dfafe224deac7ad75f"
-    },
-    {
-      "path": "items/25_磁心投壶.png",
-      "bytes": 60683,
-      "sha256": "5a10fb92c01f0f20ee8f81307a1af4f35d54031d56fd07ea110790059f5a2575"
-    },
-    {
-      "path": "items/26_遮颜斗笠.png",
-      "bytes": 52321,
-      "sha256": "c37021f2dc1d9ff52b53b5abf0f2344ec572142deddc23a23b2d9cae092331ab"
-    },
-    {
-      "path": "items/27_云南软铁锭.png",
-      "bytes": 42503,
-      "sha256": "57a23d664d6b4f79c88859efaffd98210f3e93a86e933a7fc15c929a626a06e5"
-    },
-    {
-      "path": "items/28_蜡看菜.png",
-      "bytes": 79022,
-      "sha256": "cbbe6c4369d88d461d9dbd3a846201022f0ebdbe67789e64fbb15298680742a7"
-    },
-    {
-      "path": "items/29_开锋血.png",
-      "bytes": 49240,
-      "sha256": "c5eec483ef4beb5efca042e35dc55dba2d295cfbf16983e80dd76ea40010c8cb"
-    },
-    {
-      "path": "items/30_断义袍.png",
-      "bytes": 66480,
-      "sha256": "2977f4bcee20e144cb473108eac169c33cc424eb161af723a8e70074aadf5a73"
-    },
-    {
-      "path": "items/31_遮血褐衫.png",
-      "bytes": 56877,
-      "sha256": "417a535e4e504fde129e8a93550a8c591e6dbe9f6696c245290d1e7dc15d885c"
-    },
-    {
-      "path": "items/32_点茶家什.png",
-      "bytes": 69974,
-      "sha256": "256dcd4bb7e5edba645a378c2812b34bb4112200e0282819fd16fd4b47f19d36"
-    },
-    {
-      "path": "items/33_江湖路程图.png",
-      "bytes": 69605,
-      "sha256": "8f049e9f6126aa7812b8f26340f8b85a856644174d55f39efa75f715c3af062e"
-    },
-    {
-      "path": "items/34_孤狼衔草.png",
-      "bytes": 44260,
-      "sha256": "2138c77dc827544d96a1c10573a16f227f94fce6c4f2d4861a41d3af767ae44a"
-    },
-    {
-      "path": "items/35_洗手金盆.png",
-      "bytes": 53808,
-      "sha256": "fb74a975362531bc8a84844befacbec1369358cd98bcc87a5bcad903170fb818"
-    },
-    {
-      "path": "items/36_嫁剑妆奁.png",
-      "bytes": 60575,
-      "sha256": "7a4552760031db96938d053b47ba24fcdc420d7ca608abb49c5eedb7bf5b619f"
-    },
-    {
-      "path": "items/37_开山匾.png",
-      "bytes": 46211,
-      "sha256": "31f48f4724d0c0268813c41f0e0cd5463969c1ee1f827f4eb63f24a3f80ee4c4"
-    },
-    {
-      "path": "items/38_威风诨号谱.png",
-      "bytes": 61596,
-      "sha256": "0cef351b5fe545cace8095a128f0f523fdd310f6c67e48b47ba12587e8c9f880"
-    },
-    {
-      "path": "items/39_坐名旗.png",
-      "bytes": 49446,
-      "sha256": "c6f75946173311270ed6a61a2fdee74c3aef0f19be881da5c2263d9af8112615"
-    },
-    {
-      "path": "items/40_太公直钩.png",
-      "bytes": 20234,
-      "sha256": "f7d347def73b09f8d4c1b4781e2deae082f0887d0d0ab05687eac66689648f8a"
-    },
-    {
-      "path": "items/41_结善缘钵.png",
-      "bytes": 34480,
-      "sha256": "37017bfff80dbffa307999c56a9a95494c8e614a9c21aa870142752fe2a5c399"
-    },
-    {
-      "path": "items/42_百炼包袱.png",
-      "bytes": 64667,
-      "sha256": "e32427808516e357c338de7a99b728a2881af19ba5b664529784931247213d23"
-    },
-    {
-      "path": "items/43_绿林切口抄.png",
-      "bytes": 47763,
-      "sha256": "88057367975fd530c6e1d312c4c4cf4dd352c26697e9fdfc30de7e6745794ffd"
-    },
-    {
-      "path": "items/44_袖蛇.png",
-      "bytes": 43942,
-      "sha256": "405337a86ab4a27b564341cbdb750da09f04ea56feb99285c51e635e73e29d17"
-    },
-    {
-      "path": "items/45_掩耳蜡.png",
-      "bytes": 49395,
-      "sha256": "7177482005d6df7cb7183c0c7c13770beb29fb96eba9acfb061e9961463243cb"
-    },
-    {
-      "path": "items/46_凤仙染甲浆.png",
-      "bytes": 71847,
-      "sha256": "5ded65f571b42eb1bc2a16b1acd4976fa3717540dbf3506dfe17b3980f0a77c6"
-    },
-    {
-      "path": "items/47_点苍松露膏.png",
-      "bytes": 56252,
-      "sha256": "f3021f20f8d6f51988dea094ea57ad1d296f31d12ffbdba69c6bf5b22ccea88a"
-    },
-    {
-      "path": "items/48_叆叇镜.png",
-      "bytes": 47708,
-      "sha256": "43e3e9b3ca3bcd4b73f42f5049c1e6b637a267507c9dcaf3639698ac6e279def"
-    },
-    {
-      "path": "items/49_问亡圣筊.png",
-      "bytes": 24175,
-      "sha256": "f4e12be157f53a0fd3438470a62de804df6e8614f4347479626e887ac5c94f3b"
-    },
-    {
-      "path": "items/50_七星晒衣竿.png",
-      "bytes": 34139,
-      "sha256": "888796cf02830e69a480d2164f8c7aeb8eeaf7aef72ab6704028d2601f06e7ec"
-    },
-    {
-      "path": "items/51_轻功铃.png",
-      "bytes": 66955,
-      "sha256": "9bb15a7b4c86b27067c6c6502e89afac4f6c9d27666c361402b11e659284e743"
-    },
-    {
-      "path": "items/52_唐门外堡宿舍.png",
-      "bytes": 81745,
-      "sha256": "98685deb63ff6ea024cfb7da58ee941ae9abfac22637e5b9549b9fcbd9a0df35"
-    },
-    {
-      "path": "items/53_唐门谷底肉酱罐头.png",
-      "bytes": 79873,
-      "sha256": "6fface64265be7fd2a80b5f2b7d63010f567a9c8e9fd2bb6f193ecff76cb5ffc"
-    },
-    {
-      "path": "items/54_奶娃布制玩偶.png",
-      "bytes": 52364,
-      "sha256": "97f045a796b9f6a085e163e855dd70fec1c5dffda3a09d2fc733b1ed654a3dcb"
+      "path": "licenses/OFL.txt",
+      "bytes": 14315,
+      "sha256": "4609412e8a1e44e7188adc824aa168787b5208f825aa4ae9984f9105be4058a5"
     },
     {
       "path": "news.json",
@@ -30520,1376 +30474,6 @@
       "path": "selection_catalog.json",
       "bytes": 4041722,
       "sha256": "fedaaab7de384177affe763057356f529bad7cbc630f82299f138d738d302b31"
-    },
-    {
-      "path": "ui/v4/brand/brand_shang_mark.json",
-      "bytes": 387,
-      "sha256": "79e6c6b0397f546e6a69b1bd1e670e6fb281123bb482625e16d0344276f23693"
-    },
-    {
-      "path": "ui/v4/brand/brand_shang_mark.png",
-      "bytes": 8549,
-      "sha256": "1768b9425acebf1db1c941be888e33e3ebc249f34163055ff1adeebaa248192d"
-    },
-    {
-      "path": "ui/v4/brand/money_coin_v3.json",
-      "bytes": 378,
-      "sha256": "4c5b166db4a5208050f87178e61b464e1ca7e64cb2b6a2ed885cde0b574c8496"
-    },
-    {
-      "path": "ui/v4/brand/money_coin_v3.png",
-      "bytes": 64923,
-      "sha256": "17361d5a663eadfc8d5cdf16d4c47ea8f445eda2171c976eca8dd190989d885d"
-    },
-    {
-      "path": "ui/v4/brushes/brush_arrow_hover_swash.json",
-      "bytes": 410,
-      "sha256": "ef837080436a10ed92096f478b33a93cc66551c4020e5ce47926641ee342b77d"
-    },
-    {
-      "path": "ui/v4/brushes/brush_arrow_hover_swash.png",
-      "bytes": 4296,
-      "sha256": "9d8e57c7137f7bac45c6cff082772d975497c992f96eec2584aa1140de06724c"
-    },
-    {
-      "path": "ui/v4/brushes/brush_gold_long.json",
-      "bytes": 388,
-      "sha256": "9279b0e0d365fbcd849d5c4baedb702ae769639608ab68a9d1ca16eb1d9a4ae8"
-    },
-    {
-      "path": "ui/v4/brushes/brush_gold_long.png",
-      "bytes": 1469,
-      "sha256": "9ec55bf33de913badf99e4597a55ea1d586219dbb5486e3160b5cdac74c84fae"
-    },
-    {
-      "path": "ui/v4/brushes/brush_ink_long.json",
-      "bytes": 385,
-      "sha256": "6752e9b68b3427c47413dda412ec61a605c4f24f97a598ff0e3cf44bb8b83970"
-    },
-    {
-      "path": "ui/v4/brushes/brush_ink_long.png",
-      "bytes": 1067,
-      "sha256": "40adbacf9ef72b0778b956ab520fa908d6a73ebd324527612b4e45dfaca2b5ce"
-    },
-    {
-      "path": "ui/v4/brushes/brush_red_long.json",
-      "bytes": 385,
-      "sha256": "b7928f787e09a721a0863c5f9acb767a1353f2152e6d2222cb3767e919f640d0"
-    },
-    {
-      "path": "ui/v4/brushes/brush_red_long.png",
-      "bytes": 2464,
-      "sha256": "66b5a8cb35a95ddc818243b3996dea165411c5b6243b92758f1c107d97d2f6bc"
-    },
-    {
-      "path": "ui/v4/brushes/brush_red_short.json",
-      "bytes": 363,
-      "sha256": "96948519b8f7198674982b5e39f40cc0135b081872b8ac60b6e61e40dca5256a"
-    },
-    {
-      "path": "ui/v4/brushes/brush_red_short.png",
-      "bytes": 1716,
-      "sha256": "a0c613161f0e5ff7f47ec3af72762359662cfb52480973d57966f35bc7cfda6b"
-    },
-    {
-      "path": "ui/v4/brushes/detail_stage_gold_slash.json",
-      "bytes": 409,
-      "sha256": "f7df71157de12e8098cb4369b27930a79e76d33e5ce6619a3224d26285357bd6"
-    },
-    {
-      "path": "ui/v4/brushes/detail_stage_gold_slash.png",
-      "bytes": 3228,
-      "sha256": "d33fed978f6bee39dbbe380746d5ffd9d2419caa0ccdcd37aa98edf2c24eb004"
-    },
-    {
-      "path": "ui/v4/brushes/trend_down_brush.json",
-      "bytes": 389,
-      "sha256": "b4ab111b1071825fef154fa69c203d4afc3be9389153a8ddfb83be7c91ee3393"
-    },
-    {
-      "path": "ui/v4/brushes/trend_down_brush.png",
-      "bytes": 21356,
-      "sha256": "877008f842006eb75e4ee5ad985a1b8cdac69fa3754683bbb4cc793f07a3bcc1"
-    },
-    {
-      "path": "ui/v4/brushes/trend_up_brush.json",
-      "bytes": 383,
-      "sha256": "344607d77fcfcc8f7b6f6b96ce212e80bc605a3983adb69a861d8d8e146e882c"
-    },
-    {
-      "path": "ui/v4/brushes/trend_up_brush.png",
-      "bytes": 22539,
-      "sha256": "ddd067b8496f4a491d0c1dbfb3fde7d49e319895668aa80bcb6a6fb2a0545373"
-    },
-    {
-      "path": "ui/v4/buttons/brush_arrow/button_brush_arrow_disabled.json",
-      "bytes": 412,
-      "sha256": "cf6c61c2bc00258f2eb94db9d16b5f61ba262707678efc450926187b6c1da017"
-    },
-    {
-      "path": "ui/v4/buttons/brush_arrow/button_brush_arrow_disabled.png",
-      "bytes": 1929,
-      "sha256": "f07391dcda611b30ce93f9084e6b47a04f86713388dd490746d1b9cb134bcc35"
-    },
-    {
-      "path": "ui/v4/buttons/brush_arrow/button_brush_arrow_hover.json",
-      "bytes": 403,
-      "sha256": "2708d914830627cfb0bb7a880896dbccee40f4f83f0e2abdef6460ec7412c272"
-    },
-    {
-      "path": "ui/v4/buttons/brush_arrow/button_brush_arrow_hover.png",
-      "bytes": 4180,
-      "sha256": "977a473186008e817c426d768ba3f5f715f4533fbc09993679c4723594fafda3"
-    },
-    {
-      "path": "ui/v4/buttons/brush_arrow/button_brush_arrow_normal.json",
-      "bytes": 471,
-      "sha256": "de2665c4d5bf93fed2f98a64174489ba19c89c754355c0d2cfda78675e095911"
-    },
-    {
-      "path": "ui/v4/buttons/brush_arrow/button_brush_arrow_normal.png",
-      "bytes": 211,
-      "sha256": "ff595f9d5abe9e2b662b8b1db1d6dd630876b9d047d11f22b0dd73db2295086c"
-    },
-    {
-      "path": "ui/v4/buttons/brush_arrow/button_brush_arrow_pressed.json",
-      "bytes": 431,
-      "sha256": "e273beeb5aaf8b2e83f71b48a36e3f4702db86eb27b48d55161752110c5ef5a1"
-    },
-    {
-      "path": "ui/v4/buttons/brush_arrow/button_brush_arrow_pressed.png",
-      "bytes": 2782,
-      "sha256": "6e750446eb95db8b58613aa96911459f468eff839f4febd968d3fbe40fad19d2"
-    },
-    {
-      "path": "ui/v4/buttons/checkout_red/button_checkout_red_disabled_9s.json",
-      "bytes": 451,
-      "sha256": "ad18c17c8cdaa50de9bc307d0bf59a75b1a023d602ba3b946438308df9c04f29"
-    },
-    {
-      "path": "ui/v4/buttons/checkout_red/button_checkout_red_disabled_9s.png",
-      "bytes": 664,
-      "sha256": "51c364b8909c870d8e4e9a9668ca44ffb0f3419487766d62950dcf234ed443e7"
-    },
-    {
-      "path": "ui/v4/buttons/checkout_red/button_checkout_red_hover_9s.json",
-      "bytes": 442,
-      "sha256": "e718511743bba5478bd7c0fa89fbc346b0c1ee6a0e01875b5036f9eff1e32928"
-    },
-    {
-      "path": "ui/v4/buttons/checkout_red/button_checkout_red_hover_9s.png",
-      "bytes": 727,
-      "sha256": "73e14fb47d07ceed54a82b922ed183861d3cce1d2e16558751a204b009a97c32"
-    },
-    {
-      "path": "ui/v4/buttons/checkout_red/button_checkout_red_normal_9s.json",
-      "bytes": 445,
-      "sha256": "048aaddb8847787e72a2be6811c16416b5e4a28ae7a884f07b4c43a774eff172"
-    },
-    {
-      "path": "ui/v4/buttons/checkout_red/button_checkout_red_normal_9s.png",
-      "bytes": 602,
-      "sha256": "15e7f90a0ab2fb95aa497c58ebda6cef9eb64c3b687e1f4468361d8a125a4a9d"
-    },
-    {
-      "path": "ui/v4/buttons/checkout_red/button_checkout_red_pressed_9s.json",
-      "bytes": 448,
-      "sha256": "6a053e262644215bfa56c819c671f457bd2c0bae06c3724b95c795545764edf8"
-    },
-    {
-      "path": "ui/v4/buttons/checkout_red/button_checkout_red_pressed_9s.png",
-      "bytes": 1015,
-      "sha256": "b4ce839df39d6af2a0babf18c0240f2c18bdc5206d2aadbf51759e59502684cc"
-    },
-    {
-      "path": "ui/v4/buttons/contract_green/button_contract_green_disabled_9s.json",
-      "bytes": 459,
-      "sha256": "e4e62a11c9c5e5cbc900289a8d8fdaad4774247565dd590e7b76dca69fee3b19"
-    },
-    {
-      "path": "ui/v4/buttons/contract_green/button_contract_green_disabled_9s.png",
-      "bytes": 836,
-      "sha256": "16908807c67a3ddc437a638bc8c386d2351247f47ae2bc216bcf556f9343684b"
-    },
-    {
-      "path": "ui/v4/buttons/contract_green/button_contract_green_hover_9s.json",
-      "bytes": 450,
-      "sha256": "ed4f4c147efa562e348d406c60a8c7d5a8dec54c72fa0f2eb706aab610ad3bcf"
-    },
-    {
-      "path": "ui/v4/buttons/contract_green/button_contract_green_hover_9s.png",
-      "bytes": 1207,
-      "sha256": "901f82847865891bf8a59338d77fe2cf9d85fdb59dc89031dbee87ff8f2d0297"
-    },
-    {
-      "path": "ui/v4/buttons/contract_green/button_contract_green_normal_9s.json",
-      "bytes": 451,
-      "sha256": "f105a384647efa8cdf649424395a18cbe48cd353251b72f1a0b39d6732dd5813"
-    },
-    {
-      "path": "ui/v4/buttons/contract_green/button_contract_green_normal_9s.png",
-      "bytes": 543,
-      "sha256": "e0e6df1a8cf801a6654a44b3c21538679335bae07aa9f822498b1dd11abca914"
-    },
-    {
-      "path": "ui/v4/buttons/contract_green/button_contract_green_pressed_9s.json",
-      "bytes": 456,
-      "sha256": "828c0bd5585e80be1dfe77fcc06d13330db63c9e01847662b827d625e5f3beee"
-    },
-    {
-      "path": "ui/v4/buttons/contract_green/button_contract_green_pressed_9s.png",
-      "bytes": 681,
-      "sha256": "1f60f08fc17373c5df68c38d8be8616765a956c92acf19aa46058bdc43acd983"
-    },
-    {
-      "path": "ui/v4/buttons/contract_red/button_contract_red_disabled_9s.json",
-      "bytes": 451,
-      "sha256": "1ef555e3618398c187f54837d2d1858294b5d38005829ae93bb0718c03abba94"
-    },
-    {
-      "path": "ui/v4/buttons/contract_red/button_contract_red_disabled_9s.png",
-      "bytes": 514,
-      "sha256": "defcaf6fd4e87cf507c6a9a0dccc050154377138de6398629bfcb892c189c538"
-    },
-    {
-      "path": "ui/v4/buttons/contract_red/button_contract_red_hover_9s.json",
-      "bytes": 420,
-      "sha256": "d04e555863c9b3b7d8252b97d77d2123ffd85754eff6cd9bfd7d48fd54ca9900"
-    },
-    {
-      "path": "ui/v4/buttons/contract_red/button_contract_red_hover_9s.png",
-      "bytes": 579,
-      "sha256": "3f4ec86dd81f92c978ee5582eddfbd986e6ba23d41fa981dfa94985a564ad183"
-    },
-    {
-      "path": "ui/v4/buttons/contract_red/button_contract_red_normal_9s.json",
-      "bytes": 445,
-      "sha256": "99a7d6ed77d6a5420a55d98fbe84c5bd18d86a97c467bea59b86e403d6165eb4"
-    },
-    {
-      "path": "ui/v4/buttons/contract_red/button_contract_red_normal_9s.png",
-      "bytes": 518,
-      "sha256": "95e3488eb8dcb96b197a82e4eea2903eb3c90075b6c53351eb5d59f34ae90350"
-    },
-    {
-      "path": "ui/v4/buttons/contract_red/button_contract_red_pressed_9s.json",
-      "bytes": 448,
-      "sha256": "ea1c946691f334a5ce6c3d33750f0c409c24ec4797e5cca6525dca2dd4751fdf"
-    },
-    {
-      "path": "ui/v4/buttons/contract_red/button_contract_red_pressed_9s.png",
-      "bytes": 885,
-      "sha256": "00460e71588e8fdcbca7c20ede30ab38d6396291e4976432a9ad807ddf2c7c5e"
-    },
-    {
-      "path": "ui/v4/buttons/modal_neutral/button_modal_neutral_hover_9s.json",
-      "bytes": 446,
-      "sha256": "2161098036786b6a2c9e985b434dcc58d285a5ea817524f66dcdb8d323b4789d"
-    },
-    {
-      "path": "ui/v4/buttons/modal_neutral/button_modal_neutral_hover_9s.png",
-      "bytes": 448,
-      "sha256": "4490bc162b76793ecc6dedf7beaf7e1a1dc36a3012f133f750c977e773c570dd"
-    },
-    {
-      "path": "ui/v4/buttons/modal_neutral/button_modal_neutral_normal_9s.json",
-      "bytes": 449,
-      "sha256": "dc1b5a1255d5222b53e450bbf84de88d27da9e19c79942211934e3ee0e04c5f8"
-    },
-    {
-      "path": "ui/v4/buttons/modal_neutral/button_modal_neutral_normal_9s.png",
-      "bytes": 448,
-      "sha256": "1b00c47764e452d5445a1c30885f8c88158cf1f17ebaff81945f0e19da44bd76"
-    },
-    {
-      "path": "ui/v4/buttons/modal_neutral/button_modal_neutral_pressed_9s.json",
-      "bytes": 452,
-      "sha256": "3207374ac383a22e91c25fb22f5f9aa2c9b72ef82f66f39b5fa4f38ece15ee22"
-    },
-    {
-      "path": "ui/v4/buttons/modal_neutral/button_modal_neutral_pressed_9s.png",
-      "bytes": 840,
-      "sha256": "afaf6ff4a10e1a42f5ad17224c83455ce0ef9aca0c05639261a751a7f762fcc5"
-    },
-    {
-      "path": "ui/v4/buttons/modal_primary/button_modal_primary_hover_9s.json",
-      "bytes": 446,
-      "sha256": "02bec1893bac1b1660b48c2328f1b7e6c97ad3cb155e27be53145cf9eb352401"
-    },
-    {
-      "path": "ui/v4/buttons/modal_primary/button_modal_primary_hover_9s.png",
-      "bytes": 938,
-      "sha256": "9d1e6e10b453bd9be401985a12fd57c757d774234b43af273436bbc177c2e011"
-    },
-    {
-      "path": "ui/v4/buttons/modal_primary/button_modal_primary_normal_9s.json",
-      "bytes": 449,
-      "sha256": "836d7ab632440355d2624a9d23e3a6fcd794acaf3b5e2cd84d2019a2328fc6ae"
-    },
-    {
-      "path": "ui/v4/buttons/modal_primary/button_modal_primary_normal_9s.png",
-      "bytes": 444,
-      "sha256": "be83aa51e5948c465958d379284656eff2d71515803c5ddddd1bbfecb93f61b6"
-    },
-    {
-      "path": "ui/v4/buttons/modal_primary/button_modal_primary_pressed_9s.json",
-      "bytes": 452,
-      "sha256": "6b9309b417560088a3ab037e2bf02a3e9c28f1ab3a5401877d4690f0d5a98597"
-    },
-    {
-      "path": "ui/v4/buttons/modal_primary/button_modal_primary_pressed_9s.png",
-      "bytes": 414,
-      "sha256": "b49c4372d6d7deba32e3fdd579722c169e1ae18e52f5475d5842e29773a23411"
-    },
-    {
-      "path": "ui/v4/buttons/paper_icon/button_paper_icon_disabled.json",
-      "bytes": 430,
-      "sha256": "2b5ab30e6679be64d48b95489ddb51c9bc0f0e4554e91f35f6df77972adc92b9"
-    },
-    {
-      "path": "ui/v4/buttons/paper_icon/button_paper_icon_disabled.png",
-      "bytes": 367,
-      "sha256": "dcf353af2f83a9b048882f3ec3fb25338f07b4e2750052a4d8bae57d2e92d38e"
-    },
-    {
-      "path": "ui/v4/buttons/paper_icon/button_paper_icon_hover.json",
-      "bytes": 421,
-      "sha256": "17b0bf75520cf1660bc3d0c0b05e9c123e3861212f53dd5deba3d18afcd52a7d"
-    },
-    {
-      "path": "ui/v4/buttons/paper_icon/button_paper_icon_hover.png",
-      "bytes": 394,
-      "sha256": "721428c1471de5bad32ad509df864c5a8ff6f44c9250d0d7df47b784b507fe00"
-    },
-    {
-      "path": "ui/v4/buttons/paper_icon/button_paper_icon_normal.json",
-      "bytes": 424,
-      "sha256": "9a27b6f69cae78644666becd314de46d94692cfcad850ab73400d86a1c86542d"
-    },
-    {
-      "path": "ui/v4/buttons/paper_icon/button_paper_icon_normal.png",
-      "bytes": 399,
-      "sha256": "25384b02247a224e32bc741c7b0f7f3803c5bdbcda04a27f31696bd776f4afc4"
-    },
-    {
-      "path": "ui/v4/buttons/paper_icon/button_paper_icon_pressed.json",
-      "bytes": 427,
-      "sha256": "65d93da65b9a18e35d17f80d5f80e6424c60995cccacf1c4fdd432552b5f584f"
-    },
-    {
-      "path": "ui/v4/buttons/paper_icon/button_paper_icon_pressed.png",
-      "bytes": 761,
-      "sha256": "50554d24fcb15224cc10e1ab6ea35e0a7da0651e76a6056ba165f76ef7434763"
-    },
-    {
-      "path": "ui/v4/buttons/range_tab/tab_range_active_9s.json",
-      "bytes": 389,
-      "sha256": "438de30c34bd901d73f7d0432b6af28f61684d19c8850bd09892046ae79a3eea"
-    },
-    {
-      "path": "ui/v4/buttons/range_tab/tab_range_active_9s.png",
-      "bytes": 1219,
-      "sha256": "017dc8f69812a3e1b9e3887aff01f2d53a3def4f2c65084a84ddb842053a328e"
-    },
-    {
-      "path": "ui/v4/buttons/range_tab/tab_range_hover_9s.json",
-      "bytes": 386,
-      "sha256": "06ffdabacb866437e6b2f016d319acc706e2edd4655deb2bd81cbf5b6190c5b4"
-    },
-    {
-      "path": "ui/v4/buttons/range_tab/tab_range_hover_9s.png",
-      "bytes": 292,
-      "sha256": "05108192242f3cfbd97767e202ec39dd8b5f616470d474bab05495cb4b301c95"
-    },
-    {
-      "path": "ui/v4/buttons/range_tab/tab_range_normal_9s.json",
-      "bytes": 454,
-      "sha256": "3219e0e7e1c4e71ff3ea67ba138855f6f7d01b43778c3fe276eb07c2f6ee86ae"
-    },
-    {
-      "path": "ui/v4/buttons/range_tab/tab_range_normal_9s.png",
-      "bytes": 151,
-      "sha256": "39c02e898d061e170c48cb2d73ae5c55471c96ce0c2d57bfda4551240497c7e7"
-    },
-    {
-      "path": "ui/v4/buttons/sort/button_sort_hover_9s.json",
-      "bytes": 410,
-      "sha256": "3ccf11eea757eeb46dd3cbba42271684af0faa9026ca335611202b1bbf4e0311"
-    },
-    {
-      "path": "ui/v4/buttons/sort/button_sort_hover_9s.png",
-      "bytes": 1112,
-      "sha256": "be8215ef8f67e2d799034a8ffe469db0c8258c743bc81c5e5abcff9ae7f82788"
-    },
-    {
-      "path": "ui/v4/buttons/sort/button_sort_normal_9s.json",
-      "bytes": 413,
-      "sha256": "cb77a105ab1e0cdc69abe5975b5c6e4739953356fd2cdff4bef4feda96589e0d"
-    },
-    {
-      "path": "ui/v4/buttons/sort/button_sort_normal_9s.png",
-      "bytes": 1125,
-      "sha256": "12b5b441944b602e7661cac9a685f14eaf64c4a24e607acaa15b49c930a79efc"
-    },
-    {
-      "path": "ui/v4/buttons/sort/button_sort_pressed_9s.json",
-      "bytes": 416,
-      "sha256": "478ccb0ebffd0d330cd49b73b075ef8721ce76ff2c51a7e8155d1af8e2977bb9"
-    },
-    {
-      "path": "ui/v4/buttons/sort/button_sort_pressed_9s.png",
-      "bytes": 447,
-      "sha256": "1aa5f4b9ec524e3d93f1d531f652c7f5c18b16d0f07d0714e73283b80d590b0a"
-    },
-    {
-      "path": "ui/v4/buttons/text_action/button_text_action_disabled_9s.json",
-      "bytes": 425,
-      "sha256": "db21318f5150b54ea3543caddc66e03feb96025eca33cd616e13ff9f88de8144"
-    },
-    {
-      "path": "ui/v4/buttons/text_action/button_text_action_disabled_9s.png",
-      "bytes": 393,
-      "sha256": "d320f3e7395e516e16ef50897360fe0ee3d3a66e6342a5b188ac48c9781e4874"
-    },
-    {
-      "path": "ui/v4/buttons/text_action/button_text_action_hover_9s.json",
-      "bytes": 438,
-      "sha256": "6022e432750520235853bb297289eb9e83f132a921c60771785271a48cfe3d11"
-    },
-    {
-      "path": "ui/v4/buttons/text_action/button_text_action_hover_9s.png",
-      "bytes": 664,
-      "sha256": "7c57c862040df30107c089f2f4ec4659dbb8fa46052432bed4cd79a88114def3"
-    },
-    {
-      "path": "ui/v4/buttons/text_action/button_text_action_normal_9s.json",
-      "bytes": 419,
-      "sha256": "a5420d4c19e29974b14984dade808c1176bd84c07711f436f424d5ccbfb570d2"
-    },
-    {
-      "path": "ui/v4/buttons/text_action/button_text_action_normal_9s.png",
-      "bytes": 387,
-      "sha256": "c3e8322ab4b517d27c578df9af3a4946e0f7b0df6377cc7dfec2348f3820ee67"
-    },
-    {
-      "path": "ui/v4/buttons/trade_green/button_trade_green_disabled.json",
-      "bytes": 434,
-      "sha256": "40ff1e53450e590576a752ca33de6cbfa11ac04856a00781e6e72f505f12367f"
-    },
-    {
-      "path": "ui/v4/buttons/trade_green/button_trade_green_disabled.png",
-      "bytes": 7601,
-      "sha256": "59a53dce430af71f2623197de304302067c1c0351ad2678650d73a41235469a4"
-    },
-    {
-      "path": "ui/v4/buttons/trade_green/button_trade_green_hover.json",
-      "bytes": 425,
-      "sha256": "a2687533ab2d7968d9f707035945f42cc8328cb998760393722659d12da1cdeb"
-    },
-    {
-      "path": "ui/v4/buttons/trade_green/button_trade_green_hover.png",
-      "bytes": 397,
-      "sha256": "b7bce0e2f330ad731453f5b78b28f6ee62ffc240c556ad37e2ab39742050276f"
-    },
-    {
-      "path": "ui/v4/buttons/trade_green/button_trade_green_normal.json",
-      "bytes": 428,
-      "sha256": "5cf400dd5785deb3ba3c9ab413942fcd360a2359391a55385bfb3d4289893899"
-    },
-    {
-      "path": "ui/v4/buttons/trade_green/button_trade_green_normal.png",
-      "bytes": 861,
-      "sha256": "efbd9314157950d6ae99809d6332bb246017a61ffc519d3910b08cf2d75f97d6"
-    },
-    {
-      "path": "ui/v4/buttons/trade_green/button_trade_green_pressed.json",
-      "bytes": 431,
-      "sha256": "36f4bf13f169ee6e9fd8ee6f455654b2c6c3c55767b7faa81ded3e23436f8e28"
-    },
-    {
-      "path": "ui/v4/buttons/trade_green/button_trade_green_pressed.png",
-      "bytes": 643,
-      "sha256": "241cf3c6c0882d4a1b4fc57e1727ca7061ac579091d4cd7ee56b09d5138f87d3"
-    },
-    {
-      "path": "ui/v4/buttons/trade_red/button_trade_red_disabled.json",
-      "bytes": 426,
-      "sha256": "4bb6879f20118beb5d0c1f81ebec350d07bb2f8374a9ba90fd6d560fb8c62493"
-    },
-    {
-      "path": "ui/v4/buttons/trade_red/button_trade_red_disabled.png",
-      "bytes": 8018,
-      "sha256": "d9360a9b2d8a6fe2ae7fe0fc26b347363734c49f71bcd9de981f4baa762f6ab1"
-    },
-    {
-      "path": "ui/v4/buttons/trade_red/button_trade_red_hover.json",
-      "bytes": 417,
-      "sha256": "b6002b0207f74c178b2ce1c9e1b37a08f0aa84ed175069b9ef7e479b12989cee"
-    },
-    {
-      "path": "ui/v4/buttons/trade_red/button_trade_red_hover.png",
-      "bytes": 394,
-      "sha256": "bb5305438439db39e7c755f45106e51cdde85e16f9b0ab420e06399ffa3cc8a2"
-    },
-    {
-      "path": "ui/v4/buttons/trade_red/button_trade_red_normal.json",
-      "bytes": 420,
-      "sha256": "0c2200c847bac3f34b5cf5307419fbe938f29c39d2507c2369b73c967b067b58"
-    },
-    {
-      "path": "ui/v4/buttons/trade_red/button_trade_red_normal.png",
-      "bytes": 395,
-      "sha256": "c70368aafa01ad03788aae6a81a2e5c7139e6d0fb0ef2289cc2d3eab487562ce"
-    },
-    {
-      "path": "ui/v4/buttons/trade_red/button_trade_red_pressed.json",
-      "bytes": 423,
-      "sha256": "6c2049e2f8ea9a90805be643a7f5620f9325a2ed2157e1360a23694dcccca0c8"
-    },
-    {
-      "path": "ui/v4/buttons/trade_red/button_trade_red_pressed.png",
-      "bytes": 462,
-      "sha256": "230978377be98cde2a42ad7ac5c64776611f9e67b84a27963a112f60cc4a0e4e"
-    },
-    {
-      "path": "ui/v4/cards/card_asset_9s.json",
-      "bytes": 382,
-      "sha256": "d9a3be3dbe0556f18630cef6c4f7b911ea2da8af152971e9dc670f3812b476b4"
-    },
-    {
-      "path": "ui/v4/cards/card_asset_9s.png",
-      "bytes": 912,
-      "sha256": "1b35dc807b839c4ff98a87a0eab4a1ed808518538b64bae0e7594a6a38ff760b"
-    },
-    {
-      "path": "ui/v4/cards/card_cart_entry_long_9s.json",
-      "bytes": 410,
-      "sha256": "ccaca88c328faa524e60e3495950eaaa84e6195f1e6a9b06f0f2fd1f3454158d"
-    },
-    {
-      "path": "ui/v4/cards/card_cart_entry_long_9s.png",
-      "bytes": 40145,
-      "sha256": "899147c8e9dd436c9b6154c9a3236d74ee6466562fb2c02aeaad3a5f3c9587d6"
-    },
-    {
-      "path": "ui/v4/cards/card_cart_entry_short_9s.json",
-      "bytes": 415,
-      "sha256": "9124c2b8a9633c1aa91c5e733106272a57af6e87d38fb555b235500a39d54609"
-    },
-    {
-      "path": "ui/v4/cards/card_cart_entry_short_9s.png",
-      "bytes": 39076,
-      "sha256": "b34e3135451525f4a69cd8ea5eba817ee507733bc771c5f3dc99d18ee8fd902f"
-    },
-    {
-      "path": "ui/v4/cards/card_goods_delisted.json",
-      "bytes": 400,
-      "sha256": "2797db8038470e3e367e66a17f14a223a879659bf14fe1b37d437274260c881e"
-    },
-    {
-      "path": "ui/v4/cards/card_goods_delisted.png",
-      "bytes": 167067,
-      "sha256": "e78d3f170b46abd67131f6557fb4aa97d37c58412c11ac5d5faf5bc6312459d5"
-    },
-    {
-      "path": "ui/v4/cards/card_goods_hover.json",
-      "bytes": 369,
-      "sha256": "59b9eb89ab4d1455195f320be66bba95e7be7fa6790ef49a3de0533af05375d5"
-    },
-    {
-      "path": "ui/v4/cards/card_goods_hover.png",
-      "bytes": 3083,
-      "sha256": "02d248d5af200e7b95ee0052eb2e131d828f87dd236e24ca9c5f1c3b7b70ad9c"
-    },
-    {
-      "path": "ui/v4/cards/card_goods_normal.json",
-      "bytes": 372,
-      "sha256": "8a67248b9471daf7e1e37552707cc0f1121414ad60e0e56f90f79685cdad04dd"
-    },
-    {
-      "path": "ui/v4/cards/card_goods_normal.png",
-      "bytes": 209263,
-      "sha256": "fe435fcc7caefcabbfef9f3639ecc7b3ef69fccb130fe450980aa1a86a44eb66"
-    },
-    {
-      "path": "ui/v4/decor/decor_window_double_diamond.json",
-      "bytes": 420,
-      "sha256": "a8fe98c046f0a76f8b05ad613cd32a09e51ae23343e40490a407199aac61e484"
-    },
-    {
-      "path": "ui/v4/decor/decor_window_double_diamond.png",
-      "bytes": 6344,
-      "sha256": "b859ad7dc406bd1de6f5be88cc22a730898ea7be59d00f39d9c5a2560eb64035"
-    },
-    {
-      "path": "ui/v4/decor/detail_stage_paper.json",
-      "bytes": 393,
-      "sha256": "f61f2c1c30896fb19916a62796df355139e3809bc52d410c63f69e10b957ba99"
-    },
-    {
-      "path": "ui/v4/decor/detail_stage_paper.png",
-      "bytes": 8155,
-      "sha256": "98c179319bc7015c24fe362d642cc603043b80c7f935dd49439107ea42b75ec1"
-    },
-    {
-      "path": "ui/v4/decor/detail_stage_red_shard.json",
-      "bytes": 405,
-      "sha256": "3ab6e8a31b12fb389d338c972652989421284cc6e81168433668537424f2907e"
-    },
-    {
-      "path": "ui/v4/decor/detail_stage_red_shard.png",
-      "bytes": 2973,
-      "sha256": "fb4fa1b2df1e0ee736cfd13d4948349a4d5029ffc06b665e787d188255a5889e"
-    },
-    {
-      "path": "ui/v4/delist/wasted_delist_wordmark.json",
-      "bytes": 407,
-      "sha256": "593c91bcbac5524e457ac9eae7e79d4a3589c38b25d457055e22ea21e9097b4f"
-    },
-    {
-      "path": "ui/v4/delist/wasted_delist_wordmark.png",
-      "bytes": 92867,
-      "sha256": "ca5458b1bf63a09d20c4d12edb544bcfc9f85715cfad0c3b7aae320aecf79209"
-    },
-    {
-      "path": "ui/v4/icons/icon_bag.json",
-      "bytes": 340,
-      "sha256": "bb5aab16400e02019592dfed206c59a3ec6245ba41b0fa8aa10af7a24d2e4fa8"
-    },
-    {
-      "path": "ui/v4/icons/icon_bag.png",
-      "bytes": 7679,
-      "sha256": "bffd4fe5d6f743cc8e1d3feb69f24155af84bbf9291adfb0752e0391bea98414"
-    },
-    {
-      "path": "ui/v4/icons/icon_cart.json",
-      "bytes": 365,
-      "sha256": "f729c667c1994e23673d2cb952467c24c39ec1ad3e1aff0db8cb5332ede75ddf"
-    },
-    {
-      "path": "ui/v4/icons/icon_cart.png",
-      "bytes": 5973,
-      "sha256": "c665b363aece48e51bdf58f4ab9bba8422a876929922aa2b8cd8000f4ca85d63"
-    },
-    {
-      "path": "ui/v4/icons/icon_chart.json",
-      "bytes": 346,
-      "sha256": "40ffc187f954368114700d9eac602d070eb0085dace3f6ed7fd13b61b1b55fa6"
-    },
-    {
-      "path": "ui/v4/icons/icon_chart.png",
-      "bytes": 6936,
-      "sha256": "1eea13acd138de353d725fca2f127af0ac2fd7ee7427d9fe521afbc1c21319ab"
-    },
-    {
-      "path": "ui/v4/icons/icon_check.json",
-      "bytes": 368,
-      "sha256": "84a29a0e8df1c4ae0a6427fc2c9cfd29ac2b27d0dbf8f74551cd7bc5430a3dba"
-    },
-    {
-      "path": "ui/v4/icons/icon_check.png",
-      "bytes": 1816,
-      "sha256": "27c4ec845eaa72a454866e30e5a6d812ea21793bfe561cb95a77d84b7337f86f"
-    },
-    {
-      "path": "ui/v4/icons/icon_close.json",
-      "bytes": 368,
-      "sha256": "624f8cf08f605675d7322fba84690b7e87c90d829c7ac4c226643bfdbede64eb"
-    },
-    {
-      "path": "ui/v4/icons/icon_close.png",
-      "bytes": 2827,
-      "sha256": "cc73a042c2f8822e14c7220fe1514993ff555b9233b1f11058119a9e5638bbb6"
-    },
-    {
-      "path": "ui/v4/icons/icon_coin.json",
-      "bytes": 343,
-      "sha256": "f27d74d018a10c769bd28dbdcc159507a51cdfd42da062d8cd1234078d640964"
-    },
-    {
-      "path": "ui/v4/icons/icon_coin.png",
-      "bytes": 9586,
-      "sha256": "5a266518619df4a3d47a6f7abda5ca4b21c98316787f0d9bd000386204bd1e8e"
-    },
-    {
-      "path": "ui/v4/icons/icon_eye.json",
-      "bytes": 362,
-      "sha256": "0b7aff81f3c9ecda1df032cdba7d4798a30215a247bf1d50b5b69f8fe0b51bc4"
-    },
-    {
-      "path": "ui/v4/icons/icon_eye.png",
-      "bytes": 13347,
-      "sha256": "09fb5d2eb9ce130841499e6420995f01210644792006651ea703037825643757"
-    },
-    {
-      "path": "ui/v4/icons/icon_info.json",
-      "bytes": 365,
-      "sha256": "632720d3fdf724078accf65277470198c113a5430fc2c9214e53a809f8bd8f39"
-    },
-    {
-      "path": "ui/v4/icons/icon_info.png",
-      "bytes": 9143,
-      "sha256": "09696f9f26cd7e38cee63f95510f6b69ab92cf52b83556bc2e019b0c2e1da181"
-    },
-    {
-      "path": "ui/v4/icons/icon_left.json",
-      "bytes": 365,
-      "sha256": "481e0a89e350dd7eefd365028cc82f06d88844f624462ceb8bc7064da098b65a"
-    },
-    {
-      "path": "ui/v4/icons/icon_left.png",
-      "bytes": 2145,
-      "sha256": "0dc28e86ebf5648c7431dbc4d3f1ece486d9a050245da1ee4555cbe39b434a5e"
-    },
-    {
-      "path": "ui/v4/icons/icon_minus.json",
-      "bytes": 368,
-      "sha256": "477e4e00c04213d3fe9bc5340bb11006575894c34d5e8344a1ed46d6e304df6b"
-    },
-    {
-      "path": "ui/v4/icons/icon_minus.png",
-      "bytes": 985,
-      "sha256": "761e04537b3f144070aa329d151b4e09da0e18c5638dde1ffdc94c3cc391f324"
-    },
-    {
-      "path": "ui/v4/icons/icon_motion.json",
-      "bytes": 371,
-      "sha256": "fc7d71c0f17f2665d46c2bfb89893f6e236a70af320582172274b03205a022b0"
-    },
-    {
-      "path": "ui/v4/icons/icon_motion.png",
-      "bytes": 3383,
-      "sha256": "d469ade031e34bb5b2be6b31b0e4b57359f574b7846d5d511ebd9cc8c549b96b"
-    },
-    {
-      "path": "ui/v4/icons/icon_plus.json",
-      "bytes": 343,
-      "sha256": "cb3d5c5e9bf618d2859a35925b48c6f19b5093508999f6f98094cefae31d99be"
-    },
-    {
-      "path": "ui/v4/icons/icon_plus.png",
-      "bytes": 1595,
-      "sha256": "1415d67d0233945b4d4008e44feb808b2010f7099cc20af3beb8910eadba2547"
-    },
-    {
-      "path": "ui/v4/icons/icon_rank.json",
-      "bytes": 365,
-      "sha256": "4da35c078153538610a44ddfdaa4d8b625e714c5627ea5a3dad79ca46dcfed8d"
-    },
-    {
-      "path": "ui/v4/icons/icon_rank.png",
-      "bytes": 3394,
-      "sha256": "a0287d9a6a2a1e9e1d826fd72eb7f8415278312085a60dd44213e865cf70157d"
-    },
-    {
-      "path": "ui/v4/icons/icon_reset.json",
-      "bytes": 346,
-      "sha256": "2ba0fc51001f4aff774a8691b798bd9027a2c8f54fcf8a2ad0f1258e7564c131"
-    },
-    {
-      "path": "ui/v4/icons/icon_reset.png",
-      "bytes": 11210,
-      "sha256": "a18f9ec8a3856fefafc08eaa488246b0862717dee8a8334f910eb2fdf94cf2a0"
-    },
-    {
-      "path": "ui/v4/icons/icon_return.json",
-      "bytes": 371,
-      "sha256": "0d344bac05f151318c8a2d67381e93d735472a2cfeeb7f42f8b2da1075791d9f"
-    },
-    {
-      "path": "ui/v4/icons/icon_return.png",
-      "bytes": 4368,
-      "sha256": "6663e883656d0d999740a58b47089a446a1079cc2040a61f6e288df52e46dd55"
-    },
-    {
-      "path": "ui/v4/icons/icon_right.json",
-      "bytes": 346,
-      "sha256": "524c4363c24aac2b327516440fc59c7267fc84704086f6e6122fb98d19d7b3c1"
-    },
-    {
-      "path": "ui/v4/icons/icon_right.png",
-      "bytes": 2451,
-      "sha256": "df92840ae3d7af90d96960b8977683bd4faac2d1c45551f05e3586159dfede83"
-    },
-    {
-      "path": "ui/v4/icons/icon_scroll.json",
-      "bytes": 349,
-      "sha256": "86c47f91a230f306ab7d305f564a140ad450c25e707f179cdafb31a755482dc9"
-    },
-    {
-      "path": "ui/v4/icons/icon_scroll.png",
-      "bytes": 5346,
-      "sha256": "c4fa9c15c7fbfa095090f315c16d78dafffd727095294e304e69976c05ae86e5"
-    },
-    {
-      "path": "ui/v4/icons/icon_sort.json",
-      "bytes": 365,
-      "sha256": "3ac272edb08d16f762738ac38183beff4056fdd77db8f66acedc87041e5d4a3c"
-    },
-    {
-      "path": "ui/v4/icons/icon_sort.png",
-      "bytes": 3222,
-      "sha256": "43290f0927b0f6093ac7990f079befae2d7221fd39db73dc5190c6da72b9ff6c"
-    },
-    {
-      "path": "ui/v4/icons/icon_stamina.json",
-      "bytes": 374,
-      "sha256": "4a80b7083de3312646d7f92a62acc29f6b65f7eeaa57e883ba456716671db1d9"
-    },
-    {
-      "path": "ui/v4/icons/icon_stamina.png",
-      "bytes": 9913,
-      "sha256": "3d8dfa7700c3aeabf2e2492240d2ebf127d3ee3c8d22c4ca93ef8d6079c0d6cd"
-    },
-    {
-      "path": "ui/v4/icons/icon_trade.json",
-      "bytes": 368,
-      "sha256": "b067205133fe7c9fb80707705394c79768593e9dbdafa945886f23464526775b"
-    },
-    {
-      "path": "ui/v4/icons/icon_trade.png",
-      "bytes": 3369,
-      "sha256": "86d20096cd82ac309bc443aa6db9b2623a8ab4bf9e9ea7bc0ff887d00de0cc24"
-    },
-    {
-      "path": "ui/v4/icons/icon_trash.json",
-      "bytes": 346,
-      "sha256": "b04cc21b952496c67bc6012ab0bd8f73d3c3825af974aa87bb54912ff8132c8b"
-    },
-    {
-      "path": "ui/v4/icons/icon_trash.png",
-      "bytes": 4810,
-      "sha256": "1e4d3d35b7ad9994cabc48c7b8f5986f527cbd1d481e4a2cfc8a01a39dae7d2e"
-    },
-    {
-      "path": "ui/v4/inventory/slot_inventory_empty_9s.json",
-      "bytes": 394,
-      "sha256": "cdf3025e8fa486f9159e7b07ce3fbb0ff31640f3ac24ecdeca3664be2294a50b"
-    },
-    {
-      "path": "ui/v4/inventory/slot_inventory_empty_9s.png",
-      "bytes": 828,
-      "sha256": "df4e8a288be49beaa1445bba5ff39ad99049ee28db3308d6c80b30fb4a9bc2db"
-    },
-    {
-      "path": "ui/v4/inventory/slot_inventory_long_9s.json",
-      "bytes": 391,
-      "sha256": "db6e58d2beb5f845b49bc5e3f0047c34823c1f6ea688672564ddeec01ca17545"
-    },
-    {
-      "path": "ui/v4/inventory/slot_inventory_long_9s.png",
-      "bytes": 1368,
-      "sha256": "68dab1e2cf92ddabbceb5b5864bf16f2125d18cddf2ac8387e0f199ffc32c35e"
-    },
-    {
-      "path": "ui/v4/inventory/slot_inventory_short_9s.json",
-      "bytes": 394,
-      "sha256": "dbe032466165752fbac948143274983c87e47449aabf14592f1f98c6015cd56e"
-    },
-    {
-      "path": "ui/v4/inventory/slot_inventory_short_9s.png",
-      "bytes": 1222,
-      "sha256": "cc68e93985492156b1fc577618a78b113c6b94fe25b16173247b7ae5bbe296b2"
-    },
-    {
-      "path": "ui/v4/items/final/01_飞天门辟邪玉.png",
-      "bytes": 51847,
-      "sha256": "59bbd591641ada0cb0af02a403b6ef167cec850c8d27add250a4ac35f18b90a9"
-    },
-    {
-      "path": "ui/v4/items/final/02_藏宝图刺青拓样.png",
-      "bytes": 75348,
-      "sha256": "91d34178d5941193f1587ceda54b1979dc9aba75e449ef73c1f3e9af3cfbb28b"
-    },
-    {
-      "path": "ui/v4/items/final/03_杂鱼收尸契.png",
-      "bytes": 62487,
-      "sha256": "efa5e7fea10039cb07572af1aaa527dee15890dc67f579ba8ae62b0e840827ea"
-    },
-    {
-      "path": "ui/v4/items/final/04_铁拳暖食盒.png",
-      "bytes": 63061,
-      "sha256": "c9781d3ba11435e75e6b81624f53d0922cabfb9ac6090351dd90bf22f1a7b6eb"
-    },
-    {
-      "path": "ui/v4/items/final/05_仿南宫尖肩甲.png",
-      "bytes": 51842,
-      "sha256": "a7eb065f08b2f4317a34e68f758cd979b4f62907c251bb16f41f4261fd725fe5"
-    },
-    {
-      "path": "ui/v4/items/final/06_飞石帮荣誉会员牌.png",
-      "bytes": 44058,
-      "sha256": "fd90cb5640160456057506f6356d92d34fd52e62c7fe9faaa24c9f08d87a0f93"
-    },
-    {
-      "path": "ui/v4/items/final/07_快报印花.png",
-      "bytes": 55707,
-      "sha256": "a5c7ddea43c1ce9cceabc218894dbaf840edd5d570079346a25cc66840e5dae4"
-    },
-    {
-      "path": "ui/v4/items/final/08_海捕画影.png",
-      "bytes": 72320,
-      "sha256": "affc494d9a6ec8616833220ad4a03c776394362cf8002c13cddb0216d56e7e42"
-    },
-    {
-      "path": "ui/v4/items/final/09_奇侠破奇冤戏本.png",
-      "bytes": 68684,
-      "sha256": "4ce23cd6ccc5b5258daa59acb3fd63198bf140b112cba16f5d768422d25ba6ce"
-    },
-    {
-      "path": "ui/v4/items/final/10_装死槟榔.png",
-      "bytes": 63446,
-      "sha256": "0ecc79ae3ffac863bc9e0c4b21b976e216a57589fe90fda7567c1898d57321c6"
-    },
-    {
-      "path": "ui/v4/items/final/11_南宫润喉糖.png",
-      "bytes": 53128,
-      "sha256": "6afdc17b459183ef54dc89aa51e93c843042b9eaced0c73d9838a6a6a49f2da8"
-    },
-    {
-      "path": "ui/v4/items/final/12_断肠护花散.png",
-      "bytes": 56680,
-      "sha256": "ad64f3c9cbe552f9003e587a168650ed16bf64da25e7c5e9a7d076646ddc8784"
-    },
-    {
-      "path": "ui/v4/items/final/13_崆峒全加豆浆.png",
-      "bytes": 81077,
-      "sha256": "b0438a365e01cc8b9e3f449a97387ea2e26786e265ef188d0b5a1286b267bfa0"
-    },
-    {
-      "path": "ui/v4/items/final/14_纸夫人.png",
-      "bytes": 68484,
-      "sha256": "5c3a8acdfac01d2a5ede8e88a210c32f38633c9e68ea69fbbdafa4cb03225f99"
-    },
-    {
-      "path": "ui/v4/items/final/15_白鲨鱼脍.png",
-      "bytes": 40628,
-      "sha256": "b4a20783101a9425b47f3a19d30e3fd2f836762f789e5fe5da4e4b858f5125bf"
-    },
-    {
-      "path": "ui/v4/items/final/16_正色布.png",
-      "bytes": 67007,
-      "sha256": "62fc2a63ffd47e5c08411b64585f0974b4c95d671f7686950275f26a482b380a"
-    },
-    {
-      "path": "ui/v4/items/final/17_和事灰浆.png",
-      "bytes": 61607,
-      "sha256": "ee4967194213513ca0d8061073fe169082f393b5321c2aa399858c05ea1b52e2"
-    },
-    {
-      "path": "ui/v4/items/final/18_崆峒发光菜.png",
-      "bytes": 57991,
-      "sha256": "60a219a0006019465a6510409ebac0290122ba346e472d33cac1f1ece9b7db34"
-    },
-    {
-      "path": "ui/v4/items/final/19_盆砂.png",
-      "bytes": 52065,
-      "sha256": "5b745eff25cb42b8b950c7f2fd3e0b4f00f272a0b786f9992dd0031766ab4e6a"
-    },
-    {
-      "path": "ui/v4/items/final/20_地听瓮.png",
-      "bytes": 65424,
-      "sha256": "62786448451eda032049cbc2c52b338e2e62d04fbf584f03fc41405379140d19"
-    },
-    {
-      "path": "ui/v4/items/final/21_羊脬渡命环.png",
-      "bytes": 53348,
-      "sha256": "b2559b7ef84d9487aa1b5d85b303ff9f7edc29a1dba9951181225189f6b834e9"
-    },
-    {
-      "path": "ui/v4/items/final/22_传书雁.png",
-      "bytes": 46403,
-      "sha256": "d0af9ef25a45130aad7b63cab0c5a481f64d432bff269af73859d19d3b17bae4"
-    },
-    {
-      "path": "ui/v4/items/final/23_五色泥.png",
-      "bytes": 75698,
-      "sha256": "33bcf1604c0df3b242399ee72b8ca20f0160fe3cc3d277f4ad4b733736bbcd38"
-    },
-    {
-      "path": "ui/v4/items/final/24_防侠瓦.png",
-      "bytes": 53929,
-      "sha256": "29314b60be10b8d28bd136921d31da4fd42fac1394ce60dfafe224deac7ad75f"
-    },
-    {
-      "path": "ui/v4/items/final/25_磁心投壶.png",
-      "bytes": 60683,
-      "sha256": "5a10fb92c01f0f20ee8f81307a1af4f35d54031d56fd07ea110790059f5a2575"
-    },
-    {
-      "path": "ui/v4/items/final/26_遮颜斗笠.png",
-      "bytes": 52321,
-      "sha256": "c37021f2dc1d9ff52b53b5abf0f2344ec572142deddc23a23b2d9cae092331ab"
-    },
-    {
-      "path": "ui/v4/items/final/27_云南软铁锭.png",
-      "bytes": 42503,
-      "sha256": "57a23d664d6b4f79c88859efaffd98210f3e93a86e933a7fc15c929a626a06e5"
-    },
-    {
-      "path": "ui/v4/items/final/28_蜡看菜.png",
-      "bytes": 79022,
-      "sha256": "cbbe6c4369d88d461d9dbd3a846201022f0ebdbe67789e64fbb15298680742a7"
-    },
-    {
-      "path": "ui/v4/items/final/29_开锋血.png",
-      "bytes": 49240,
-      "sha256": "c5eec483ef4beb5efca042e35dc55dba2d295cfbf16983e80dd76ea40010c8cb"
-    },
-    {
-      "path": "ui/v4/items/final/30_断义袍.png",
-      "bytes": 66480,
-      "sha256": "2977f4bcee20e144cb473108eac169c33cc424eb161af723a8e70074aadf5a73"
-    },
-    {
-      "path": "ui/v4/items/final/31_遮血褐衫.png",
-      "bytes": 56877,
-      "sha256": "417a535e4e504fde129e8a93550a8c591e6dbe9f6696c245290d1e7dc15d885c"
-    },
-    {
-      "path": "ui/v4/items/final/32_点茶家什.png",
-      "bytes": 69974,
-      "sha256": "256dcd4bb7e5edba645a378c2812b34bb4112200e0282819fd16fd4b47f19d36"
-    },
-    {
-      "path": "ui/v4/items/final/33_江湖路程图.png",
-      "bytes": 69605,
-      "sha256": "8f049e9f6126aa7812b8f26340f8b85a856644174d55f39efa75f715c3af062e"
-    },
-    {
-      "path": "ui/v4/items/final/34_孤狼衔草.png",
-      "bytes": 44260,
-      "sha256": "2138c77dc827544d96a1c10573a16f227f94fce6c4f2d4861a41d3af767ae44a"
-    },
-    {
-      "path": "ui/v4/items/final/35_洗手金盆.png",
-      "bytes": 53808,
-      "sha256": "fb74a975362531bc8a84844befacbec1369358cd98bcc87a5bcad903170fb818"
-    },
-    {
-      "path": "ui/v4/items/final/36_嫁剑妆奁.png",
-      "bytes": 60575,
-      "sha256": "7a4552760031db96938d053b47ba24fcdc420d7ca608abb49c5eedb7bf5b619f"
-    },
-    {
-      "path": "ui/v4/items/final/37_开山匾.png",
-      "bytes": 46211,
-      "sha256": "31f48f4724d0c0268813c41f0e0cd5463969c1ee1f827f4eb63f24a3f80ee4c4"
-    },
-    {
-      "path": "ui/v4/items/final/38_威风诨号谱.png",
-      "bytes": 61596,
-      "sha256": "0cef351b5fe545cace8095a128f0f523fdd310f6c67e48b47ba12587e8c9f880"
-    },
-    {
-      "path": "ui/v4/items/final/39_坐名旗.png",
-      "bytes": 49446,
-      "sha256": "c6f75946173311270ed6a61a2fdee74c3aef0f19be881da5c2263d9af8112615"
-    },
-    {
-      "path": "ui/v4/items/final/40_太公直钩.png",
-      "bytes": 20234,
-      "sha256": "f7d347def73b09f8d4c1b4781e2deae082f0887d0d0ab05687eac66689648f8a"
-    },
-    {
-      "path": "ui/v4/items/final/41_结善缘钵.png",
-      "bytes": 34480,
-      "sha256": "37017bfff80dbffa307999c56a9a95494c8e614a9c21aa870142752fe2a5c399"
-    },
-    {
-      "path": "ui/v4/items/final/42_百炼包袱.png",
-      "bytes": 64667,
-      "sha256": "e32427808516e357c338de7a99b728a2881af19ba5b664529784931247213d23"
-    },
-    {
-      "path": "ui/v4/items/final/43_绿林切口抄.png",
-      "bytes": 47763,
-      "sha256": "88057367975fd530c6e1d312c4c4cf4dd352c26697e9fdfc30de7e6745794ffd"
-    },
-    {
-      "path": "ui/v4/items/final/44_袖蛇.png",
-      "bytes": 43942,
-      "sha256": "405337a86ab4a27b564341cbdb750da09f04ea56feb99285c51e635e73e29d17"
-    },
-    {
-      "path": "ui/v4/items/final/45_掩耳蜡.png",
-      "bytes": 49395,
-      "sha256": "7177482005d6df7cb7183c0c7c13770beb29fb96eba9acfb061e9961463243cb"
-    },
-    {
-      "path": "ui/v4/items/final/46_凤仙染甲浆.png",
-      "bytes": 71847,
-      "sha256": "5ded65f571b42eb1bc2a16b1acd4976fa3717540dbf3506dfe17b3980f0a77c6"
-    },
-    {
-      "path": "ui/v4/items/final/47_点苍松露膏.png",
-      "bytes": 56252,
-      "sha256": "f3021f20f8d6f51988dea094ea57ad1d296f31d12ffbdba69c6bf5b22ccea88a"
-    },
-    {
-      "path": "ui/v4/items/final/48_叆叇镜.png",
-      "bytes": 47708,
-      "sha256": "43e3e9b3ca3bcd4b73f42f5049c1e6b637a267507c9dcaf3639698ac6e279def"
-    },
-    {
-      "path": "ui/v4/items/final/49_问亡圣筊.png",
-      "bytes": 24175,
-      "sha256": "f4e12be157f53a0fd3438470a62de804df6e8614f4347479626e887ac5c94f3b"
-    },
-    {
-      "path": "ui/v4/items/final/50_七星晒衣竿.png",
-      "bytes": 34139,
-      "sha256": "888796cf02830e69a480d2164f8c7aeb8eeaf7aef72ab6704028d2601f06e7ec"
-    },
-    {
-      "path": "ui/v4/items/final/51_轻功铃.png",
-      "bytes": 66955,
-      "sha256": "9bb15a7b4c86b27067c6c6502e89afac4f6c9d27666c361402b11e659284e743"
-    },
-    {
-      "path": "ui/v4/items/final/52_唐门外堡宿舍.png",
-      "bytes": 81745,
-      "sha256": "98685deb63ff6ea024cfb7da58ee941ae9abfac22637e5b9549b9fcbd9a0df35"
-    },
-    {
-      "path": "ui/v4/items/final/53_唐门谷底肉酱罐头.png",
-      "bytes": 79873,
-      "sha256": "6fface64265be7fd2a80b5f2b7d63010f567a9c8e9fd2bb6f193ecff76cb5ffc"
-    },
-    {
-      "path": "ui/v4/items/final/54_奶娃布制玩偶.png",
-      "bytes": 52364,
-      "sha256": "97f045a796b9f6a085e163e855dd70fec1c5dffda3a09d2fc733b1ed654a3dcb"
-    },
-    {
-      "path": "ui/v4/manifest.json",
-      "bytes": 107698,
-      "sha256": "401f989019281ec924e019a6027765f358f8db88e8ff6e3627a4f2a6536c7288"
-    },
-    {
-      "path": "ui/v4/masks/mask_chart_drybrush_tile.json",
-      "bytes": 412,
-      "sha256": "29219f55364905263695010b4aae52b0c14082444d79d276b71884c7e22fa09a"
-    },
-    {
-      "path": "ui/v4/masks/mask_chart_drybrush_tile.png",
-      "bytes": 5231,
-      "sha256": "db8e23789b2112c4e34eded9ba05e1c323fae35cefee5543cbacd8017c61c3f4"
-    },
-    {
-      "path": "ui/v4/masks/mask_ticker_edge_fade.json",
-      "bytes": 401,
-      "sha256": "47e75efeaaf00404ff97232748f71abc0cf7a5fd4f01074a81af02bc018ddb9a"
-    },
-    {
-      "path": "ui/v4/masks/mask_ticker_edge_fade.png",
-      "bytes": 258,
-      "sha256": "17f3b79740935d1985d0dac5dc95dca03cfdd24bfa59cc3469314549084fdb5e"
-    },
-    {
-      "path": "ui/v4/native/back_menu_screen_1__265.png",
-      "bytes": 900686,
-      "sha256": "124a16c8d68655e93499cdd06582ce73a39322cb14aba6d39ca85f20bab76b78"
-    },
-    {
-      "path": "ui/v4/panels/panel_brand_block.json",
-      "bytes": 391,
-      "sha256": "85939d44f1bcb126982b14286352d31c17c3c7eee883112de1d89b093450eb55"
-    },
-    {
-      "path": "ui/v4/panels/panel_brand_block.png",
-      "bytes": 992,
-      "sha256": "cd6001c9f0deaa81844eb10cfb16ceaa7e29c4e051c831cbc13986e63b2196ec"
-    },
-    {
-      "path": "ui/v4/panels/panel_cart_rail_9s.json",
-      "bytes": 398,
-      "sha256": "12ac2e18fbee850414905a30bfe7413776e05d310670848808485aaa2131766a"
-    },
-    {
-      "path": "ui/v4/panels/panel_cart_rail_9s.png",
-      "bytes": 1502,
-      "sha256": "2978f463dd72bd5d611af7e7dfe32f509149646b96fc95324cc05810779a801a"
-    },
-    {
-      "path": "ui/v4/panels/panel_contract_modal_9s.json",
-      "bytes": 412,
-      "sha256": "be67f9efcd80641175d40c6ed6a18a5f5066c61369f3e4ffe1f07bca28bb212c"
-    },
-    {
-      "path": "ui/v4/panels/panel_contract_modal_9s.png",
-      "bytes": 2595,
-      "sha256": "ac4086e80395cb6040e7cd3d14d8bc972187d67f5f4b9c00dac424e00933186c"
-    },
-    {
-      "path": "ui/v4/panels/panel_detail_chart_9s.json",
-      "bytes": 407,
-      "sha256": "9a0e719b453f8a626f53a906f094eb3d63db51ccd4173a8464c2bfa101ecb08a"
-    },
-    {
-      "path": "ui/v4/panels/panel_detail_chart_9s.png",
-      "bytes": 2206,
-      "sha256": "2eb9b67d23cdeed0f6eea9eed125e7cca2a766f0d73f648c999afb635f4b249b"
-    },
-    {
-      "path": "ui/v4/panels/panel_masthead_9s.json",
-      "bytes": 396,
-      "sha256": "8c6195bb36e83b5ca2c8da8a7f83f5bcb395e2a14e7e017585484c3e04526979"
-    },
-    {
-      "path": "ui/v4/panels/panel_masthead_9s.png",
-      "bytes": 760,
-      "sha256": "f1815bd4a0ab0847c1ed0a94af16e537712e985f62f726dd4c7ef6566283c207"
-    },
-    {
-      "path": "ui/v4/panels/panel_merchant_window_9s.json",
-      "bytes": 416,
-      "sha256": "f11de6fe348dcafaa395b100e8c684f611a5a149c9a32e99fa3990e9687677da"
-    },
-    {
-      "path": "ui/v4/panels/panel_merchant_window_9s.png",
-      "bytes": 128833,
-      "sha256": "f9f98aa34444f7001b1f217797fad1e53a384504d2e1696a55cfc4874ddfcd37"
-    },
-    {
-      "path": "ui/v4/panels/panel_paper_tooltip_9s.json",
-      "bytes": 388,
-      "sha256": "1fa912d70a7f227e50e5db2e18bbb19ae5c755df6103a15b6d1b09cc459b781c"
-    },
-    {
-      "path": "ui/v4/panels/panel_paper_tooltip_9s.png",
-      "bytes": 1474,
-      "sha256": "3f5f48079fd279bac7f518ea7b5f85c5c69e261dd23441f40be9893b1f81733d"
-    },
-    {
-      "path": "ui/v4/panels/panel_position_cell_9s.json",
-      "bytes": 383,
-      "sha256": "fb1aeaf0f565b6e66e3a2614834a64bde4b7b491cf7f0b96217a08cf565502af"
-    },
-    {
-      "path": "ui/v4/panels/panel_position_cell_9s.png",
-      "bytes": 487,
-      "sha256": "d44aee74c87289588c06c47241a1f661a708e3bc5efb07b45c474b74538a52f7"
-    },
-    {
-      "path": "ui/v4/panels/panel_story_news_9s.json",
-      "bytes": 397,
-      "sha256": "b0b9a2f5d7be6550228d12267ee7fcb20aaba35e01f0f73f95f94fde387f91e4"
-    },
-    {
-      "path": "ui/v4/panels/panel_story_news_9s.png",
-      "bytes": 801,
-      "sha256": "a3fef31652a7e4bbab5b571f32666ba155499ca749583c9b6b920115165b8d5f"
-    },
-    {
-      "path": "ui/v4/panels/panel_ticker_label.json",
-      "bytes": 371,
-      "sha256": "b035f67080857b3216cae7666414e2ee71c25537e858bcbcfac24cad11ccbcad"
-    },
-    {
-      "path": "ui/v4/panels/panel_ticker_label.png",
-      "bytes": 460,
-      "sha256": "ebef5cd6650921036abb700a2a90ed277ee658bb243264173ef950e28a687534"
-    },
-    {
-      "path": "ui/v4/panels/panel_toast_9s.json",
-      "bytes": 381,
-      "sha256": "df225776d72f4bd6e0412cd4e5f3b94e41d2028a033059af4f5cfba1f0dc6fd6"
-    },
-    {
-      "path": "ui/v4/panels/panel_toast_9s.png",
-      "bytes": 361,
-      "sha256": "f403fde8f048206c391ae0cd7a91c3f74a4ac7e33ac25bc5c9c53f4c635fc15b"
-    },
-    {
-      "path": "ui/v4/panels/tag_cart_count.json",
-      "bytes": 386,
-      "sha256": "d27e042faf3e869d1004942377c391767a6a924ebab5278ec44ae5f4f032a04f"
-    },
-    {
-      "path": "ui/v4/panels/tag_cart_count.png",
-      "bytes": 345,
-      "sha256": "d992169103b9c2b3ba9bd3b36035627e2bf2ecb596749f70e43a5535e05e631f"
-    },
-    {
-      "path": "ui/v4/rows/row_ranking_hover_9s.json",
-      "bytes": 381,
-      "sha256": "49356c66ab91cad1c1f9775ce443da18ebc3f41b88bb8d950b2c6aa47a3eb534"
-    },
-    {
-      "path": "ui/v4/rows/row_ranking_hover_9s.png",
-      "bytes": 1138,
-      "sha256": "b0ebdc4b73799aa81170111cd1fbc936b41e33c3fb6cc858f9d04f91070264dd"
-    },
-    {
-      "path": "ui/v4/rows/row_ranking_normal_9s.json",
-      "bytes": 384,
-      "sha256": "2409bd21b2c6243b9dc2fa5f7514ad7e65d518d28dec9a1794b2bdaacef128d7"
-    },
-    {
-      "path": "ui/v4/rows/row_ranking_normal_9s.png",
-      "bytes": 1243,
-      "sha256": "157701fe712533a280e976f007decee9bd7662915b7fea2cdfacf46e1c94a9f8"
-    },
-    {
-      "path": "ui/v4/stamps/stamp_deal_chengjiao.json",
-      "bytes": 400,
-      "sha256": "7efa07ded212e46b2e799ba9f9011b3398502e59709fa9bcd119fe0fb37ecb4b"
-    },
-    {
-      "path": "ui/v4/stamps/stamp_deal_chengjiao.png",
-      "bytes": 58184,
-      "sha256": "6d7f38bcedf2ab57af5c1aeeaa5df5d5b7b4b2a91e1cb6968b8920b2df45c1e9"
-    },
-    {
-      "path": "ui/v4/stamps/stamp_deal_pingcang.json",
-      "bytes": 397,
-      "sha256": "d54127610d1982c188813afe2ef42972371c5587eb67ffabeae1334057f883fc"
-    },
-    {
-      "path": "ui/v4/stamps/stamp_deal_pingcang.png",
-      "bytes": 48833,
-      "sha256": "d3cdb2c33cef77e00361798a0e1b9d6f27885da9889f9824dd420f4bacdc7eb8"
-    },
-    {
-      "path": "ui/v4/textures/texture_celadon_halftone.json",
-      "bytes": 414,
-      "sha256": "9c9c37162579ba6d08c2ae0fb9de79837f007326fba3e4fc243797208625578f"
-    },
-    {
-      "path": "ui/v4/textures/texture_celadon_halftone.png",
-      "bytes": 6143,
-      "sha256": "a80a87baaa0f4328df9827082a3a0951797a496e769ac48882d18ad261a85873"
-    },
-    {
-      "path": "ui/v4/textures/texture_ink_diagonal_hatch_tile.json",
-      "bytes": 435,
-      "sha256": "8a3f55044bf85fc199ae64cc030cc8d10b47a4e08862609380697d8cb444bc12"
-    },
-    {
-      "path": "ui/v4/textures/texture_ink_diagonal_hatch_tile.png",
-      "bytes": 1425,
-      "sha256": "6e46836c09d2efc81d76b410fdd05cf5693cc2e94e67edafca61de2eaa101df7"
-    },
-    {
-      "path": "ui/v4/textures/texture_ink_grain_tile.json",
-      "bytes": 387,
-      "sha256": "8a3d43e41cd9d6524093d84f40d938eefc415fda85fd08f06b0e3f3a34b4c23f"
-    },
-    {
-      "path": "ui/v4/textures/texture_ink_grain_tile.png",
-      "bytes": 210156,
-      "sha256": "dde536549e1731756d15306308a78a11402421a43efffedead4a7586f45a319e"
-    },
-    {
-      "path": "ui/v4/textures/texture_paper_grain_tile.json",
-      "bytes": 393,
-      "sha256": "084410414072874e72ba5ff456a27e681eebaca98a7b8c198960d0da691b820e"
-    },
-    {
-      "path": "ui/v4/textures/texture_paper_grain_tile.png",
-      "bytes": 276271,
-      "sha256": "da9f2133585ec822c1f79c3f20acaa60a659f84811bd267e983617a8eac81845"
     }
   ]
 }

@@ -6,48 +6,71 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using XingShangMod.Domain;
+using XingShangMod.UI.Shared;
 
 namespace XingShangMod.UI.Charting
 {
-    public sealed class WeeklyChartGraphic : MaskableGraphic,
+    [RequireComponent(typeof(CanvasRenderer))]
+    public sealed partial class WeeklyChartGraphic : MaskableGraphic,
         IPointerEnterHandler,
         IPointerExitHandler,
         IPointerDownHandler,
-        IDragHandler
+        IPointerUpHandler,
+        IDragHandler,
+        IEndDragHandler,
+        IScrollHandler
     {
+        private readonly List<ChartSeriesData> _series = new List<ChartSeriesData>();
+        private readonly List<int> _timeline = new List<int>();
+        private readonly List<Text> _axisLabels = new List<Text>();
+        private readonly List<ChartTag> _dataTags = new List<ChartTag>();
+        private readonly List<Text> _hoverRows = new List<Text>();
         private List<WeeklyPoint> _points = new List<WeeklyPoint>();
         private ReadOnlyCollection<WeeklyChartSegment> _segments = WeeklyChartSegmentBuilder.Empty;
         private WeeklyChartMode _mode = WeeklyChartMode.Card;
+        private string _styleSeed = string.Empty;
+        private int _presetRange = WeeklyChartData.DetailPoints;
+        private bool _hasCustomRange;
         private Color32 _risingColor = WeeklyChartSegmentBuilder.DefaultRisingColor;
         private Color32 _fallingColor = WeeklyChartSegmentBuilder.DefaultFallingColor;
         private Color32 _flatColor = WeeklyChartSegmentBuilder.DefaultFlatColor;
-        private Color32 _gridColor = new Color32(55, 46, 36, 36);
-        private Color32 _crosshairColor = new Color32(48, 40, 32, 160);
-        private Color32 _labelColor = new Color32(48, 40, 32, 255);
-        private Vector4 _plotPadding = new Vector4(8f, 8f, 8f, 8f);
-        private float _lineWidth = 2f;
-        private float _gridLineWidth = 1f;
-        private int _horizontalGridLines = 3;
+        private Color32 _gridColor = new Color32(117, 107, 89, 87);
+        private Color32 _crosshairColor = new Color32(98, 89, 75, 158);
+        private Color32 _labelColor = new Color32(67, 59, 48, 255);
+        private Vector4 _plotPadding = new Vector4(12f, 28f, 12f, 12f);
+        private float _lineWidth = 1.85f;
+        private float _gridLineWidth = 0.8f;
+        private int _horizontalGridLines;
         private int _verticalGridLines;
-        private int _labelFontSize = 14;
+        private int _labelFontSize = 10;
+        private Font _axisLabelFont;
         private bool _interactionEnabled;
         private bool _showLatestLabel;
         private bool _showRangeLabels;
         private Font _labelFont;
-        private Text _highLabel;
-        private Text _lowLabel;
-        private Text _latestLabel;
-        private Text _hoverLabel;
+        private Texture2D _dryBrushTexture;
+        private RectTransform _plotClip;
+        private WeeklyChartMeshGraphic _plotGraphic;
+        private WeeklyChartMeshGraphic _overlayGraphic;
+        private ChartTag _hoverTag;
+        private float _viewStart;
+        private int _viewCount = 1;
+        private float _yZoomFactor = 1f;
+        private float _yZoomCenterRatio = 0.5f;
         private bool _pointerInside;
         private Camera _pointerCamera;
         private int _selectedIndex = -1;
+        private Vector2 _lastPointerLocal;
+        private bool _hasPointerLocal;
+        private DragState _drag;
         private bool _hasVisibleRange;
         private double _visibleMinimum;
         private double _visibleMaximum;
-        private double _plotMinimum;
-        private double _plotMaximum;
         private int _visibleLowPointIndex = -1;
         private int _visibleHighPointIndex = -1;
+        private Color _lastGraphicColor;
+        private bool _hasGraphicColor;
+        private bool _isDestroying;
 
         public static WeeklyChartGraphic Create(
             Transform parent,
@@ -56,7 +79,6 @@ namespace XingShangMod.UI.Charting
         {
             if (parent == null)
                 throw new ArgumentNullException("parent");
-
             var gameObject = new GameObject("XingShangMod.WeeklyChart", typeof(RectTransform));
             gameObject.layer = parent.gameObject.layer;
             var rect = (RectTransform)gameObject.transform;
@@ -68,9 +90,39 @@ namespace XingShangMod.UI.Charting
             rect.sizeDelta = new Vector2(480f, 240f);
             rect.localScale = Vector3.one;
 
+            EnsureCanvasRenderer(gameObject);
             WeeklyChartGraphic chart = gameObject.AddComponent<WeeklyChartGraphic>();
             chart._labelFont = labelFont;
-            chart.Mode = mode;
+            chart._mode = mode;
+            chart.ApplyModeDefaults();
+            chart.UpdateVisuals();
+            return chart;
+        }
+
+        public static WeeklyChartGraphic Mount(
+            RectTransform host,
+            WeeklyChartMode mode,
+            Font labelFont,
+            Texture2D dryBrushTexture,
+            Font axisLabelFont = null)
+        {
+            if (host == null)
+                throw new ArgumentNullException("host");
+            if (host.GetComponent<WeeklyChartGraphic>() != null)
+                throw new InvalidOperationException("The chart host is already mounted.");
+            EnsureCanvasRenderer(host.gameObject);
+            WeeklyChartGraphic chart = host.gameObject.AddComponent<WeeklyChartGraphic>();
+            chart._labelFont = labelFont;
+            chart._axisLabelFont = axisLabelFont;
+            chart._dryBrushTexture = dryBrushTexture;
+            chart._mode = mode;
+            chart.ApplyModeDefaults();
+            if (chart._plotGraphic != null)
+            {
+                chart._plotGraphic.DryBrush = dryBrushTexture;
+                chart._plotGraphic.SetMaterialDirty();
+            }
+            chart.UpdateVisuals();
             return chart;
         }
 
@@ -83,11 +135,25 @@ namespace XingShangMod.UI.Charting
                     return;
                 _mode = value;
                 ApplyModeDefaults();
-                _pointerInside = false;
-                _selectedIndex = -1;
-                raycastTarget = _interactionEnabled;
-                SetVerticesDirty();
-                RefreshLabels();
+                ApplySeriesStyleKeys();
+                CancelInteraction();
+                ResetView();
+            }
+        }
+
+        public event Action<WeeklyChartGraphic> ViewChanged;
+
+        public string StyleSeed
+        {
+            get { return _styleSeed; }
+            set
+            {
+                string next = value ?? string.Empty;
+                if (string.Equals(_styleSeed, next, StringComparison.Ordinal))
+                    return;
+                _styleSeed = next;
+                ApplySeriesStyleKeys();
+                UpdateVisuals();
             }
         }
 
@@ -96,9 +162,64 @@ namespace XingShangMod.UI.Charting
             get { return _segments; }
         }
 
+        public int? ActivePresetRange
+        {
+            get { return _hasCustomRange ? (int?)null : _presetRange; }
+        }
+
+        public bool HasCustomRange
+        {
+            get { return _hasCustomRange; }
+        }
+
+        public bool HasCustomPriceZoom
+        {
+            get { return WeeklyChartData.HasCustomPriceZoom(_yZoomFactor, _yZoomCenterRatio); }
+        }
+
+        public bool IsCustomView
+        {
+            get { return _hasCustomRange || HasCustomPriceZoom; }
+        }
+
         public int VisiblePointCount
         {
-            get { return _points.Count; }
+            get
+            {
+                if (_series.Count == 0 || _timeline.Count == 0)
+                    return 0;
+                int first;
+                int last;
+                VisibleBounds(false, out first, out last);
+                int count = 0;
+                IList<WeeklyPoint> points = _series[0].AlignedPoints;
+                for (int i = first; i <= last; i++)
+                {
+                    if (points[i] != null)
+                        count++;
+                }
+                return count;
+            }
+        }
+
+        public int TotalPointCount
+        {
+            get { return _timeline.Count; }
+        }
+
+        public int VisibleRange
+        {
+            get { return _timeline.Count == 0 ? 0 : _viewCount; }
+        }
+
+        public float VisibleStart
+        {
+            get { return _viewStart; }
+        }
+
+        public float YZoomFactor
+        {
+            get { return _yZoomFactor; }
         }
 
         public double VisibleMinimum
@@ -135,9 +256,28 @@ namespace XingShangMod.UI.Charting
                 if (_lineWidth == value)
                     return;
                 _lineWidth = value;
-                SetVerticesDirty();
-                RefreshLabelLayout();
+                UpdateVisuals();
             }
+        }
+
+        internal float MainStrokeOpacity
+        {
+            get
+            {
+                return _mode == WeeklyChartMode.Card
+                    ? 1f
+                    : _mode == WeeklyChartMode.Spark ? 0.88f : _mode == WeeklyChartMode.Detail ? 1f : 0.94f;
+            }
+        }
+
+        internal float UnderStrokeOpacity
+        {
+            get { return _mode == WeeklyChartMode.Card ? 0.07f : 0.13f; }
+        }
+
+        internal float UnderStrokeAdditionalWidth
+        {
+            get { return _mode == WeeklyChartMode.Spark ? 0.75f : 1.35f; }
         }
 
         public float GridLineWidth
@@ -149,7 +289,7 @@ namespace XingShangMod.UI.Charting
                 if (_gridLineWidth == value)
                     return;
                 _gridLineWidth = value;
-                SetVerticesDirty();
+                UpdateVisuals();
             }
         }
 
@@ -162,7 +302,7 @@ namespace XingShangMod.UI.Charting
                 if (_horizontalGridLines == value)
                     return;
                 _horizontalGridLines = value;
-                SetVerticesDirty();
+                UpdateVisuals();
             }
         }
 
@@ -175,7 +315,7 @@ namespace XingShangMod.UI.Charting
                 if (_verticalGridLines == value)
                     return;
                 _verticalGridLines = value;
-                SetVerticesDirty();
+                UpdateVisuals();
             }
         }
 
@@ -192,8 +332,7 @@ namespace XingShangMod.UI.Charting
                 if (_plotPadding == value)
                     return;
                 _plotPadding = value;
-                SetVerticesDirty();
-                RefreshLabelLayout();
+                UpdateVisuals();
             }
         }
 
@@ -205,7 +344,7 @@ namespace XingShangMod.UI.Charting
                 if (_gridColor.Equals(value))
                     return;
                 _gridColor = value;
-                SetVerticesDirty();
+                UpdateVisuals();
             }
         }
 
@@ -217,7 +356,7 @@ namespace XingShangMod.UI.Charting
                 if (_crosshairColor.Equals(value))
                     return;
                 _crosshairColor = value;
-                SetVerticesDirty();
+                UpdateVisuals();
             }
         }
 
@@ -229,10 +368,7 @@ namespace XingShangMod.UI.Charting
                 if (_labelColor.Equals(value))
                     return;
                 _labelColor = value;
-                ApplyLabelColor(_highLabel);
-                ApplyLabelColor(_lowLabel);
-                ApplyLabelColor(_latestLabel);
-                ApplyLabelColor(_hoverLabel);
+                UpdateVisuals();
             }
         }
 
@@ -245,6 +381,7 @@ namespace XingShangMod.UI.Charting
                     return;
                 _risingColor = value;
                 RebuildSegments();
+                UpdateVisuals();
             }
         }
 
@@ -257,6 +394,7 @@ namespace XingShangMod.UI.Charting
                     return;
                 _fallingColor = value;
                 RebuildSegments();
+                UpdateVisuals();
             }
         }
 
@@ -269,6 +407,7 @@ namespace XingShangMod.UI.Charting
                     return;
                 _flatColor = value;
                 RebuildSegments();
+                UpdateVisuals();
             }
         }
 
@@ -280,10 +419,21 @@ namespace XingShangMod.UI.Charting
                 if (_labelFont == value)
                     return;
                 _labelFont = value;
-                ApplyLabelFont(_highLabel);
-                ApplyLabelFont(_lowLabel);
-                ApplyLabelFont(_latestLabel);
-                ApplyLabelFont(_hoverLabel);
+                ApplyLabelFont();
+                UpdateVisuals();
+            }
+        }
+
+        public Font AxisLabelFont
+        {
+            get { return _axisLabelFont; }
+            set
+            {
+                if (_axisLabelFont == value)
+                    return;
+                _axisLabelFont = value;
+                ApplyLabelFont();
+                UpdateVisuals();
             }
         }
 
@@ -296,11 +446,8 @@ namespace XingShangMod.UI.Charting
                 if (_labelFontSize == value)
                     return;
                 _labelFontSize = value;
-                ApplyLabelFontSize(_highLabel);
-                ApplyLabelFontSize(_lowLabel);
-                ApplyLabelFontSize(_latestLabel);
-                ApplyLabelFontSize(_hoverLabel);
-                RefreshLabelLayout();
+                ApplyLabelFontSize();
+                UpdateVisuals();
             }
         }
 
@@ -315,11 +462,10 @@ namespace XingShangMod.UI.Charting
                 raycastTarget = value;
                 if (!value)
                 {
-                    _pointerInside = false;
-                    _selectedIndex = -1;
+                    CancelInteraction();
+                    DisposeCursorResources();
                 }
-                SetVerticesDirty();
-                RefreshLabels();
+                UpdateVisuals();
             }
         }
 
@@ -331,8 +477,7 @@ namespace XingShangMod.UI.Charting
                 if (_showLatestLabel == value)
                     return;
                 _showLatestLabel = value;
-                SetVerticesDirty();
-                RefreshLabels();
+                UpdateVisuals();
             }
         }
 
@@ -344,7 +489,7 @@ namespace XingShangMod.UI.Charting
                 if (_showRangeLabels == value)
                     return;
                 _showRangeLabels = value;
-                RefreshLabels();
+                UpdateVisuals();
             }
         }
 
@@ -352,38 +497,136 @@ namespace XingShangMod.UI.Charting
         {
             if (visiblePoints == null)
                 throw new ArgumentNullException("visiblePoints");
-
-            var copy = new List<WeeklyPoint>(visiblePoints.Count);
+            string id = "series-1";
             for (int i = 0; i < visiblePoints.Count; i++)
-                copy.Add(WeeklyChartSegmentBuilder.CopyVisiblePoint(visiblePoints[i], i));
-            ReadOnlyCollection<WeeklyChartSegment> segments = WeeklyChartSegmentBuilder.Build(
-                copy,
-                _risingColor,
-                _fallingColor,
-                _flatColor);
+            {
+                if (visiblePoints[i] != null && !string.IsNullOrWhiteSpace(visiblePoints[i].ItemId))
+                {
+                    id = visiblePoints[i].ItemId;
+                    break;
+                }
+            }
+            SetSeries(new List<WeeklyChartSeries>
+            {
+                new WeeklyChartSeries(id, string.Empty, visiblePoints)
+            });
+        }
 
-            _points = copy;
-            _segments = segments;
-            _selectedIndex = -1;
-            ComputeVisibleRange();
-            SetVerticesDirty();
-            RefreshLabels();
+        public void SetPoints(List<WeeklyPoint> visiblePoints, int currentWeek)
+        {
+            SetPoints(WeeklyChartData.VisibleThrough(visiblePoints, currentWeek));
+        }
+
+        public void SetSeries(IList<WeeklyChartSeries> visibleSeries, int currentWeek)
+        {
+            if (visibleSeries == null)
+                throw new ArgumentNullException("visibleSeries");
+            var filtered = new List<WeeklyChartSeries>(visibleSeries.Count);
+            for (int i = 0; i < visibleSeries.Count; i++)
+            {
+                WeeklyChartSeries source = visibleSeries[i];
+                if (source == null)
+                    throw new ArgumentException("Visible series " + i + " is null.", "visibleSeries");
+                filtered.Add(new WeeklyChartSeries(
+                    source.Id,
+                    source.Label,
+                    WeeklyChartData.VisibleThrough(source.VisiblePoints, currentWeek),
+                    source.Color));
+            }
+            SetSeries(filtered);
+        }
+
+        public void SetSeries(IList<WeeklyChartSeries> visibleSeries)
+        {
+            if (visibleSeries == null)
+                throw new ArgumentNullException("visibleSeries");
+            var next = new List<ChartSeriesData>(visibleSeries.Count);
+            var weeks = new HashSet<int>();
+            for (int i = 0; i < visibleSeries.Count; i++)
+            {
+                WeeklyChartSeries source = visibleSeries[i];
+                if (source == null)
+                    throw new ArgumentException("Visible series " + i + " is null.", "visibleSeries");
+                ChartSeriesData item = NormalizeSeries(source, i, weeks);
+                next.Add(item);
+            }
+            LoadSeries(next, weeks);
+        }
+
+        public void SetAssetPoints(List<WeeklyPoint> cashPoints, List<WeeklyPoint> goodsPoints)
+        {
+            if (Mode != WeeklyChartMode.Assets)
+                Mode = WeeklyChartMode.Assets;
+            SetSeries(new List<WeeklyChartSeries>
+            {
+                new WeeklyChartSeries("cash", "金钱", cashPoints, new Color32(180, 147, 88, 255)),
+                new WeeklyChartSeries("goods", "货物总产值", goodsPoints, new Color32(63, 107, 88, 255))
+            });
+        }
+
+        internal bool IsProfitChart { get { return _mode == WeeklyChartMode.Assets && _series.Count > 0 && _series[0].Id == "profit"; } }
+
+        internal void SetProfitPoints(List<WeeklyPoint> profit, List<WeeklyPoint> rate)
+        {
+            if (Mode != WeeklyChartMode.Assets) Mode = WeeklyChartMode.Assets;
+            SetSeries(new List<WeeklyChartSeries>
+            {
+                new WeeklyChartSeries("profit", "总盈亏", profit, new Color32(180, 147, 88, 255)),
+                new WeeklyChartSeries("returnRate", "总收益率", rate, new Color32(63, 107, 88, 255))
+            });
+        }
+
+        private string SeriesValue(int index, double value)
+        {
+            if (_mode != WeeklyChartMode.Assets) return FormatValue(value);
+            return FormatValue(value) + (IsProfitChart && index == 1 ? "%" : " 文");
         }
 
         public void ClearPoints()
         {
-            _points.Clear();
+            _series.Clear();
+            _timeline.Clear();
+            _points = new List<WeeklyPoint>();
             _segments = WeeklyChartSegmentBuilder.Empty;
-            _selectedIndex = -1;
-            ComputeVisibleRange();
-            SetVerticesDirty();
-            RefreshLabels();
+            _viewStart = 0f;
+            _viewCount = 1;
+            _yZoomFactor = 1f;
+            _yZoomCenterRatio = 0.5f;
+            _presetRange = GetDefaultRange();
+            _hasCustomRange = false;
+            CancelInteraction();
+            UpdateVisuals();
+            NotifyViewChanged();
+        }
+
+        public void SetRange(int points)
+        {
+            if (points < 1)
+                return;
+            _presetRange = points;
+            _hasCustomRange = false;
+            ChangeRange(points, null);
+        }
+
+        public void ResetView()
+        {
+            WeeklyChartViewport viewport = WeeklyChartData.ResetViewport(_timeline.Count, GetDefaultRange());
+            _viewCount = viewport.Count;
+            _viewStart = viewport.Start;
+            _yZoomFactor = 1f;
+            _yZoomCenterRatio = 0.5f;
+            _presetRange = GetDefaultRange();
+            _hasCustomRange = false;
+            SetHoverIndex(-1);
+            UpdateVisuals();
+            NotifyViewChanged();
         }
 
         public void SetSelectedIndex(int index)
         {
-            if (index < 0 || index >= _points.Count)
+            if (index < 0 || index >= _timeline.Count)
                 throw new ArgumentOutOfRangeException("index");
+            _hasPointerLocal = false;
             SetHoverIndex(index);
         }
 
@@ -392,158 +635,209 @@ namespace XingShangMod.UI.Charting
             SetHoverIndex(-1);
         }
 
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            if (!_interactionEnabled)
-                return;
-            _pointerInside = true;
-            _pointerCamera = eventData != null ? eventData.pressEventCamera : null;
-            if (eventData != null)
-                UpdateSelection(eventData.position, _pointerCamera);
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            _pointerInside = false;
-            _pointerCamera = null;
-            SetHoverIndex(-1);
-        }
-
-        public void OnPointerDown(PointerEventData eventData)
-        {
-            if (!_interactionEnabled || eventData == null)
-                return;
-            _pointerInside = true;
-            _pointerCamera = eventData.pressEventCamera;
-            UpdateSelection(eventData.position, _pointerCamera);
-        }
-
-        public void OnDrag(PointerEventData eventData)
-        {
-            if (!_interactionEnabled || eventData == null)
-                return;
-            _pointerCamera = eventData.pressEventCamera;
-            UpdateSelection(eventData.position, _pointerCamera);
-        }
-
         protected override void Awake()
         {
             base.Awake();
             color = Color.white;
+            EnsureMeshChildren();
             raycastTarget = _interactionEnabled;
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            ScheduleLayoutRefresh();
         }
 
         protected override void OnDisable()
         {
-            _pointerInside = false;
-            _pointerCamera = null;
-            _selectedIndex = -1;
-            RefreshLabels();
+            CancelLayoutRefresh();
+            CancelInteraction();
+            DisposeCursorResources();
             base.OnDisable();
         }
 
         protected override void OnDestroy()
         {
-            DestroyLabel(ref _highLabel);
-            DestroyLabel(ref _lowLabel);
-            DestroyLabel(ref _latestLabel);
-            DestroyLabel(ref _hoverLabel);
+            _isDestroying = true;
+            CancelLayoutRefresh();
+            CancelInteraction();
+            DisposeCursorResources();
+            if (_plotGraphic != null)
+                _plotGraphic.Owner = null;
+            if (_overlayGraphic != null)
+                _overlayGraphic.Owner = null;
+            _series.Clear();
+            _timeline.Clear();
             _points.Clear();
             _segments = WeeklyChartSegmentBuilder.Empty;
+            _axisLabels.Clear();
+            _dataTags.Clear();
+            _hoverRows.Clear();
+            _hoverTag = null;
+            ViewChanged = null;
             base.OnDestroy();
         }
 
         protected override void OnRectTransformDimensionsChange()
         {
             base.OnRectTransformDimensionsChange();
-            SetVerticesDirty();
-            RefreshLabelLayout();
+            ScheduleLayoutRefresh();
         }
 
         protected override void OnPopulateMesh(VertexHelper vertexHelper)
         {
             vertexHelper.Clear();
-            Rect plot = GetPlotRect();
-            if (plot.width <= 0f || plot.height <= 0f)
-                return;
-
-            DrawGrid(vertexHelper, plot);
-            if (_points.Count == 0)
-                return;
-
-            for (int i = 0; i < _segments.Count; i++)
-            {
-                WeeklyChartSegment segment = _segments[i];
-                Vector2 start = GetPointPosition(segment.StartPointIndex, plot);
-                Vector2 end = GetPointPosition(segment.EndPointIndex, plot);
-                AddLine(
-                    vertexHelper,
-                    start,
-                    end,
-                    _lineWidth,
-                    segment.StartColor,
-                    segment.EndColor);
-            }
-
-            if (_points.Count == 1 || _showLatestLabel || _interactionEnabled)
-            {
-                int latestIndex = _points.Count - 1;
-                AddQuad(
-                    vertexHelper,
-                    GetPointPosition(latestIndex, plot),
-                    Mathf.Max(3f, _lineWidth * 1.8f),
-                    GetPointColor(latestIndex));
-            }
-
-            if (_selectedIndex >= 0 && _selectedIndex < _points.Count)
-                DrawCrosshair(vertexHelper, plot, _selectedIndex);
-        }
-
-        private void Update()
-        {
-            if (!_interactionEnabled || !_pointerInside || _points.Count == 0)
-                return;
-            UpdateSelection(Input.mousePosition, _pointerCamera);
         }
 
         private void ApplyModeDefaults()
         {
             switch (_mode)
             {
+                case WeeklyChartMode.Spark:
+                    _lineWidth = 1.45f;
+                    _gridLineWidth = 0.8f;
+                    _plotPadding = new Vector4(2f, 3f, 2f, 3f);
+                    _gridColor = new Color32(105, 93, 75, 168);
+                    _labelFontSize = 10;
+                    _interactionEnabled = false;
+                    _showLatestLabel = false;
+                    _showRangeLabels = false;
+                    break;
                 case WeeklyChartMode.Detail:
-                    _lineWidth = 3f;
-                    _gridLineWidth = 1f;
-                    _horizontalGridLines = 5;
-                    _verticalGridLines = 7;
-                    _plotPadding = new Vector4(56f, 30f, 20f, 26f);
-                    _labelFontSize = 18;
+                    _lineWidth = 4.2f;
+                    _gridLineWidth = 0.8f;
+                    _plotPadding = new Vector4(64f, 34f, 24f, 26f);
+                    _gridColor = new Color32(105, 93, 75, 168);
+                    _labelFontSize = 12;
                     _interactionEnabled = true;
                     _showLatestLabel = true;
                     _showRangeLabels = true;
                     break;
                 case WeeklyChartMode.Assets:
-                    _lineWidth = 2.5f;
-                    _gridLineWidth = 1f;
-                    _horizontalGridLines = 5;
-                    _verticalGridLines = 5;
-                    _plotPadding = new Vector4(58f, 30f, 20f, 26f);
-                    _labelFontSize = 18;
+                    _lineWidth = 3.1f;
+                    _gridLineWidth = 0.8f;
+                    _plotPadding = new Vector4(64f, 34f, 24f, 34f);
+                    _gridColor = new Color32(105, 93, 75, 168);
+                    _labelFontSize = 11;
                     _interactionEnabled = true;
                     _showLatestLabel = true;
                     _showRangeLabels = true;
                     break;
                 default:
-                    _lineWidth = 2f;
-                    _gridLineWidth = 1f;
-                    _horizontalGridLines = 3;
-                    _verticalGridLines = 0;
-                    _plotPadding = new Vector4(8f, 8f, 8f, 8f);
-                    _labelFontSize = 14;
+                    _lineWidth = 1.85f;
+                    _gridLineWidth = 0.8f;
+                    _plotPadding = new Vector4(12f, 28f, 12f, 12f);
+                    _gridColor = new Color32(117, 107, 89, 87);
+                    _risingColor = new Color32(182, 64, 54, 255);
+                    _fallingColor = new Color32(63, 107, 88, 255);
+                    _labelFontSize = 10;
                     _interactionEnabled = false;
                     _showLatestLabel = false;
                     _showRangeLabels = false;
                     break;
             }
+            _horizontalGridLines = 0;
+            _verticalGridLines = 0;
+            raycastTarget = _interactionEnabled;
+        }
+
+        private ChartSeriesData NormalizeSeries(WeeklyChartSeries source, int seriesIndex, HashSet<int> weeks)
+        {
+            var byWeek = new Dictionary<int, WeeklyPoint>();
+            for (int i = 0; i < source.VisiblePoints.Count; i++)
+            {
+                WeeklyPoint copy = WeeklyChartSegmentBuilder.CopyVisiblePoint(source.VisiblePoints[i], i);
+                byWeek[copy.MarketWeekIndex] = copy;
+                weeks.Add(copy.MarketWeekIndex);
+            }
+            var ordered = new List<int>(byWeek.Keys);
+            ordered.Sort();
+            var points = new List<WeeklyPoint>(ordered.Count);
+            for (int i = 0; i < ordered.Count; i++)
+                points.Add(byWeek[ordered[i]]);
+            return new ChartSeriesData
+            {
+                Id = string.IsNullOrWhiteSpace(source.Id) ? "series-" + (seriesIndex + 1) : source.Id,
+                Label = source.Label ?? string.Empty,
+                AssetColor = source.Color,
+                SourcePoints = points,
+                ByWeek = byWeek,
+                AlignedPoints = new WeeklyPoint[0]
+            };
+        }
+
+        private void LoadSeries(List<ChartSeriesData> next, HashSet<int> weekSet)
+        {
+            int oldCount = _viewCount;
+            float oldStart = _viewStart;
+            int oldLength = _timeline.Count;
+            bool sameIdentity = next.Count == _series.Count && oldLength > 0;
+            if (sameIdentity)
+            {
+                for (int i = 0; i < next.Count; i++)
+                {
+                    if (!string.Equals(next[i].Id, _series[i].Id, StringComparison.Ordinal))
+                    {
+                        sameIdentity = false;
+                        break;
+                    }
+                }
+            }
+
+            _series.Clear();
+            _series.AddRange(next);
+            _timeline.Clear();
+            _timeline.AddRange(weekSet);
+            _timeline.Sort();
+            for (int i = 0; i < _series.Count; i++)
+            {
+                ChartSeriesData item = _series[i];
+                item.StyleKey = WeeklyChartData.StyleKey(_styleSeed, _mode, item.Id);
+                item.AlignedPoints = new WeeklyPoint[_timeline.Count];
+                for (int j = 0; j < _timeline.Count; j++)
+                {
+                    WeeklyPoint point;
+                    if (item.ByWeek.TryGetValue(_timeline[j], out point))
+                        item.AlignedPoints[j] = point;
+                }
+            }
+            _points = _series.Count > 0
+                ? new List<WeeklyPoint>(_series[0].SourcePoints)
+                : new List<WeeklyPoint>();
+            RebuildSegments();
+
+            bool preserve = sameIdentity && _timeline.Count > 0;
+            if (!preserve)
+            {
+                _yZoomFactor = 1f;
+                _yZoomCenterRatio = 0.5f;
+                _presetRange = GetDefaultRange();
+                _hasCustomRange = false;
+            }
+            int length = _timeline.Count;
+            WeeklyChartViewport viewport = WeeklyChartData.LoadViewport(
+                oldCount,
+                oldStart,
+                oldLength,
+                length,
+                preserve,
+                GetDefaultRange(),
+                _presetRange,
+                _hasCustomRange);
+            _viewCount = viewport.Count;
+            _viewStart = viewport.Start;
+            if (length == 0 || (_drag != null && !preserve))
+                CancelInteraction();
+            SetHoverIndex(-1);
+            UpdateVisuals();
+            NotifyViewChanged();
+        }
+
+        private void ApplySeriesStyleKeys()
+        {
+            for (int i = 0; i < _series.Count; i++)
+                _series[i].StyleKey = WeeklyChartData.StyleKey(_styleSeed, _mode, _series[i].Id);
         }
 
         private void RebuildSegments()
@@ -553,61 +847,38 @@ namespace XingShangMod.UI.Charting
                 _risingColor,
                 _fallingColor,
                 _flatColor);
-            SetVerticesDirty();
         }
 
-        private void ComputeVisibleRange()
+        private void ChangeRange(int nextCount, float? anchorRatio)
         {
-            _hasVisibleRange = _points.Count > 0;
-            _visibleLowPointIndex = _hasVisibleRange ? 0 : -1;
-            _visibleHighPointIndex = _hasVisibleRange ? 0 : -1;
-            if (!_hasVisibleRange)
+            int length = _timeline.Count;
+            if (length == 0)
             {
-                _visibleMinimum = 0.0;
-                _visibleMaximum = 0.0;
-                _plotMinimum = 0.0;
-                _plotMaximum = 0.0;
+                NotifyViewChanged();
                 return;
             }
+            WeeklyChartViewport viewport = WeeklyChartData.ChangeRange(
+                _viewStart,
+                _viewCount,
+                length,
+                nextCount,
+                anchorRatio);
+            _viewCount = viewport.Count;
+            _viewStart = viewport.Start;
+            SetHoverIndex(-1);
+            UpdateVisuals();
+            NotifyViewChanged();
+        }
 
-            _visibleMinimum = _points[0].Price;
-            _visibleMaximum = _points[0].Price;
-            for (int i = 1; i < _points.Count; i++)
-            {
-                double price = _points[i].Price;
-                if (price < _visibleMinimum)
-                {
-                    _visibleMinimum = price;
-                    _visibleLowPointIndex = i;
-                }
-                if (price > _visibleMaximum)
-                {
-                    _visibleMaximum = price;
-                    _visibleHighPointIndex = i;
-                }
-            }
+        private int GetDefaultRange()
+        {
+            return WeeklyChartData.DefaultRange(_mode, _timeline.Count);
+        }
 
-            double range = _visibleMaximum - _visibleMinimum;
-            if (double.IsInfinity(range))
-            {
-                _plotMinimum = _visibleMinimum;
-                _plotMaximum = _visibleMaximum;
-                return;
-            }
-
-            double margin = range > 0.0
-                ? range * 0.08
-                : Math.Max(1.0, Math.Abs(_visibleMinimum) * 0.05);
-            double lower = _visibleMinimum - margin;
-            double upper = _visibleMaximum + margin;
-            if (double.IsNaN(lower) || double.IsInfinity(lower) ||
-                double.IsNaN(upper) || double.IsInfinity(upper))
-            {
-                lower = _visibleMinimum;
-                upper = _visibleMaximum;
-            }
-            _plotMinimum = lower;
-            _plotMaximum = upper;
+        private void NotifyViewChanged()
+        {
+            if (ViewChanged != null)
+                ViewChanged(this);
         }
 
         private Rect GetPlotRect()
@@ -624,352 +895,260 @@ namespace XingShangMod.UI.Charting
             return Rect.MinMaxRect(left, bottom, right, top);
         }
 
-        private Vector2 GetPointPosition(int index, Rect plot)
+        private void VisibleBounds(bool includeEdges, out int first, out int last)
         {
-            float x = _points.Count == 1
-                ? plot.center.x
-                : plot.xMin + plot.width * index / (_points.Count - 1);
-            double range = _plotMaximum - _plotMinimum;
-            double normalized;
-            if (range == 0.0)
-            {
-                normalized = 0.5;
-            }
-            else if (double.IsInfinity(range))
-            {
-                normalized = ((_points[index].Price * 0.5) - (_plotMinimum * 0.5)) /
-                             ((_plotMaximum * 0.5) - (_plotMinimum * 0.5));
-            }
-            else
-            {
-                normalized = (_points[index].Price - _plotMinimum) / range;
-            }
-            float y = plot.yMin + plot.height * Mathf.Clamp01((float)normalized);
-            return new Vector2(x, y);
+            int maximum = Math.Max(0, _timeline.Count - 1);
+            float end = _viewStart + _viewCount - 1;
+            first = Mathf.Clamp(
+                includeEdges ? Mathf.FloorToInt(_viewStart) : Mathf.CeilToInt(_viewStart - 0.0000001f),
+                0,
+                maximum);
+            last = Mathf.Clamp(
+                includeEdges ? Mathf.CeilToInt(end) : Mathf.FloorToInt(end + 0.0000001f),
+                0,
+                maximum);
+            if (_timeline.Count == 0)
+                first = last = -1;
         }
 
-        private Color32 GetPointColor(int index)
+        private void ComputeVisibleRange()
         {
-            return index > 0 && index - 1 < _segments.Count
-                ? _segments[index - 1].EndColor
-                : _flatColor;
-        }
-
-        private void DrawGrid(VertexHelper vertexHelper, Rect plot)
-        {
-            if (_horizontalGridLines > 1)
+            _hasVisibleRange = false;
+            _visibleLowPointIndex = -1;
+            _visibleHighPointIndex = -1;
+            if (_series.Count == 0 || _timeline.Count == 0)
+                return;
+            int first;
+            int last;
+            VisibleBounds(false, out first, out last);
+            IList<WeeklyPoint> points = _series[0].AlignedPoints;
+            for (int i = first; i <= last; i++)
             {
-                for (int i = 0; i < _horizontalGridLines; i++)
+                WeeklyPoint point = points[i];
+                if (point == null)
+                    continue;
+                if (!_hasVisibleRange || point.Price < _visibleMinimum)
                 {
-                    float y = plot.yMin + plot.height * i / (_horizontalGridLines - 1);
-                    AddLine(
-                        vertexHelper,
-                        new Vector2(plot.xMin, y),
-                        new Vector2(plot.xMax, y),
-                        _gridLineWidth,
-                        _gridColor,
-                        _gridColor);
+                    _visibleMinimum = point.Price;
+                    _visibleLowPointIndex = i;
                 }
-            }
-
-            if (_verticalGridLines > 1)
-            {
-                for (int i = 0; i < _verticalGridLines; i++)
+                if (!_hasVisibleRange || point.Price > _visibleMaximum)
                 {
-                    float x = plot.xMin + plot.width * i / (_verticalGridLines - 1);
-                    AddLine(
-                        vertexHelper,
-                        new Vector2(x, plot.yMin),
-                        new Vector2(x, plot.yMax),
-                        _gridLineWidth,
-                        _gridColor,
-                        _gridColor);
+                    _visibleMaximum = point.Price;
+                    _visibleHighPointIndex = i;
                 }
+                _hasVisibleRange = true;
             }
         }
 
-        private void DrawCrosshair(VertexHelper vertexHelper, Rect plot, int index)
+        private void EnsureMeshChildren()
         {
-            Vector2 point = GetPointPosition(index, plot);
-            float width = Mathf.Max(1f, _gridLineWidth);
-            AddLine(
-                vertexHelper,
-                new Vector2(point.x, plot.yMin),
-                new Vector2(point.x, plot.yMax),
-                width,
-                _crosshairColor,
-                _crosshairColor);
-            AddLine(
-                vertexHelper,
-                new Vector2(plot.xMin, point.y),
-                new Vector2(plot.xMax, point.y),
-                width,
-                _crosshairColor,
-                _crosshairColor);
-            AddQuad(
-                vertexHelper,
-                point,
-                Mathf.Max(5f, _lineWidth * 2f),
-                GetPointColor(index));
+            if (_plotGraphic != null)
+                return;
+            var clipObject = new GameObject("PlotClip", typeof(RectTransform));
+            clipObject.layer = gameObject.layer;
+            _plotClip = (RectTransform)clipObject.transform;
+            _plotClip.SetParent(transform, false);
+            _plotClip.anchorMin = Vector2.zero;
+            _plotClip.anchorMax = Vector2.zero;
+            _plotClip.pivot = Vector2.zero;
+            _plotClip.localScale = Vector3.one;
+            clipObject.AddComponent<RectMask2D>();
+
+            var plotObject = new GameObject("DryBrushPlot", typeof(RectTransform));
+            plotObject.layer = gameObject.layer;
+            var plotRect = (RectTransform)plotObject.transform;
+            plotRect.SetParent(_plotClip, false);
+            StretchRect(plotRect, Vector2.zero);
+            EnsureCanvasRenderer(plotObject);
+            _plotGraphic = plotObject.AddComponent<WeeklyChartMeshGraphic>();
+            _plotGraphic.Owner = this;
+            _plotGraphic.Layer = WeeklyChartMeshLayer.Plot;
+            _plotGraphic.DryBrush = _dryBrushTexture;
+
+            var overlayObject = new GameObject("AxesAndRuler", typeof(RectTransform));
+            overlayObject.layer = gameObject.layer;
+            var overlayRect = (RectTransform)overlayObject.transform;
+            overlayRect.SetParent(transform, false);
+            StretchRect(overlayRect, rectTransform.pivot);
+            EnsureCanvasRenderer(overlayObject);
+            _overlayGraphic = overlayObject.AddComponent<WeeklyChartMeshGraphic>();
+            _overlayGraphic.Owner = this;
+            _overlayGraphic.Layer = WeeklyChartMeshLayer.Overlay;
         }
 
-        private static void AddLine(
-            VertexHelper vertexHelper,
-            Vector2 start,
-            Vector2 end,
-            float width,
-            Color32 startColor,
-            Color32 endColor)
+        private static void EnsureCanvasRenderer(GameObject target)
         {
-            if (width <= 0f)
-                return;
-            Vector2 delta = end - start;
-            if (delta.sqrMagnitude < 0.000001f)
-                return;
-            Vector2 normal = new Vector2(-delta.y, delta.x).normalized * (width * 0.5f);
-            int index = vertexHelper.currentVertCount;
-            UIVertex vertex = UIVertex.simpleVert;
-            vertex.color = startColor;
-            vertex.position = start - normal;
-            vertexHelper.AddVert(vertex);
-            vertex.position = start + normal;
-            vertexHelper.AddVert(vertex);
-            vertex.color = endColor;
-            vertex.position = end + normal;
-            vertexHelper.AddVert(vertex);
-            vertex.position = end - normal;
-            vertexHelper.AddVert(vertex);
-            vertexHelper.AddTriangle(index, index + 1, index + 2);
-            vertexHelper.AddTriangle(index + 2, index + 3, index);
+            if (target.GetComponent<CanvasRenderer>() == null)
+                target.AddComponent<CanvasRenderer>();
         }
 
-        private static void AddQuad(
-            VertexHelper vertexHelper,
-            Vector2 center,
-            float size,
-            Color32 color)
+        private static void StretchRect(RectTransform rect, Vector2 pivot)
         {
-            float half = size * 0.5f;
-            int index = vertexHelper.currentVertCount;
-            UIVertex vertex = UIVertex.simpleVert;
-            vertex.color = color;
-            vertex.position = center + new Vector2(-half, -half);
-            vertexHelper.AddVert(vertex);
-            vertex.position = center + new Vector2(-half, half);
-            vertexHelper.AddVert(vertex);
-            vertex.position = center + new Vector2(half, half);
-            vertexHelper.AddVert(vertex);
-            vertex.position = center + new Vector2(half, -half);
-            vertexHelper.AddVert(vertex);
-            vertexHelper.AddTriangle(index, index + 1, index + 2);
-            vertexHelper.AddTriangle(index + 2, index + 3, index);
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = pivot;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.localScale = Vector3.one;
         }
 
-        private void UpdateSelection(Vector2 screenPoint, Camera eventCamera)
+        private void UpdateVisuals()
         {
-            Vector2 localPoint;
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    rectTransform,
-                    screenPoint,
-                    eventCamera,
-                    out localPoint))
-            {
+            if (_isDestroying || rectTransform == null)
                 return;
-            }
+            EnsureMeshChildren();
+            ComputeVisibleRange();
+            UpdateClipRect();
+            UpdateCardLineWidth();
+            SetVerticesDirty();
+            _plotGraphic.SetVerticesDirty();
+            _plotGraphic.SetMaterialDirty();
+            _overlayGraphic.SetVerticesDirty();
+            RefreshLabels();
+            _lastGraphicColor = color;
+            _hasGraphicColor = true;
+        }
 
+        private void UpdateCardLineWidth()
+        {
+            if (_mode != WeeklyChartMode.Card || rectTransform.rect.width <= 0.0001f)
+                return;
+            Canvas canvas = GetComponentInParent<Canvas>();
+            if (canvas == null)
+                return;
+            canvas = canvas.rootCanvas;
+            Camera camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay
+                ? null
+                : canvas.worldCamera == null ? Camera.main : canvas.worldCamera;
+            Vector3[] corners = new Vector3[4];
+            rectTransform.GetWorldCorners(corners);
+            Vector2 minimum = RectTransformUtility.WorldToScreenPoint(camera, corners[0]);
+            Vector2 maximum = RectTransformUtility.WorldToScreenPoint(camera, corners[2]);
+            float pixelsPerLocalUnit = (maximum.x - minimum.x) / rectTransform.rect.width;
+            if (pixelsPerLocalUnit <= 0.0001f)
+                return;
+            float nativePixelsPerCssPixel = Screen.width >= 2304 && Screen.height >= 1296 ? 1.5f : 1f;
+            _lineWidth = 1.85f * nativePixelsPerCssPixel / pixelsPerLocalUnit;
+        }
+
+        private void UpdateClipRect()
+        {
+            Rect parentRect = rectTransform.rect;
             Rect plot = GetPlotRect();
-            int index = 0;
-            if (_points.Count > 1 && plot.width > 0f)
-            {
-                float normalized = Mathf.Clamp01((localPoint.x - plot.xMin) / plot.width);
-                index = Mathf.RoundToInt(normalized * (_points.Count - 1));
-            }
-            SetHoverIndex(index);
+            Rect clip = Rect.MinMaxRect(
+                plot.xMin - 4f,
+                plot.yMin - 4f,
+                plot.xMax + 4f,
+                plot.yMax + 4f);
+            _plotClip.pivot = Vector2.zero;
+            _plotClip.anchorMin = Vector2.zero;
+            _plotClip.anchorMax = Vector2.zero;
+            _plotClip.sizeDelta = clip.size;
+            _plotClip.anchoredPosition = clip.min - parentRect.min;
+            _overlayGraphic.rectTransform.pivot = rectTransform.pivot;
         }
 
         private void SetHoverIndex(int index)
         {
-            if (index >= _points.Count)
-                index = _points.Count - 1;
+            if (index >= _timeline.Count)
+                index = _timeline.Count - 1;
             if (_selectedIndex == index)
                 return;
             _selectedIndex = index;
-            SetVerticesDirty();
-            RefreshLabels();
+            if (_overlayGraphic != null)
+                _overlayGraphic.SetVerticesDirty();
+            RefreshHoverLabel();
         }
 
-        private void RefreshLabels()
+        private Color32 Multiply(Color32 value)
         {
-            bool hasPoints = _points.Count > 0;
-            bool showRange = hasPoints && _showRangeLabels;
-            bool showLatest = hasPoints && _showLatestLabel && _selectedIndex < 0;
-            bool showHover = hasPoints && _selectedIndex >= 0;
-
-            if (showRange)
-            {
-                _highLabel = EnsureLabel(_highLabel, "HighLabel");
-                _lowLabel = EnsureLabel(_lowLabel, "LowLabel");
-                _highLabel.text = "高 " + FormatValue(_visibleMaximum);
-                _lowLabel.text = "低 " + FormatValue(_visibleMinimum);
-            }
-            if (showLatest)
-            {
-                _latestLabel = EnsureLabel(_latestLabel, "LatestLabel");
-                _latestLabel.text = "最新 " + FormatValue(_points[_points.Count - 1].Price);
-            }
-            if (showHover)
-            {
-                _hoverLabel = EnsureLabel(_hoverLabel, "HoverLabel");
-                WeeklyPoint point = _points[_selectedIndex];
-                _hoverLabel.text = "周 " + point.MarketWeekIndex.ToString(CultureInfo.InvariantCulture)
-                                   + "  " + FormatValue(point.Price);
-            }
-
-            SetLabelActive(_highLabel, showRange);
-            SetLabelActive(_lowLabel, showRange);
-            SetLabelActive(_latestLabel, showLatest);
-            SetLabelActive(_hoverLabel, showHover);
-            RefreshLabelLayout();
+            return (Color32)((Color)value * color);
         }
 
-        private void RefreshLabelLayout()
+        private Color32 Paint(Color32 value, float opacity)
         {
-            if (rectTransform == null)
-                return;
-            Rect plot = GetPlotRect();
-            if (plot.width <= 0f || plot.height <= 0f)
-                return;
-
-            if (_highLabel != null && _highLabel.gameObject.activeSelf)
-            {
-                _highLabel.alignment = TextAnchor.UpperLeft;
-                PlaceLabel(
-                    _highLabel,
-                    new Vector2(plot.xMin + 4f, plot.yMax - 2f),
-                    new Vector2(0f, 1f),
-                    Mathf.Max(60f, plot.width * 0.45f));
-            }
-            if (_lowLabel != null && _lowLabel.gameObject.activeSelf)
-            {
-                _lowLabel.alignment = TextAnchor.LowerLeft;
-                PlaceLabel(
-                    _lowLabel,
-                    new Vector2(plot.xMin + 4f, plot.yMin + 2f),
-                    new Vector2(0f, 0f),
-                    Mathf.Max(60f, plot.width * 0.45f));
-            }
-            if (_latestLabel != null && _latestLabel.gameObject.activeSelf && _points.Count > 0)
-            {
-                Vector2 point = GetPointPosition(_points.Count - 1, plot);
-                float height = _labelFontSize + 8f;
-                float y = Mathf.Clamp(
-                    point.y + height,
-                    rectTransform.rect.yMin + height * 0.5f,
-                    rectTransform.rect.yMax - height * 0.5f);
-                _latestLabel.alignment = TextAnchor.MiddleRight;
-                PlaceLabel(
-                    _latestLabel,
-                    new Vector2(plot.xMax - 4f, y),
-                    new Vector2(1f, 0.5f),
-                    Mathf.Min(220f, Mathf.Max(100f, plot.width * 0.45f)));
-            }
-            if (_hoverLabel != null && _hoverLabel.gameObject.activeSelf && _selectedIndex >= 0)
-            {
-                Vector2 point = GetPointPosition(_selectedIndex, plot);
-                bool alignRight = point.x > plot.center.x;
-                float height = _labelFontSize + 8f;
-                float y = Mathf.Clamp(
-                    point.y + 12f,
-                    rectTransform.rect.yMin,
-                    rectTransform.rect.yMax - height);
-                _hoverLabel.alignment = alignRight ? TextAnchor.LowerRight : TextAnchor.LowerLeft;
-                PlaceLabel(
-                    _hoverLabel,
-                    new Vector2(point.x + (alignRight ? -8f : 8f), y),
-                    new Vector2(alignRight ? 1f : 0f, 0f),
-                    Mathf.Min(260f, Mathf.Max(120f, plot.width * 0.55f)));
-            }
-        }
-
-        private Text EnsureLabel(Text label, string name)
-        {
-            if (label != null)
-                return label;
-
-            var gameObject = new GameObject(name, typeof(RectTransform));
-            gameObject.layer = this.gameObject.layer;
-            var rect = (RectTransform)gameObject.transform;
-            rect.SetParent(transform, false);
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.zero;
-            rect.localScale = Vector3.one;
-            Text created = gameObject.AddComponent<Text>();
-            created.font = ResolveLabelFont();
-            created.fontSize = _labelFontSize;
-            created.color = _labelColor;
-            created.supportRichText = false;
-            created.horizontalOverflow = HorizontalWrapMode.Overflow;
-            created.verticalOverflow = VerticalWrapMode.Overflow;
-            created.raycastTarget = false;
-            return created;
+            return Multiply(new Color32(value.r, value.g, value.b, (byte)Mathf.Clamp(Mathf.RoundToInt(opacity * 255f), 0, 255)));
         }
 
         private Font ResolveLabelFont()
         {
-            return _labelFont != null
-                ? _labelFont
-                : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            return _labelFont != null ? _labelFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         }
 
-        private void PlaceLabel(Text label, Vector2 localPosition, Vector2 pivot, float width)
+        private Font ResolveAxisLabelFont()
         {
-            RectTransform rect = label.rectTransform;
-            Rect parentRect = rectTransform.rect;
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.zero;
-            rect.pivot = pivot;
-            rect.sizeDelta = new Vector2(width, _labelFontSize + 8f);
-            rect.anchoredPosition = new Vector2(
-                localPosition.x - parentRect.xMin,
-                localPosition.y - parentRect.yMin);
+            return _axisLabelFont != null ? _axisLabelFont : ResolveLabelFont();
         }
 
-        private static void SetLabelActive(Text label, bool active)
+        internal static string FormatValue(double value)
         {
-            if (label != null && label.gameObject.activeSelf != active)
-                label.gameObject.SetActive(active);
+            return value.ToString("#,0.##", CultureInfo.InvariantCulture);
         }
 
-        private static string FormatValue(double value)
+        private static string FormatDate(WeeklyPoint point)
         {
-            return value.ToString(
-                Math.Abs(value) >= 10000.0 ? "0" : "0.##",
-                CultureInfo.InvariantCulture);
+            return MarketQuery.FormatMarketTime(point);
         }
 
-        private void ApplyLabelColor(Text label)
+        private string FormatAxisDate(WeeklyPoint point)
         {
-            if (label != null)
-                label.color = _labelColor;
+            if (_mode != WeeklyChartMode.Card || point == null)
+                return FormatDate(point);
+            return MarketQuery.FormatMarketWeek(point.MarketWeekIndex);
         }
 
-        private void ApplyLabelFont(Text label)
+        private sealed class ChartSeriesData
         {
-            if (label != null)
-                label.font = ResolveLabelFont();
+            internal string Id;
+            internal string Label;
+            internal string StyleKey;
+            internal Color32? AssetColor;
+            internal List<WeeklyPoint> SourcePoints;
+            internal Dictionary<int, WeeklyPoint> ByWeek;
+            internal WeeklyPoint[] AlignedPoints;
         }
 
-        private void ApplyLabelFontSize(Text label)
+        private sealed class RenderContext
         {
-            if (label != null)
-                label.fontSize = _labelFontSize;
+            internal Rect Plot;
+            internal int FirstEdge;
+            internal int LastEdge;
+            internal int First;
+            internal int Last;
+            internal double Minimum;
+            internal double Maximum;
+            internal int ReferenceIndex = -1;
+            internal ChartSeriesData Reference;
+            internal double ReferenceMinimum;
+            internal double ReferenceMaximum;
         }
 
-        private static void DestroyLabel(ref Text label)
+        private sealed class ChartTag
         {
-            if (label != null)
-                Destroy(label.gameObject);
-            label = null;
+            internal RectTransform Root;
+            internal WeeklyChartPaperGraphic Paper;
+            internal Text Text;
+        }
+
+        private enum DragKind
+        {
+            None,
+            Time,
+            Price
+        }
+
+        private sealed class DragState
+        {
+            internal DragKind Kind;
+            internal int PointerId;
+            internal Vector2 StartLocal;
+            internal float StartView;
+            internal float StartYFactor;
+            internal float StartYCenter;
+            internal float AnchorRatio;
+            internal int Count;
+            internal bool Moved;
         }
     }
 }

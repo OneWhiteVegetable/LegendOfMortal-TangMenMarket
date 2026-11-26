@@ -89,7 +89,7 @@ namespace XingShangMod.Market
             }
             else
             {
-                state.Multiplier = 3.0 + 0.5 * Math.Max(0, overallWeek - 6);
+                state.Multiplier = 3.0 + 0.5 * Math.Max(0, overallWeek - 5);
             }
 
             return new ElasticityResult(baseReturn, finalReturn, multiplier, false, false);

@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
@@ -10,6 +12,14 @@ namespace XingShangMod.Data
     public static class JsonCodec
     {
         private const int MaximumDepth = 128;
+        private static readonly ConcurrentDictionary<Type, SerializableField[]> FieldCache =
+            new ConcurrentDictionary<Type, SerializableField[]>();
+
+        private sealed class SerializableField
+        {
+            internal FieldInfo Field;
+            internal DefaultValueAttribute OmittedDefault;
+        }
 
         public static T Deserialize<T>(string json)
         {
@@ -209,13 +219,14 @@ namespace XingShangMod.Data
                 throw new NotSupportedException("Cannot construct JSON target type: " + targetType.FullName);
 
             object result = Activator.CreateInstance(targetType, true);
-            FieldInfo[] fields = GetSerializableFields(targetType);
+            SerializableField[] fields = FieldCache.GetOrAdd(targetType, DescribeFields);
             var comparer = ignorePropertyCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
             var fieldsByName = new Dictionary<string, FieldInfo>(comparer);
             for (int i = 0; i < fields.Length; i++)
             {
-                if (!fieldsByName.ContainsKey(fields[i].Name))
-                    fieldsByName.Add(fields[i].Name, fields[i]);
+                FieldInfo field = fields[i].Field;
+                if (!fieldsByName.ContainsKey(field.Name))
+                    fieldsByName.Add(field.Name, field);
                 else
                     throw new NotSupportedException("JSON target has ambiguous fields: " + targetType.FullName);
             }
@@ -267,14 +278,23 @@ namespace XingShangMod.Data
             return null;
         }
 
-        private static FieldInfo[] GetSerializableFields(Type type)
+        private static SerializableField[] DescribeFields(Type type)
         {
             FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public);
             Array.Sort(fields, delegate(FieldInfo left, FieldInfo right)
             {
                 return string.CompareOrdinal(left.Name, right.Name);
             });
-            return fields;
+            var result = new SerializableField[fields.Length];
+            for (int i = 0; i < fields.Length; i++)
+            {
+                result[i] = new SerializableField
+                {
+                    Field = fields[i],
+                    OmittedDefault = fields[i].GetCustomAttribute<DefaultValueAttribute>()
+                };
+            }
+            return result;
         }
 
         private static void RequireKind(JsonValue value, JsonKind kind, string path, Type targetType)
@@ -382,26 +402,33 @@ namespace XingShangMod.Data
             bool pretty,
             int depth)
         {
-            FieldInfo[] fields = GetSerializableFields(declaredType);
+            SerializableField[] fields = FieldCache.GetOrAdd(declaredType, DescribeFields);
             result.Append('{');
-            if (fields.Length > 0 && pretty)
-                result.Append('\n');
+            bool wroteField = false;
             for (int i = 0; i < fields.Length; i++)
             {
-                if (pretty)
-                    AppendIndent(result, depth + 1);
-                WriteString(result, fields[i].Name);
-                result.Append(':');
-                if (pretty)
-                    result.Append(' ');
-                WriteValue(result, fields[i].GetValue(value), fields[i].FieldType, pretty, depth + 1);
-                if (i + 1 < fields.Length)
+                FieldInfo field = fields[i].Field;
+                object member = field.GetValue(value);
+                DefaultValueAttribute defaultValue = fields[i].OmittedDefault;
+                if (defaultValue != null && Equals(member, defaultValue.Value))
+                    continue;
+                if (wroteField)
                     result.Append(',');
                 if (pretty)
+                {
                     result.Append('\n');
+                    AppendIndent(result, depth + 1);
+                }
+                WriteString(result, field.Name);
+                result.Append(pretty ? ": " : ":");
+                WriteValue(result, member, field.FieldType, pretty, depth + 1);
+                wroteField = true;
             }
-            if (fields.Length > 0 && pretty)
+            if (wroteField && pretty)
+            {
+                result.Append('\n');
                 AppendIndent(result, depth);
+            }
             result.Append('}');
         }
 

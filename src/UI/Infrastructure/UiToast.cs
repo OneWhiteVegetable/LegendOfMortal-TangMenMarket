@@ -6,197 +6,326 @@ using UnityEngine.UI;
 
 namespace XingShangMod.UI.Infrastructure
 {
-    public sealed class UiToast : MonoBehaviour
+    internal enum UiToastKind
     {
-        private readonly Queue<ToastMessage> _queue = new Queue<ToastMessage>();
-        private Text _text;
-        private CanvasGroup _group;
-        private Tween _fade;
-        private float _remaining;
-        private bool _visible;
-        private bool _fadingOut;
+        Neutral,
+        Success,
+        Error
+    }
 
-        public RectTransform Root { get; private set; }
-        public int MaxQueuedMessages { get; set; }
+    internal sealed class UiToast : IDisposable
+    {
+        private const int MaximumVisible = 4;
+        private const float StackGap = 8f;
+        private const float BottomOffset = 46f;
+        private const float MaximumTextWidth = 440f;
 
-        public bool IsVisible
+        private readonly UiFrontendServices _services;
+        private readonly List<ToastEntry> _entries = new List<ToastEntry>();
+        private RectTransform _stack;
+        private bool _disposed;
+
+        internal UiToast(UiFrontendServices services)
         {
-            get { return _visible && Root != null && Root.gameObject.activeSelf; }
+            _services = services;
         }
 
-        public static UiToast Create(UiFactory factory, Transform parent)
+        internal void Show(Transform parent, string message, float duration, UiToastKind kind)
         {
-            if (factory == null)
+            if (_disposed || parent == null || string.IsNullOrEmpty(message))
+                return;
+            EnsureStack(parent);
+            while (_entries.Count >= MaximumVisible)
             {
-                throw new ArgumentNullException("factory");
+                ToastEntry oldest = _entries[0];
+                _entries.RemoveAt(0);
+                oldest.Dispose();
             }
-            if (parent == null)
-            {
-                throw new ArgumentNullException("parent");
-            }
-
-            Image panel = factory.CreatePanel(
-                parent,
-                "XingShangMod.Toast",
-                "panel_toast_9s",
-                new Vector2(640f, 80f));
-            panel.raycastTarget = false;
-            UiFactory.SetRect(
-                panel.rectTransform,
-                new Vector2(0.5f, 1f),
-                new Vector2(0.5f, 1f),
-                new Vector2(0.5f, 1f),
-                new Vector2(0f, -32f),
-                new Vector2(640f, 80f));
-
-            UiToast toast = panel.gameObject.AddComponent<UiToast>();
-            toast.Root = panel.rectTransform;
-            toast.MaxQueuedMessages = 16;
-            toast._group = panel.gameObject.AddComponent<CanvasGroup>();
-            toast._group.interactable = false;
-            toast._group.blocksRaycasts = false;
-            toast._text = factory.CreateText(
-                panel.transform,
-                "Text",
-                string.Empty,
-                24,
-                new Color(0.18f, 0.13f, 0.09f, 1f),
-                TextAnchor.MiddleCenter);
-            toast._text.verticalOverflow = VerticalWrapMode.Overflow;
-            UiFactory.Stretch(
-                toast._text.rectTransform,
-                new Vector2(28f, 10f),
-                new Vector2(-28f, -10f));
-            panel.gameObject.SetActive(false);
-            return toast;
+            ToastEntry entry = new ToastEntry(_services, this, _stack, message, Mathf.Max(0.4f, duration), kind);
+            _entries.Add(entry);
+            Reflow(true, entry);
+            entry.PlayEnter();
         }
 
-        public void Show(string message, float duration = 2.5f)
+        private void EnsureStack(Transform parent)
         {
-            if (Root == null || string.IsNullOrEmpty(message))
+            if (_stack != null && _stack.parent == parent)
             {
+                _stack.gameObject.SetActive(true);
+                _stack.SetAsLastSibling();
                 return;
             }
-            int limit = Mathf.Max(1, MaxQueuedMessages);
-            while (_queue.Count >= limit)
+            Clear();
+            if (_stack != null)
+                UnityEngine.Object.Destroy(_stack.gameObject);
+            GameObject stackObject = new GameObject("XingShangMod.ToastStack", typeof(RectTransform), typeof(Canvas));
+            _stack = stackObject.GetComponent<RectTransform>();
+            _stack.SetParent(parent, false);
+            _stack.anchorMin = Vector2.zero;
+            _stack.anchorMax = Vector2.one;
+            _stack.pivot = new Vector2(0.5f, 0.5f);
+            _stack.offsetMin = Vector2.zero;
+            _stack.offsetMax = Vector2.zero;
+            Canvas canvas = stackObject.GetComponent<Canvas>();
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 31200;
+            _stack.SetAsLastSibling();
+        }
+
+        private void Reflow(bool animate, ToastEntry entering = null)
+        {
+            float y = BottomOffset;
+            for (int i = _entries.Count - 1; i >= 0; i--)
             {
-                _queue.Dequeue();
-            }
-            _queue.Enqueue(new ToastMessage(message, Mathf.Max(0.1f, duration)));
-            if (!_visible)
-            {
-                BeginNext();
+                ToastEntry entry = _entries[i];
+                entry.SetTarget(y, animate && !ReferenceEquals(entry, entering));
+                y += entry.Height + StackGap;
             }
         }
 
-        public void Clear()
+        private void Complete(ToastEntry entry)
         {
-            _queue.Clear();
-            SafeTween.Kill(_fade);
-            _fade = null;
-            _visible = false;
-            _fadingOut = false;
-            if (Root != null)
-            {
-                Root.gameObject.SetActive(false);
-            }
-        }
-
-        private void Update()
-        {
-            if (!_visible || _fadingOut)
-            {
+            if (_disposed || !_entries.Remove(entry))
                 return;
-            }
-            _remaining -= Time.unscaledDeltaTime;
-            if (_remaining <= 0f)
-            {
-                FadeOut();
-            }
+            entry.Dispose();
+            Reflow(true);
+            if (_entries.Count == 0 && _stack != null)
+                _stack.gameObject.SetActive(false);
         }
 
-        private void BeginNext()
+        internal void SettleForReducedMotion()
         {
-            if (_queue.Count == 0 || Root == null)
-            {
-                _visible = false;
+            if (_disposed)
                 return;
-            }
-            ToastMessage next = _queue.Dequeue();
-            _text.text = next.Message;
-            _remaining = next.Duration;
-            _visible = true;
-            _fadingOut = false;
-            Root.gameObject.SetActive(true);
-            Root.SetAsLastSibling();
-            _group.alpha = 0f;
-            FadeTo(1f, 0.12f, null);
+            for (int i = 0; i < _entries.Count; i++)
+                _entries[i].SettleForReducedMotion();
         }
 
-        private void FadeOut()
+        internal void Clear()
         {
-            if (_fadingOut)
-            {
+            for (int i = 0; i < _entries.Count; i++)
+                _entries[i].Dispose();
+            _entries.Clear();
+            if (_stack != null)
+                _stack.gameObject.SetActive(false);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
                 return;
-            }
-            _fadingOut = true;
-            FadeTo(0f, 0.18f, CompleteCurrent);
+            Clear();
+            _disposed = true;
+            if (_stack != null)
+                UnityEngine.Object.Destroy(_stack.gameObject);
+            _stack = null;
         }
 
-        private void FadeTo(float alpha, float duration, TweenCallback onComplete)
+        private sealed class ToastEntry : IDisposable
         {
-            SafeTween.Kill(_fade);
-            _fade = DOTween.To(
-                    () => _group.alpha,
-                    value =>
-                    {
-                        if (_group != null)
-                        {
-                            _group.alpha = value;
-                        }
-                    },
-                    alpha,
-                    duration)
-                .SetTarget(Root.gameObject)
-                .SetUpdate(true);
-            if (onComplete != null)
-            {
-                _fade.OnComplete(onComplete);
-            }
-        }
+            private readonly UiToast _owner;
+            private readonly UiPrefabInstance _view;
+            private readonly CanvasGroup _group;
+            private readonly float _duration;
+            private Tween _delay;
+            private Tween _move;
+            private Tween _fade;
+            private Tween _rotate;
+            private float _targetY;
+            private bool _leaving;
+            private bool _disposed;
 
-        private void CompleteCurrent()
-        {
-            _fade = null;
-            _visible = false;
-            _fadingOut = false;
-            if (Root != null)
+            internal ToastEntry(
+                UiFrontendServices services,
+                UiToast owner,
+                Transform parent,
+                string message,
+                float duration,
+                UiToastKind kind)
             {
-                Root.gameObject.SetActive(false);
-            }
-            if (_queue.Count > 0)
-            {
-                BeginNext();
-            }
-        }
-
-        private void OnDestroy()
-        {
-            SafeTween.Kill(_fade);
-            _fade = null;
-            _queue.Clear();
-        }
-
-        private sealed class ToastMessage
-        {
-            public ToastMessage(string message, float duration)
-            {
-                Message = message;
-                Duration = duration;
+                _owner = owner;
+                _duration = duration;
+                _view = services.Assets.Create("Toast", parent);
+                _group = _view.Get<CanvasGroup>("CanvasGroup");
+                _group.blocksRaycasts = false;
+                _group.interactable = false;
+                Graphic[] graphics = _view.Root.GetComponentsInChildren<Graphic>(true);
+                for (int i = 0; i < graphics.Length; i++)
+                    graphics[i].raycastTarget = false;
+                _view.Root.anchorMin = new Vector2(0.5f, 0f);
+                _view.Root.anchorMax = new Vector2(0.5f, 0f);
+                _view.Root.pivot = new Vector2(0.5f, 0f);
+                _view.Root.anchoredPosition = new Vector2(0f, BottomOffset);
+                _view.Root.localRotation = Quaternion.identity;
+                _view.Root.localScale = Vector3.one;
+                Text text = _view.Text("MessageText");
+                text.text = message;
+                Color accent = Accent(kind);
+                _view.Image("StatusStripe").color = accent;
+                _view.Image("StatusIcon").color = accent;
+                _view.Image("StatusIcon").sprite = services.Assets.GetSprite(kind == UiToastKind.Error ? "icon_info" : "icon_check");
+                _view.SetActive(true);
+                Measure(text);
             }
 
-            public string Message { get; private set; }
-            public float Duration { get; private set; }
+            internal float Height { get; private set; }
+
+            private void Measure(Text text)
+            {
+                LayoutElement layout = text.GetComponent<LayoutElement>();
+                layout.preferredWidth = -1f;
+                layout.preferredHeight = -1f;
+                float width = Mathf.Min(MaximumTextWidth, text.preferredWidth);
+                layout.preferredWidth = width;
+                Canvas.ForceUpdateCanvases();
+                layout.preferredHeight = Mathf.Max(18f, text.preferredHeight);
+                Canvas.ForceUpdateCanvases();
+                Height = Mathf.Max(40f, _view.Root.rect.height);
+            }
+
+            internal void SetTarget(float y, bool animate)
+            {
+                _targetY = y;
+                SafeTween.Kill(_move);
+                _move = null;
+                Vector2 target = new Vector2(0f, y);
+                if (!animate || _leaving || _owner._services.Motion.ReducedMotion || _view.Root == null)
+                {
+                    if (_view.Root != null)
+                        _view.Root.anchoredPosition = target;
+                    return;
+                }
+                try
+                {
+                    _move = _view.Root.DOAnchorPos(target, 0.22f).SetUpdate(true).SetEase(UiMotionEasing.PaperOut);
+                }
+                catch (Exception)
+                {
+                    _view.Root.anchoredPosition = target;
+                }
+            }
+
+            internal void PlayEnter()
+            {
+                if (_disposed)
+                    return;
+                _view.Root.anchoredPosition = new Vector2(0f, _targetY - 12f);
+                _view.Root.localRotation = Quaternion.Euler(0f, 0f, 1f);
+                _group.alpha = 0f;
+                ScheduleHide();
+                UiMotion motion = _owner._services.Motion;
+                if (motion.ReducedMotion)
+                {
+                    _view.Root.anchoredPosition = new Vector2(0f, _targetY);
+                    _view.Root.localRotation = Quaternion.identity;
+                    _group.alpha = 1f;
+                    return;
+                }
+                try
+                {
+                    _move = _view.Root.DOAnchorPos(new Vector2(0f, _targetY), 0.22f).SetUpdate(true).SetEase(UiMotionEasing.PaperOut);
+                    _rotate = _view.Root.DORotate(Vector3.zero, 0.22f).SetUpdate(true).SetEase(UiMotionEasing.PaperOut);
+                    _fade = _group.DOFade(1f, 0.22f).SetUpdate(true).SetEase(UiMotionEasing.PaperOut);
+                }
+                catch (Exception)
+                {
+                    _view.Root.anchoredPosition = new Vector2(0f, _targetY);
+                    _view.Root.localRotation = Quaternion.identity;
+                    _group.alpha = 1f;
+                }
+            }
+
+            internal void SettleForReducedMotion()
+            {
+                if (_disposed)
+                    return;
+                bool restartStay = _leaving;
+                SafeTween.Kill(_move);
+                SafeTween.Kill(_rotate);
+                SafeTween.Kill(_fade);
+                _move = null;
+                _rotate = null;
+                _fade = null;
+                _leaving = false;
+                if (_view.Root != null)
+                {
+                    _view.Root.anchoredPosition = new Vector2(0f, _targetY);
+                    _view.Root.localRotation = Quaternion.identity;
+                }
+                if (_group != null)
+                    _group.alpha = 1f;
+                if (restartStay)
+                    ScheduleHide();
+            }
+
+            private void ScheduleHide()
+            {
+                SafeTween.Kill(_delay);
+                _delay = null;
+                try
+                {
+                    _delay = DOVirtual.DelayedCall(_duration, BeginHide, false).SetUpdate(true);
+                }
+                catch (Exception)
+                {
+                    _delay = null;
+                }
+            }
+
+            private void BeginHide()
+            {
+                if (_disposed || _leaving)
+                    return;
+                _delay = null;
+                _leaving = true;
+                SafeTween.Kill(_move);
+                SafeTween.Kill(_rotate);
+                SafeTween.Kill(_fade);
+                _move = null;
+                _rotate = null;
+                _fade = null;
+                if (_owner._services.Motion.ReducedMotion)
+                {
+                    _group.alpha = 0f;
+                    _owner.Complete(this);
+                    return;
+                }
+                try
+                {
+                    _move = _view.Root.DOAnchorPos(new Vector2(0f, _targetY - 8f), 0.2f).SetUpdate(true).SetEase(UiMotionEasing.CssEase);
+                    _fade = _group.DOFade(0f, 0.2f).SetUpdate(true).SetEase(UiMotionEasing.CssEase).OnComplete(delegate { _owner.Complete(this); });
+                }
+                catch (Exception)
+                {
+                    _owner.Complete(this);
+                }
+            }
+
+            private static Color Accent(UiToastKind kind)
+            {
+                switch (kind)
+                {
+                    case UiToastKind.Success: return new Color32(142, 196, 168, 255);
+                    case UiToastKind.Error: return new Color32(239, 154, 130, 255);
+                    default: return new Color32(216, 188, 123, 255);
+                }
+            }
+
+            public void Dispose()
+            {
+                if (_disposed)
+                    return;
+                _disposed = true;
+                SafeTween.Kill(_delay);
+                SafeTween.Kill(_move);
+                SafeTween.Kill(_rotate);
+                SafeTween.Kill(_fade);
+                _delay = null;
+                _move = null;
+                _rotate = null;
+                _fade = null;
+                _view.Dispose();
+            }
         }
     }
 }

@@ -24,6 +24,14 @@ namespace XingShangMod.Market
 
         public AnnualIndexBinding CreateAnnualIndexBinding(int year, double startIndexValue)
         {
+            return CreateAnnualIndexBinding(year, startIndexValue, null);
+        }
+
+        public AnnualIndexBinding CreateAnnualIndexBinding(
+            int year,
+            double startIndexValue,
+            string previousSecurityId)
+        {
             if (year < 1)
                 throw new ArgumentOutOfRangeException("year");
             if (double.IsNaN(startIndexValue) || double.IsInfinity(startIndexValue) || startIndexValue <= 0.0)
@@ -35,7 +43,8 @@ namespace XingShangMod.Market
                 "annual-index",
                 stableKey,
                 IndexReserveWeeks,
-                true);
+                true,
+                previousSecurityId);
             return new AnnualIndexBinding
             {
                 Year = year,
@@ -93,6 +102,17 @@ namespace XingShangMod.Market
             int normalReserveWeeks,
             bool isIndex)
         {
+            return Select(source, purpose, stableKey, normalReserveWeeks, isIndex, null);
+        }
+
+        private SelectionResult Select(
+            IReadOnlyList<SelectionEntry> source,
+            string purpose,
+            string stableKey,
+            int normalReserveWeeks,
+            bool isIndex,
+            string previousSecurityId)
+        {
             var candidates = new List<SelectionEntry>();
             for (int i = 0; i < source.Count; i++)
             {
@@ -100,7 +120,8 @@ namespace XingShangMod.Market
                 if (entry.Status == "success"
                     && !string.IsNullOrWhiteSpace(entry.Path)
                     && entry.ObservedRows > 0
-                    && entry.SourceMissingRows == 0)
+                    && entry.SourceMissingRows == 0
+                    && !string.Equals(entry.SecurityId, previousSecurityId, StringComparison.Ordinal))
                 {
                     candidates.Add(entry);
                 }

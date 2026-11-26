@@ -9,29 +9,42 @@ namespace XingShangMod.Patches
     [HarmonyPatch(typeof(LuaManager), "ChangeScene")]
     internal static class DoorWorkPatch
     {
-        private static void Prefix(LuaManager __instance, string name, out bool __state)
+        private static bool Prefix(LuaManager __instance, string name, string key, string nextScene)
         {
-            __state = false;
+            if (DoorWorkSession.IsContinuation(__instance, name, key, nextScene))
+                return true;
+
+            DoorWorkSession.CloseActive(DoorWorkCloseReason.SceneChanged);
             if (!string.Equals(name, "Free", StringComparison.Ordinal))
-                return;
-            bool accepted = false;
-            PatchGuard.Run("door_work_001.ChangeScene(prefix)", delegate(ModApplication app)
+                return true;
+
+            bool skipOriginal = false;
+            PatchGuard.Run("door_work.ChangeScene(prefix)", delegate(ModApplication app)
             {
                 SceneController scene = SceneController.Instance;
-                accepted = scene != null && !scene.IsPrepare && !scene.IsLoading &&
-                    string.Equals(__instance.ScriptName, "door_work_001", StringComparison.Ordinal);
+                if (scene == null || scene.IsPrepare || scene.IsLoading ||
+                    !IsSupportedScript(__instance.ScriptName))
+                    return;
+
+                skipOriginal = app.TryOpenMarketFromDoorWork(__instance, name, key, nextScene);
             });
-            __state = accepted;
+            return !skipOriginal;
         }
 
-        private static void Postfix(bool __state)
+        private static bool IsSupportedScript(string scriptName)
         {
-            if (!__state)
-                return;
-            PatchGuard.Run("door_work_001.ChangeScene", delegate(ModApplication app)
+            switch (scriptName)
             {
-                app.MarkDoorWorkCompleted();
-            });
+                case "door_work_001":
+                case "door_work_101":
+                case "door_work_201":
+                case "door_work_301":
+                case "door_work_401":
+                case "door_work_402":
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ namespace XingShangMod.Trading
 
         internal RunState State { get { return _state; } }
         internal IPlayerWallet Wallet { get { return _wallet; } }
+        internal bool NewBorrowClosed { get { return _state.Clock != null && _state.Clock.CurrentGameMonth >= ShortService.FirstClosedMonth; } }
 
         public TradingService(
             RunState state,
@@ -51,7 +52,17 @@ namespace XingShangMod.Trading
 
         public TradeResult Preview(IEnumerable<TradeOrder> orders)
         {
-            return ExecuteCore(orders, false, false, false);
+            return ExecuteCore(orders, false, false, false, null);
+        }
+
+        public TradeResult PreviewCapacity(TradeOrder order)
+        {
+            return PreviewCapacity(order == null ? null : new[] { order });
+        }
+
+        public TradeResult PreviewCapacity(IEnumerable<TradeOrder> orders)
+        {
+            return ExecuteCore(orders, false, false, false, null, true);
         }
 
         public TradeResult Execute(TradeOrder order)
@@ -61,18 +72,42 @@ namespace XingShangMod.Trading
 
         public TradeResult Execute(IEnumerable<TradeOrder> orders)
         {
-            return ExecuteCore(orders, false, false, true);
+            return ExecuteCore(orders, false, false, true, null);
+        }
+
+        public TradeResult ExecuteDelistedShort(string itemId, int quantity)
+        {
+            return ExecuteCore(new[]
+            {
+                new TradeOrder(TradeAction.Return, itemId, quantity)
+            }, true, true, true, itemId);
         }
 
         internal TradeResult ExecuteAutomatic(IEnumerable<TradeOrder> orders)
         {
-            return ExecuteCore(orders, true, true, true);
+            return ExecuteCore(orders, true, true, true, null);
         }
 
-        private TradeResult ExecuteCore(IEnumerable<TradeOrder> orders, bool allowDebt, bool automatic, bool commit)
+        private TradeResult ExecuteCore(
+            IEnumerable<TradeOrder> orders,
+            bool allowOverdraft,
+            bool automatic,
+            bool commit,
+            string delistedItemId)
+        {
+            return ExecuteCore(orders, allowOverdraft, automatic, commit, delistedItemId, false);
+        }
+
+        private TradeResult ExecuteCore(
+            IEnumerable<TradeOrder> orders,
+            bool allowOverdraft,
+            bool automatic,
+            bool commit,
+            string delistedItemId,
+            bool capacityOnly)
         {
             long balance = _wallet.Balance;
-            if (balance < 0 || _state.Debt < 0 || _state.Clock == null)
+            if (balance < MortalMoneyLimit.Minimum || _state.Debt < 0 || _state.Clock == null)
                 return Fail(TradeError.InvalidState, string.Empty);
             if (orders == null)
                 return Fail(TradeError.InvalidRequest, string.Empty);
@@ -101,6 +136,13 @@ namespace XingShangMod.Trading
                 ItemDefinition definition;
                 if (!_items.TryGetValue(order.ItemId, out definition) || definition == null)
                     return Fail(TradeError.UnknownItem, order.ItemId);
+                SecurityBinding binding = _state.FindSecurityBinding(order.ItemId);
+                if (binding != null && binding.AppearedWeek > _state.Clock.MarketWeekIndex)
+                    return Fail(TradeError.PriceUnavailable, order.ItemId);
+                if (capacityOnly && binding != null && binding.IsDelisted)
+                    return Fail(TradeError.Delisted, order.ItemId);
+                if (order.Action == TradeAction.Borrow && NewBorrowClosed)
+                    return Fail(TradeError.BorrowWindowClosed, order.ItemId);
             }
 
             Simulation simulation = new Simulation();
@@ -132,9 +174,19 @@ namespace XingShangMod.Trading
                 {
                     TradeOrder order = orderList[i];
                     WeeklyPoint point;
-                    TradeError priceError = GetCurrentPoint(order.ItemId, out point);
-                    if (priceError != TradeError.None)
-                        return Fail(priceError, order.ItemId);
+                    if (capacityOnly)
+                    {
+                        point = new WeeklyPoint { Price = 1.0 };
+                    }
+                    else
+                    {
+                        TradeError priceError = order.Action == TradeAction.Return &&
+                            string.Equals(order.ItemId, delistedItemId, StringComparison.Ordinal)
+                            ? GetLastValidPoint(order.ItemId, out point)
+                            : GetCurrentPoint(order.ItemId, out point);
+                        if (priceError != TradeError.None)
+                            return Fail(priceError, order.ItemId);
+                    }
 
                     long amount;
                     switch (order.Action)
@@ -207,6 +259,16 @@ namespace XingShangMod.Trading
                 return capacityFailure;
             }
 
+            if (capacityOnly)
+            {
+                TradeResult projection = TradeResult.Ok();
+                projection.CashAfter = balance;
+                projection.DebtAfter = _state.Debt;
+                projection.CapacityBefore = before;
+                projection.CapacityAfter = after;
+                return projection;
+            }
+
             long positiveCash = 0;
             for (int i = 0; i < simulation.Records.Count; i++)
             {
@@ -224,68 +286,38 @@ namespace XingShangMod.Trading
             }
 
             long debtPayment = Math.Min(_state.Debt, positiveCash);
-            long cashBeforeNewDebt;
-            try
-            {
-                cashBeforeNewDebt = checked(simulation.GrossCashDelta - debtPayment);
-            }
-            catch (OverflowException)
-            {
-                return Fail(TradeError.CashOverflow, string.Empty, before, after);
-            }
-
             long cashDelta;
-            long newDebt = 0;
-            long required = 0;
-            if (cashBeforeNewDebt < 0)
-            {
-                try
-                {
-                    required = checked(-cashBeforeNewDebt);
-                }
-                catch (OverflowException)
-                {
-                    return Fail(TradeError.CashOverflow, string.Empty, before, after);
-                }
-
-                if (balance < required)
-                {
-                    if (!allowDebt)
-                    {
-                        TradeResult cashFailure = Fail(TradeError.InsufficientCash, string.Empty, before, after);
-                        cashFailure.RequiredAmount = required;
-                        cashFailure.AvailableAmount = balance;
-                        return cashFailure;
-                    }
-                    newDebt = required - balance;
-                    cashDelta = -balance;
-                }
-                else
-                {
-                    cashDelta = cashBeforeNewDebt;
-                }
-            }
-            else
-            {
-                cashDelta = cashBeforeNewDebt;
-            }
-
+            long finalCash;
             long debtDelta;
             long finalDebt;
-            long finalCash;
+            long newDebt = 0;
+            long required;
             try
             {
-                debtDelta = checked(newDebt - debtPayment);
-                finalDebt = checked(_state.Debt + debtDelta);
+                cashDelta = checked(simulation.GrossCashDelta - debtPayment);
+                required = cashDelta < 0 ? checked(-cashDelta) : 0;
+                if (!allowOverdraft && cashDelta < 0 && balance < required)
+                {
+                    TradeResult insufficient = Fail(TradeError.InsufficientCash, string.Empty, before, after);
+                    insufficient.RequiredAmount = required;
+                    insufficient.AvailableAmount = Math.Max(0L, balance);
+                    return insufficient;
+                }
+                if (allowOverdraft && required > balance - MortalMoneyLimit.Minimum)
+                {
+                    cashDelta = MortalMoneyLimit.Minimum - balance;
+                    newDebt = required + cashDelta;
+                }
                 finalCash = checked(balance + cashDelta);
+                debtDelta = newDebt - debtPayment;
+                finalDebt = checked(_state.Debt + debtDelta);
             }
             catch (OverflowException)
             {
                 return Fail(TradeError.CashOverflow, string.Empty, before, after);
             }
-            if (finalDebt < 0 || finalCash < 0)
-                return Fail(TradeError.InvalidState, string.Empty, before, after);
-
+            if (finalCash < MortalMoneyLimit.Minimum || finalCash > MortalMoneyLimit.Maximum)
+                return Fail(TradeError.CashOverflow, string.Empty, before, after);
             if (cashDelta < 0 && !_wallet.CanSpend(-cashDelta))
                 return Fail(TradeError.WalletRejected, string.Empty, before, after);
             if (cashDelta > 0 && !_wallet.CanDeposit(cashDelta))
@@ -314,22 +346,8 @@ namespace XingShangMod.Trading
                 : new List<TradeRecord>(_state.TradeHistory);
             committedHistory.AddRange(records);
 
-            bool walletChanged = false;
-            if (cashDelta < 0)
-            {
-                if (!_wallet.TrySpend(-cashDelta))
-                    return Fail(TradeError.WalletRejected, string.Empty, before, after);
-                walletChanged = true;
-            }
-            else if (cashDelta > 0)
-            {
-                if (!_wallet.TryDeposit(cashDelta))
-                    return Fail(TradeError.CashOverflow, string.Empty, before, after);
-                walletChanged = true;
-            }
-
-            if (walletChanged && _wallet.Balance != finalCash)
-                throw new InvalidOperationException("The wallet did not apply the validated cash delta exactly.");
+            if (!WalletChange.TryApply(_wallet, balance, cashDelta))
+                return Fail(TradeError.WalletRejected, string.Empty, before, after);
 
             _state.Holdings = committedHoldings;
             _state.ShortBatches = committedBatches;
@@ -412,6 +430,58 @@ namespace XingShangMod.Trading
             if (double.IsNaN(point.Price) || double.IsInfinity(point.Price) || point.Price <= 0.0)
                 return TradeError.InvalidPrice;
             return TradeError.None;
+        }
+
+        private TradeError GetLastValidPoint(string itemId, out WeeklyPoint point)
+        {
+            point = null;
+            SecurityBinding binding = _state.FindSecurityBinding(itemId);
+            bool isDelisted = binding != null && binding.IsDelisted;
+            int delistedWeek = binding == null ? -1 : binding.DelistedWeek;
+            int currentWeek = _state.Clock.MarketWeekIndex;
+
+            if (_state.PriceHistory != null)
+            {
+                for (int i = 0; i < _state.PriceHistory.Count; i++)
+                {
+                    WeeklyPoint candidate = _state.PriceHistory[i];
+                    if (candidate == null || !candidate.Delisted ||
+                        candidate.MarketWeekIndex > currentWeek ||
+                        !string.Equals(candidate.ItemId, itemId, StringComparison.Ordinal))
+                        continue;
+
+                    isDelisted = true;
+                    if (delistedWeek < 0 || candidate.MarketWeekIndex < delistedWeek)
+                        delistedWeek = candidate.MarketWeekIndex;
+                }
+            }
+
+            if (!isDelisted)
+                return TradeError.InvalidRequest;
+
+            int bestWeek = -1;
+            if (_state.PriceHistory != null)
+            {
+                for (int i = 0; i < _state.PriceHistory.Count; i++)
+                {
+                    WeeklyPoint candidate = _state.PriceHistory[i];
+                    if (candidate == null || candidate.Delisted ||
+                        candidate.MarketWeekIndex > currentWeek ||
+                        (delistedWeek >= 0 && candidate.MarketWeekIndex >= delistedWeek) ||
+                        !string.Equals(candidate.ItemId, itemId, StringComparison.Ordinal) ||
+                        double.IsNaN(candidate.Price) || double.IsInfinity(candidate.Price) ||
+                        candidate.Price <= 0.0)
+                        continue;
+
+                    if (bestWeek < 0 || candidate.MarketWeekIndex > bestWeek)
+                    {
+                        bestWeek = candidate.MarketWeekIndex;
+                        point = candidate;
+                    }
+                }
+            }
+
+            return point == null ? TradeError.PriceUnavailable : TradeError.None;
         }
 
         private static void AddLong(Simulation simulation, string itemId, int quantity, long cost)
@@ -580,18 +650,17 @@ namespace XingShangMod.Trading
                 remainingPayment -= payment;
             }
 
-            long remainingDebt = newDebt;
-            for (int i = records.Length - 1; i >= 0 && remainingDebt > 0; i--)
+            // Only the unrepresentable part of a forced cover goes to the sidecar.
+            for (int i = records.Length - 1; i >= 0 && newDebt > 0; i--)
             {
                 long gross = simulation.Records[i].GrossCashDelta;
                 if (gross >= 0)
                     continue;
-                long funded = Math.Min(-gross, remainingDebt);
-                records[i].CashDelta += funded;
-                records[i].DebtDelta += funded;
-                remainingDebt -= funded;
+                long unpaid = Math.Min(-gross, newDebt);
+                records[i].CashDelta += unpaid;
+                records[i].DebtDelta += unpaid;
+                newDebt -= unpaid;
             }
-
             return records;
         }
 
@@ -662,7 +731,7 @@ namespace XingShangMod.Trading
             }
         }
 
-        private static bool TryShortProceeds(double unitPrice, long quantity, out long proceeds)
+        internal static bool TryShortProceeds(double unitPrice, long quantity, out long proceeds)
         {
             proceeds = 0;
             if (double.IsNaN(unitPrice) || double.IsInfinity(unitPrice) || unitPrice <= 0.0 || quantity < 0)
@@ -738,6 +807,7 @@ namespace XingShangMod.Trading
                 case TradeError.InvalidItemWeight: return "商品重量必须大于零。";
                 case TradeError.CashOverflow: return "结算金额超出银两可记录范围。";
                 case TradeError.WalletRejected: return "原版银两未接受本次结算。";
+                case TradeError.BorrowWindowClosed: return ShortService.ClosedMessage;
                 default: return string.Empty;
             }
         }

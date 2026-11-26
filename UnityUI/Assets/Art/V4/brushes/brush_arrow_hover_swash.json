@@ -1,0 +1,22 @@
+{
+  "id": "brush_arrow_hover_swash",
+  "file": "brush_arrow_hover_swash.png",
+  "width": 256,
+  "height": 128,
+  "category": "brushes",
+  "spriteBorder": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "Bilinear",
+  "sourceScript": "tools/unity_ui/draw_brush_arrow_hover_swash.py"
+}

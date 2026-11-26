@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Reflection;
 using BepInEx;
+using BepInEx.Logging;
 using Mortal.Core;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using XingShangMod.App;
 using XingShangMod.Domain;
 using XingShangMod.Market;
 using XingShangMod.Persistence;
-using XingShangMod.UI.Charting;
+using XingShangMod.Progression;
 using XingShangMod.UI.Infrastructure;
 using XingShangMod.UI.Inventory;
 using XingShangMod.UI.Market;
@@ -21,27 +21,80 @@ namespace XingShangMod.UI
 {
     public sealed class ModUserInterface : IModUserInterface, IDisposable
     {
-        private readonly Dictionary<string, ItemDefinition> _definitions =
-            new Dictionary<string, ItemDefinition>(StringComparer.Ordinal);
-        private readonly HashSet<int> _menuFailures = new HashSet<int>();
+        private enum NavigationScreen
+        {
+            Market,
+            Detail,
+            Inventory
+        }
 
+        private struct NavigationFrame
+        {
+            internal NavigationScreen Screen;
+            internal bool ShowRanking;
+            internal string ItemId;
+            internal bool IndexMode;
+
+            internal static NavigationFrame Market(bool showRanking)
+            {
+                return new NavigationFrame
+                {
+                    Screen = NavigationScreen.Market,
+                    ShowRanking = showRanking
+                };
+            }
+
+            internal static NavigationFrame Detail(string itemId, bool indexMode)
+            {
+                return new NavigationFrame
+                {
+                    Screen = NavigationScreen.Detail,
+                    ItemId = itemId,
+                    IndexMode = indexMode
+                };
+            }
+
+            internal static NavigationFrame Inventory()
+            {
+                return new NavigationFrame { Screen = NavigationScreen.Inventory };
+            }
+        }
+
+        private enum UiCloseReason
+        {
+            HostRequest,
+            UserRequest,
+            ApplicationChanged,
+            ApplicationUnavailable,
+            StateReplaced,
+            SceneChanged,
+            RefreshFailed,
+            OpenFailed,
+            Disposed
+        }
+
+        private static global::XingShangMod.Plugin _loggerOwner;
+        private static ManualLogSource _pluginLogger;
+        private readonly HashSet<int> _menuFailures = new HashSet<int>();
+        private readonly List<NavigationFrame> _navigation = new List<NavigationFrame>();
         private ModApplication _application;
-        private SpriteAssetLibrary _sprites;
-        private UiFactory _factory;
-        private Canvas _canvas;
+        private GameObject _runtimeObject;
         private ModUserInterfaceRuntime _runtime;
-        private UiToast _toast;
+        private UiAssetBundle _assets;
+        private UiInputStack _input;
+        private UiMotion _motion;
+        private UiFrontendServices _services;
+        private UiOverlayService _overlays;
+        private TradeConfirmation _confirmation;
         private MarketWindow _market;
+        private MarketItemDetail _detail;
         private InventoryWindow _inventory;
         private MarketEngine _subscribedMarket;
         private RunState _boundState;
-        private NewsTicker _marketTicker;
-        private AssetBar _inventoryAssetBar;
-        private NewsTicker _inventoryTicker;
-        private ButtonNavigation _inventoryNavigation;
-        private NavigationTab _inventoryNavigationTab;
-        private Button _nativeInventoryTab;
-        private Button _nativeAssetsTab;
+        private Action _marketClosed;
+        private bool _marketSessionActive;
+        private bool _userClosePending;
+        private int _closeGeneration;
         private float _menuScanRemaining;
         private bool _sceneHookAttached;
         private bool _disposed;
@@ -55,13 +108,13 @@ namespace XingShangMod.UI
             Attach(application);
         }
 
-        public Canvas Canvas { get { return _canvas; } }
-        public bool IsAlive { get { return !_disposed && _canvas != null; } }
+        public bool IsAlive { get { return !_disposed && _runtimeObject != null; } }
+        public bool IsMarketOpen { get { return _market != null && _market.IsOpen; } }
         public bool IsOpen
         {
             get
             {
-                return (_market != null && _market.IsOpen) ||
+                return IsMarketOpen || (_detail != null && _detail.IsOpen) ||
                     (_inventory != null && _inventory.IsOpen);
             }
         }
@@ -71,687 +124,680 @@ namespace XingShangMod.UI
         {
             ThrowIfDisposed();
             if (application == null)
-            {
                 throw new ArgumentNullException("application");
-            }
-            if (ReferenceEquals(_application, application))
+            if (!ReferenceEquals(_application, application))
             {
-                EnsureCanvas();
-                return;
+                CloseAll(UiCloseReason.ApplicationChanged);
+                DisposeFrontend();
+                _application = application;
             }
-
-            CloseAll();
-            UnsubscribeMarket();
-            _application = application;
-            _definitions.Clear();
-            if (application.Items != null)
-            {
-                for (int i = 0; i < application.Items.Items.Count; i++)
-                {
-                    ItemDefinition item = application.Items.Items[i];
-                    if (item != null && !_definitions.ContainsKey(item.ItemId))
-                    {
-                        _definitions.Add(item.ItemId, item);
-                    }
-                }
-            }
-            EnsureCanvas();
+            EnsureRuntime();
             AttachSceneHook();
             Refresh();
         }
 
-        public void OpenMarket()
+        public bool TryOpenMarket(Action onClosed)
         {
-            if (!EnsureReady())
+            if (_disposed || _application == null || !_application.IsEnabled || _application.State == null ||
+                _marketSessionActive || _userClosePending || IsOpen)
+                return false;
+            try
             {
-                return;
+                if (!EnsureReady())
+                    return false;
+                _marketClosed = onClosed;
+                _marketSessionActive = true;
+                _navigation.Clear();
+                _market.ShowMarket();
+                if (!_market.IsOpen)
+                    throw new InvalidOperationException("The prefab market window did not open.");
+                return true;
             }
-            EnsureEventSystem();
-            if (_inventory != null)
+            catch (Exception exception)
             {
-                _inventory.Hide();
+                ReportWarning("Market open failed; the original merchant flow remains available: " + exception);
+                CloseAll(UiCloseReason.OpenFailed);
+                DisposeFrontend();
+                return false;
             }
-            RefreshShared();
-            _market.Show();
         }
 
         public void OpenReadonlyInventory()
         {
-            if (!EnsureReady())
-            {
+            if (_disposed || _application == null || !_application.IsEnabled || _application.State == null ||
+                _marketSessionActive || _userClosePending || IsMarketOpen || (_detail != null && _detail.IsOpen))
                 return;
-            }
-            EnsureEventSystem();
-            if (_market != null)
+            try
             {
-                _market.Hide();
+                if (EnsureReady())
+                {
+                    _navigation.Clear();
+                    _inventory.Show(false);
+                }
             }
-            RefreshShared();
-            _inventoryAssetBar.SetIndexInteractive(false);
-            _inventoryNavigation.SetCurrent(_inventoryNavigationTab);
-            _inventory.Show();
-            SelectInventoryNavigation();
+            catch (Exception exception)
+            {
+                ReportWarning("Readonly inventory open failed: " + exception);
+                CloseAll(UiCloseReason.OpenFailed);
+            }
         }
 
         public void CloseAll()
         {
-            HideWindows();
-            if (_toast != null)
+            CloseAll(UiCloseReason.HostRequest);
+        }
+
+        private void CloseAll(UiCloseReason reason)
+        {
+            if (reason == UiCloseReason.UserRequest && TryBeginUserClose())
+                return;
+            ForceClose(reason);
+        }
+
+        private bool TryBeginUserClose()
+        {
+            if (_userClosePending)
+                return true;
+            UiScreen active = GetActiveWindow();
+            if (active == null)
+                return false;
+
+            _userClosePending = true;
+            int generation = ++_closeGeneration;
+            _navigation.Clear();
+            if (_overlays != null)
+                _overlays.CloseAll();
+            if (_input != null)
+                _input.CloseAll();
+            try
             {
-                _toast.Clear();
+                active.Hide(delegate
+                {
+                    if (!_userClosePending || generation != _closeGeneration)
+                        return;
+                    FinishClose(UiCloseReason.UserRequest);
+                });
             }
+            catch (Exception exception)
+            {
+                ReportWarning("Animated market close failed; forcing cleanup: " + exception);
+                ForceClose(UiCloseReason.UserRequest);
+            }
+            return true;
+        }
+
+        private void ForceClose(UiCloseReason reason)
+        {
+            _closeGeneration++;
+            _userClosePending = false;
+            _navigation.Clear();
+            if (_overlays != null)
+                _overlays.CloseAll();
+            if (_input != null)
+                _input.CloseAll();
+            DisposeWindows();
+            FinishClose(reason);
+        }
+
+        private void FinishClose(UiCloseReason reason)
+        {
+            _closeGeneration++;
+            _userClosePending = false;
+            _navigation.Clear();
+            bool notify = _marketSessionActive && reason != UiCloseReason.OpenFailed;
+            _marketSessionActive = false;
+            Action callback = _marketClosed;
+            _marketClosed = null;
+            if (notify && callback != null)
+            {
+                try
+                {
+                    callback();
+                }
+                catch (Exception exception)
+                {
+                    ReportWarning("Market close callback failed (" + reason + "): " + exception);
+                }
+            }
+        }
+
+        private UiScreen GetActiveWindow()
+        {
+            if (_inventory != null && _inventory.IsOpen)
+                return _inventory;
+            if (_detail != null && _detail.IsOpen)
+                return _detail;
+            if (_market != null && _market.IsOpen)
+                return _market;
+            return null;
+        }
+
+        private void HideWindows()
+        {
+            if (_inventory != null)
+                _inventory.Hide();
+            if (_detail != null)
+                _detail.Hide();
+            if (_market != null)
+                _market.Hide();
         }
 
         public void Refresh()
         {
             if (_disposed)
+                return;
+            if (_application == null || !_application.IsEnabled || _application.State == null)
             {
+                CloseAll(UiCloseReason.ApplicationUnavailable);
                 return;
             }
-            EnsureCanvas();
-            if (_application == null || !_application.IsEnabled)
-            {
-                HideWindows();
+            if (_boundState == null && _market == null && _inventory == null && _detail == null)
                 return;
-            }
-            if (_application.State == null)
+            try
             {
-                return;
+                if (!ReferenceEquals(_boundState, _application.State) || !WindowsAreAlive())
+                {
+                    if (!EnsureReady())
+                        return;
+                }
+                if (_market != null && _market.IsOpen)
+                    _market.Refresh();
+                if (_detail != null && _detail.IsOpen)
+                    _detail.Refresh();
+                if (_inventory != null && _inventory.IsOpen)
+                    _inventory.Refresh();
             }
-            if (!ReferenceEquals(_boundState, _application.State) || !WindowsAreAlive())
+            catch (Exception exception)
             {
-                RebuildWindows();
+                ReportWarning("UI refresh failed: " + exception);
+                CloseAll(UiCloseReason.RefreshFailed);
             }
-            if (_market != null)
-            {
-                _market.Refresh();
-            }
-            if (_inventory != null)
-            {
-                _inventory.Refresh();
-            }
-            RefreshShared();
         }
 
         public void AttachSystemMenu(MenuPanel panel)
         {
+            AttachSystemMenuCore(panel);
+        }
+
+        private void AttachSystemMenuCore(MenuPanel panel)
+        {
             if (_disposed || panel == null)
-            {
                 return;
-            }
-            EnsureCanvas();
+            EnsureRuntime();
             Button entry = SystemMenuEntry.EnsureCreated(
                 panel,
                 OpenReadonlyInventory,
                 CloseAll,
-                SetFont);
+                null);
             if (entry != null)
-            {
                 SystemMenuEntry.ScheduleReposition(panel);
-            }
-        }
-
-        public void SetFont(Font font)
-        {
-            if (font == null || _canvas == null || (_factory != null && _factory.GameFont == font))
-            {
-                return;
-            }
-            if (_factory != null)
-            {
-                _factory.GameFont = font;
-            }
-            Text[] texts = _canvas.GetComponentsInChildren<Text>(true);
-            for (int i = 0; i < texts.Length; i++)
-            {
-                texts[i].font = font;
-            }
-            WeeklyChartGraphic[] charts = _canvas.GetComponentsInChildren<WeeklyChartGraphic>(true);
-            for (int i = 0; i < charts.Length; i++)
-            {
-                charts[i].LabelFont = font;
-            }
         }
 
         public void Dispose()
         {
             if (_disposed)
-            {
                 return;
-            }
             _disposed = true;
-            UnsubscribeMarket();
             if (_sceneHookAttached)
             {
                 SceneManager.sceneLoaded -= OnSceneLoaded;
                 _sceneHookAttached = false;
             }
-            HideWindows();
-            if (_market != null)
-            {
-                _market.Dispose();
-                _market = null;
-            }
-            if (_inventory != null && _inventory.Root != null)
-            {
-                UnityEngine.Object.Destroy(_inventory.Root.gameObject);
-            }
-            _inventory = null;
+            CloseAll(UiCloseReason.Disposed);
+            DisposeFrontend();
             if (_runtime != null)
-            {
                 _runtime.Owner = null;
-            }
-            if (_canvas != null)
-            {
-                SafeTween.Kill(_canvas.gameObject);
-                UnityEngine.Object.Destroy(_canvas.gameObject);
-            }
-            _canvas = null;
-            if (_sprites != null)
-            {
-                _sprites.Dispose();
-                _sprites = null;
-            }
+            if (_runtimeObject != null)
+                UnityEngine.Object.Destroy(_runtimeObject);
+            _runtime = null;
+            _runtimeObject = null;
             _application = null;
             _boundState = null;
+            _menuFailures.Clear();
         }
 
         private bool EnsureReady()
         {
             if (_disposed || _application == null || !_application.IsEnabled || _application.State == null)
-            {
                 return false;
+            EnsureRuntime();
+            if (_assets == null)
+            {
+                _assets = new UiAssetBundle();
+                _input = new UiInputStack();
+                _motion = new UiMotion();
+                _services = new UiFrontendServices(_assets, _input, _motion);
+                _overlays = new UiOverlayService(_services);
+                _confirmation = new TradeConfirmation(_application, _services);
             }
-            EnsureCanvas();
-            EnsureEventSystem();
             if (!ReferenceEquals(_boundState, _application.State) || !WindowsAreAlive())
-            {
                 RebuildWindows();
-            }
-            return _market != null && _inventory != null;
-        }
-
-        private void EnsureCanvas()
-        {
-            if (_canvas != null)
-            {
-                return;
-            }
-            if (_sprites == null)
-            {
-                string pluginRoot = Path.Combine(Paths.PluginPath, "XingShangMod");
-                _sprites = new SpriteAssetLibrary(pluginRoot);
-                _sprites.LogWarning = ReportWarning;
-            }
-            _factory = new UiFactory(_sprites, FindGameFont());
-            _canvas = _factory.CreateCanvas();
-            _runtime = _canvas.gameObject.AddComponent<ModUserInterfaceRuntime>();
-            _runtime.Owner = this;
-            _toast = UiToast.Create(_factory, _canvas.transform);
-            _market = null;
-            _inventory = null;
-            _boundState = null;
-            _marketTicker = null;
-            _inventoryAssetBar = null;
-            _inventoryTicker = null;
-            _inventoryNavigation = null;
+            return WindowsAreAlive();
         }
 
         private void RebuildWindows()
         {
+            CloseAll(UiCloseReason.StateReplaced);
+            DisposeWindows();
+            _market = new MarketWindow(_services, _application, _confirmation);
+            _market.DetailRequested += OpenDetail;
+            _market.IndexRequested += OpenIndex;
+            _market.InventoryRequested += OpenMarketInventory;
+            _market.CloseRequested += CloseFromUser;
+            _detail = new MarketItemDetail(_services, _application, _market.Cart, () => _marketSessionActive);
+            _detail.BackRequested += ReturnToMarket;
+            _detail.CloseRequested += CloseDetail;
+            _detail.InventoryRequested += OpenDetailInventory;
+            _detail.RankingRequested += ReturnToRanking;
+            _detail.AddRequested += AddFromDetail;
+            _detail.ConstituentRequested += OpenConstituent;
+            _inventory = new InventoryWindow(_services, _application, _confirmation);
+            _inventory.CloseRequested += CloseInventory;
+            _inventory.DetailRequested += OpenInventoryDetail;
+            _inventory.IndexRequested += OpenInventoryIndex;
+            _inventory.RankingRequested += OpenInventoryRanking;
+            _boundState = _application.State;
+            _subscribedMarket = _application.Market;
+            if (_subscribedMarket != null)
+                _subscribedMarket.WeekAdvanced += OnMarketWeekAdvanced;
+        }
+
+        private void CloseFromUser()
+        {
+            CloseAll(UiCloseReason.UserRequest);
+        }
+
+        private void OpenDetail(string itemId)
+        {
+            if (!_marketSessionActive || _market == null || !_market.IsOpen)
+                return;
+            _navigation.Add(NavigationFrame.Market(_market.IsRanking));
+            _market.Hide();
+            _detail.Show(itemId);
+        }
+
+        private void OpenIndex()
+        {
+            if (!_marketSessionActive || _market == null || !_market.IsOpen)
+                return;
+            _navigation.Add(NavigationFrame.Market(_market.IsRanking));
+            _market.Hide();
+            _detail.ShowIndex();
+        }
+
+        private void OpenConstituent(string itemId)
+        {
+            if (!_marketSessionActive || _detail == null || !_detail.IsOpen || string.IsNullOrEmpty(itemId))
+                return;
+            NavigationFrame frame = CaptureDetail();
+            if (!frame.IndexMode)
+                return;
+            _navigation.Add(frame);
+            _detail.Show(itemId);
+        }
+
+        private void ReturnToMarket()
+        {
+            GoBack();
+        }
+
+        private void CloseDetail()
+        {
+            if (_marketSessionActive)
+                CloseFromUser();
+            else
+                GoBack();
+        }
+
+        private void ReturnToRanking()
+        {
+            ShowRootRanking();
+        }
+
+        private void OpenMarketInventory()
+        {
+            if (!_marketSessionActive || _market == null || !_market.IsOpen)
+                return;
+            _navigation.Add(NavigationFrame.Market(_market.IsRanking));
+            _market.Hide();
+            _inventory.Show(true);
+        }
+
+        private void OpenDetailInventory()
+        {
+            if (!_marketSessionActive || _detail == null || !_detail.IsOpen)
+                return;
+            _navigation.Add(CaptureDetail());
+            _detail.Hide();
+            _inventory.Show(true);
+        }
+
+        private void CloseInventory()
+        {
+            if (_inventory == null)
+                return;
+            if (!_marketSessionActive)
+            {
+                CloseAll(UiCloseReason.UserRequest);
+                return;
+            }
+            GoBack();
+        }
+
+        private void OpenInventoryDetail(string itemId)
+        {
+            if (_inventory == null || !_inventory.IsOpen || _userClosePending ||
+                _inventory.IsInteractive != _marketSessionActive || !_detail.HasPosition(itemId))
+                return;
+            if (!_marketSessionActive)
+            {
+                _inventory.Hide();
+                _detail.ShowHolding(itemId);
+                return;
+            }
+            _navigation.Add(NavigationFrame.Inventory());
+            _inventory.Hide();
+            _detail.Show(itemId);
+        }
+
+        private void OpenInventoryIndex()
+        {
+            if (!_marketSessionActive || _inventory == null || !_inventory.IsOpen || !_inventory.IsInteractive)
+                return;
+            _navigation.Add(NavigationFrame.Inventory());
+            _inventory.Hide();
+            _detail.ShowIndex();
+        }
+
+        private void OpenInventoryRanking()
+        {
+            if (!_marketSessionActive || _inventory == null || !_inventory.IsOpen || !_inventory.IsInteractive)
+                return;
+            ShowRootRanking();
+        }
+
+        private void GoBack()
+        {
+            if (!_marketSessionActive)
+            {
+                if (_detail != null && _detail.IsOpen && !_userClosePending)
+                {
+                    _detail.Hide();
+                    _inventory.Show(false);
+                }
+                return;
+            }
+            NavigationFrame frame = NavigationFrame.Market(false);
+            if (_navigation.Count > 0)
+            {
+                int index = _navigation.Count - 1;
+                frame = _navigation[index];
+                _navigation.RemoveAt(index);
+            }
             HideWindows();
+            Restore(frame);
+        }
+
+        private NavigationFrame CaptureDetail()
+        {
+            return NavigationFrame.Detail(_detail.ItemId, _detail.IndexMode);
+        }
+
+        private void ShowRootRanking()
+        {
+            if (!_marketSessionActive)
+                return;
+            _navigation.Clear();
+            HideWindows();
+            _market.ShowRanking();
+        }
+
+        private void Restore(NavigationFrame frame)
+        {
+            switch (frame.Screen)
+            {
+                case NavigationScreen.Detail:
+                    if (frame.IndexMode)
+                        _detail.ShowIndex();
+                    else if (!string.IsNullOrEmpty(frame.ItemId))
+                        _detail.Show(frame.ItemId);
+                    else
+                        _detail.Resume();
+                    break;
+                case NavigationScreen.Inventory:
+                    _inventory.Show(true);
+                    break;
+                default:
+                    if (frame.ShowRanking)
+                        _market.ShowRanking();
+                    else
+                        _market.ShowMarket();
+                    break;
+            }
+        }
+
+        private void AddFromDetail(string itemId, Trading.TradeAction action, int quantity, RectTransform sourceRect)
+        {
+            if (!_marketSessionActive || _market == null || !_detail.IsOpen || _detail.IndexMode ||
+                !string.Equals(itemId, _detail.ItemId, StringComparison.Ordinal))
+                return;
+            _market.AddFromDetail(itemId, action, quantity, sourceRect);
+        }
+
+        private void EnsureRuntime()
+        {
+            if (_runtimeObject != null)
+                return;
+            _runtimeObject = new GameObject("XingShangMod.UI.Host");
+            UnityEngine.Object.DontDestroyOnLoad(_runtimeObject);
+            _runtime = _runtimeObject.AddComponent<ModUserInterfaceRuntime>();
+            _runtime.Owner = this;
+        }
+
+        private bool WindowsAreAlive()
+        {
+            return _market != null && _market.Root != null && _detail != null && _detail.Root != null &&
+                _inventory != null && _inventory.Root != null;
+        }
+
+        private void DisposeWindows()
+        {
             UnsubscribeMarket();
             if (_market != null)
             {
+                _market.DetailRequested -= OpenDetail;
+                _market.IndexRequested -= OpenIndex;
+                _market.InventoryRequested -= OpenMarketInventory;
+                _market.CloseRequested -= CloseFromUser;
                 _market.Dispose();
             }
-            if (_inventory != null && _inventory.Root != null)
+            if (_detail != null)
             {
-                UnityEngine.Object.Destroy(_inventory.Root.gameObject);
+                _detail.BackRequested -= ReturnToMarket;
+                _detail.CloseRequested -= CloseDetail;
+                _detail.InventoryRequested -= OpenDetailInventory;
+                _detail.RankingRequested -= ReturnToRanking;
+                _detail.AddRequested -= AddFromDetail;
+                _detail.ConstituentRequested -= OpenConstituent;
+                _detail.Dispose();
+            }
+            if (_inventory != null)
+            {
+                _inventory.CloseRequested -= CloseInventory;
+                _inventory.DetailRequested -= OpenInventoryDetail;
+                _inventory.IndexRequested -= OpenInventoryIndex;
+                _inventory.RankingRequested -= OpenInventoryRanking;
+                _inventory.Dispose();
             }
             _market = null;
+            _detail = null;
             _inventory = null;
-            _marketTicker = null;
-            _inventoryAssetBar = null;
-            _inventoryTicker = null;
-            _inventoryNavigation = null;
-            _nativeInventoryTab = null;
-            _nativeAssetsTab = null;
+            _boundState = null;
+        }
 
-            _boundState = _application.State;
-            _market = new MarketWindow(
-                _canvas.transform,
-                _factory,
-                _boundState,
-                _application.Items,
-                _application.Trading,
-                _application.Capacity,
-                OnMarketChanged);
-            BuildMarketTicker();
+        private void DisposeFrontend()
+        {
+            DisposeWindows();
+            if (_overlays != null)
+                _overlays.Dispose();
+            if (_input != null)
+                _input.Dispose();
+            if (_assets != null)
+                _assets.Dispose();
+            _overlays = null;
+            _input = null;
+            _motion = null;
+            _services = null;
+            _assets = null;
+            _confirmation = null;
+        }
 
-            _inventory = new InventoryWindow(
-                _canvas.transform,
-                _factory,
-                _boundState,
-                _application.Items,
-                _application.Shorts,
-                _application.Assets,
-                _application.Capacity);
-            BuildInventoryChrome();
-
-            _subscribedMarket = _application.Market;
+        private void UnsubscribeMarket()
+        {
             if (_subscribedMarket != null)
-            {
-                _subscribedMarket.WeekAdvanced += OnMarketWeekAdvanced;
-            }
-            _inventoryNavigationTab = NavigationTab.Inventory;
-            RefreshShared();
-        }
-
-        private void BuildMarketTicker()
-        {
-            Transform marketRoot = null;
-            for (int i = _canvas.transform.childCount - 1; i >= 0; i--)
-            {
-                Transform child = _canvas.transform.GetChild(i);
-                if (child.name == "XingShangMod.MarketWindow")
-                {
-                    marketRoot = child;
-                    break;
-                }
-            }
-            if (marketRoot == null)
-            {
-                throw new InvalidOperationException("The market window root was not created.");
-            }
-            Transform oldTicker = marketRoot.Find("LatestNews");
-            int siblingIndex = oldTicker == null ? 1 : oldTicker.GetSiblingIndex();
-            _marketTicker = NewsTicker.Create(_factory, marketRoot);
-            _marketTicker.Root.SetSiblingIndex(siblingIndex);
-            if (oldTicker != null)
-            {
-                oldTicker.gameObject.SetActive(false);
-            }
-        }
-
-        private void BuildInventoryChrome()
-        {
-            Transform paper = _inventory.Root.Find("PaperWindow");
-            if (paper == null)
-            {
-                throw new InvalidOperationException("The inventory paper window was not created.");
-            }
-            Transform oldHeader = paper.Find("Header");
-            if (oldHeader == null)
-            {
-                throw new InvalidOperationException("The inventory header was not created.");
-            }
-            _nativeInventoryTab = FindButton(oldHeader, "InventoryTab");
-            _nativeAssetsTab = FindButton(oldHeader, "AssetsTab");
-
-            _inventoryAssetBar = AssetBar.Create(_factory, paper);
-            _inventoryAssetBar.Root.SetSiblingIndex(oldHeader.GetSiblingIndex());
-            _inventoryAssetBar.SetIndexInteractive(false);
-            _inventoryNavigation = ButtonNavigation.CreateReadonly(
-                _factory,
-                _inventoryAssetBar.Root,
-                ShowReadonlyInventoryTab,
-                ShowReadonlyAssetsTab,
-                CloseAll);
-            _inventoryAssetBar.DockNavigation(_inventoryNavigation);
-            _inventoryNavigation.SetCurrent(NavigationTab.Inventory);
-
-            _inventoryTicker = NewsTicker.Create(_factory, paper);
-            _inventoryTicker.Root.SetSiblingIndex(oldHeader.GetSiblingIndex() + 1);
-            RectTransform content = paper.Find("Content") as RectTransform;
-            if (content != null)
-            {
-                content.offsetMax = new Vector2(content.offsetMax.x, -150f);
-            }
-            oldHeader.gameObject.SetActive(false);
-        }
-
-        private void ShowReadonlyInventoryTab()
-        {
-            _inventoryNavigationTab = NavigationTab.Inventory;
-            if (_inventoryNavigation != null)
-            {
-                _inventoryNavigation.SetCurrent(NavigationTab.Inventory);
-            }
-            if (_nativeInventoryTab != null)
-            {
-                _nativeInventoryTab.onClick.Invoke();
-            }
-            SelectInventoryNavigation();
-        }
-
-        private void ShowReadonlyAssetsTab()
-        {
-            _inventoryNavigationTab = NavigationTab.Assets;
-            if (_inventoryNavigation != null)
-            {
-                _inventoryNavigation.SetCurrent(NavigationTab.Assets);
-            }
-            if (_nativeAssetsTab != null)
-            {
-                _nativeAssetsTab.onClick.Invoke();
-            }
-            SelectInventoryNavigation();
-        }
-
-        private void SelectInventoryNavigation()
-        {
-            if (_inventoryNavigation == null || EventSystem.current == null)
-            {
-                return;
-            }
-            Button selected = _inventoryNavigationTab == NavigationTab.Assets
-                ? _inventoryNavigation.AssetsButton
-                : _inventoryNavigation.InventoryButton;
-            if (selected != null)
-            {
-                EventSystem.current.SetSelectedGameObject(selected.gameObject);
-            }
-        }
-
-        private void RefreshShared()
-        {
-            if (_application == null || _application.State == null)
-            {
-                return;
-            }
-            RunState state = _application.State;
-            if (_marketTicker != null)
-            {
-                _marketTicker.SetNews(state, _definitions);
-            }
-            if (_inventoryTicker != null)
-            {
-                _inventoryTicker.SetNews(state, _definitions);
-            }
-            if (_inventoryAssetBar != null)
-            {
-                if (_application.Assets != null)
-                {
-                    _inventoryAssetBar.SetAssets(_application.Assets.GetSnapshot());
-                }
-                WeeklyPoint current = GetCurrentIndexPoint(state);
-                _inventoryAssetBar.SetIndex(
-                    current == null ? state.CurrentIndex : current.Price,
-                    current == null ? 0.0 : current.Return);
-                _inventoryAssetBar.SetIndexInteractive(false);
-            }
-        }
-
-        private void OnMarketChanged()
-        {
-            if (_application != null && _application.Assets != null)
-            {
-                _application.Assets.CaptureTradeSnapshot();
-            }
-            Refresh();
+                _subscribedMarket.WeekAdvanced -= OnMarketWeekAdvanced;
+            _subscribedMarket = null;
         }
 
         private void OnMarketWeekAdvanced(MarketWeekChange change)
         {
-            if (change == null || change.NewlyDelistedItemIds == null || change.NewlyDelistedItemIds.Count == 0)
-            {
+            if (!IsOpen || _overlays == null || change == null || change.NewlyDelistedItemIds == null ||
+                change.NewlyDelistedItemIds.Count == 0 || _application.State == null)
                 return;
-            }
-            List<string> names = new List<string>();
+            RunState state = _application.State;
+            List<string> notices = new List<string>();
             for (int i = 0; i < change.NewlyDelistedItemIds.Count; i++)
             {
                 string itemId = change.NewlyDelistedItemIds[i];
                 ItemDefinition item;
-                names.Add(_definitions.TryGetValue(itemId, out item) ? item.Name : itemId);
+                string name = _application.Items.TryGetItem(itemId, out item) ? item.Name : itemId;
+                DelistingNotice notice = NewsService.BuildDelistingNotice(state, itemId, change.MarketWeekIndex);
+                List<string> changes = new List<string>();
+                if ((notice.Kind & DelistingNoticeKind.LongFrozen) != 0)
+                    changes.Add("持货 " + notice.FrozenLongQuantity + " 件冻结");
+                if ((notice.Kind & DelistingNoticeKind.ShortSettled) != 0)
+                {
+                    string settlement = "空头 " + notice.SettledShortQuantity + " 件已自动结算";
+                    if ((notice.Kind & DelistingNoticeKind.ShortOutstanding) != 0)
+                        settlement += "，剩余借货 " + notice.OutstandingShortQuantity + " 件冻结";
+                    if (notice.SettlementCashDelta != 0)
+                        settlement += "，现金 " + UiFormatting.SignedMoney(notice.SettlementCashDelta) + " 文";
+                    if (notice.SettlementDebtDelta != 0)
+                        settlement += "，债务 " + UiFormatting.SignedMoney(notice.SettlementDebtDelta) + " 文";
+                    changes.Add(settlement);
+                }
+                else if ((notice.Kind & DelistingNoticeKind.ShortOutstanding) != 0)
+                {
+                    changes.Add("借货 " + notice.OutstandingShortQuantity + " 件仍冻结");
+                }
+                string text = name + " 已退市";
+                if (changes.Count > 0)
+                    text += "（" + string.Join("；", changes.ToArray()) + "）";
+                notices.Add(text);
             }
-            if (_toast != null)
-            {
-                _toast.Show(string.Join("、", names.ToArray()) + " 已退市，持倉與借貨批次凍結。", 4f);
-            }
+            _overlays.ShowToast(string.Join("；", notices.ToArray()) + "。", 4f);
         }
 
         internal void Tick()
         {
             if (_disposed)
-            {
                 return;
-            }
             _menuScanRemaining -= Time.unscaledDeltaTime;
             if (_menuScanRemaining <= 0f)
             {
                 _menuScanRemaining = 0.6f;
                 EnsureSystemMenuEntries();
             }
-            if (!IsOpen)
-            {
-                return;
-            }
-            EnsureEventSystem();
-            bool escape = Input.GetKeyDown(KeyCode.Escape);
-            bool cancelButton = Input.GetButtonDown("Cancel");
-            if (!escape && !cancelButton)
-            {
-                return;
-            }
-            if (HasOpenModal())
-            {
-                if (cancelButton && !escape)
-                {
-                    CancelTopModal();
-                }
-                return;
-            }
-            if (!WindowHandlesCancel(escape))
-            {
-                CloseAll();
-            }
-        }
-
-        private bool WindowHandlesCancel(bool escape)
-        {
-            if (escape && _market != null && _market.IsOpen && _marketTicker != null)
-            {
-                Transform root = _marketTicker.Root.parent;
-                MarketWindowLifecycle input = root == null ? null : root.GetComponent<MarketWindowLifecycle>();
-                if (input != null && input.isActiveAndEnabled)
-                {
-                    return true;
-                }
-            }
             if (_inventory != null && _inventory.IsOpen)
-            {
-                InventoryWindowInput input = _inventory.Root.GetComponent<InventoryWindowInput>();
-                if (input != null && input.isActiveAndEnabled)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private void CancelTopModal()
-        {
-            UiModal[] modals = _canvas.GetComponentsInChildren<UiModal>(false);
-            for (int i = modals.Length - 1; i >= 0; i--)
-            {
-                if (modals[i].IsOpen)
-                {
-                    modals[i].Cancel();
-                    return;
-                }
-            }
+                _inventory.Tick();
+            if (_input != null && (IsOpen || (_overlays != null && _overlays.HasModal)))
+                _input.Tick();
         }
 
         private void EnsureSystemMenuEntries()
         {
             if (_application == null || !_application.IsEnabled)
-            {
                 return;
-            }
             MenuPanel[] panels = Resources.FindObjectsOfTypeAll<MenuPanel>();
             for (int i = 0; i < panels.Length; i++)
             {
                 MenuPanel panel = panels[i];
                 if (panel == null || !panel.gameObject.scene.IsValid())
-                {
                     continue;
-                }
                 int id = panel.GetInstanceID();
                 if (_menuFailures.Contains(id))
-                {
                     continue;
-                }
                 try
                 {
-                    AttachSystemMenu(panel);
+                    AttachSystemMenuCore(panel);
                 }
                 catch (Exception exception)
                 {
                     _menuFailures.Add(id);
-                    ReportWarning("System menu entry failed: " + exception.Message);
+                    ReportWarning("System menu entry failed: " + exception);
                 }
-            }
-        }
-
-        private static void EnsureEventSystem()
-        {
-            EventSystem eventSystem = EventSystem.current;
-            if (eventSystem == null)
-            {
-                eventSystem = UnityEngine.Object.FindObjectOfType<EventSystem>();
-            }
-            if (eventSystem == null)
-            {
-                GameObject root = new GameObject("XingShangMod.EventSystem", typeof(EventSystem));
-                eventSystem = root.GetComponent<EventSystem>();
-            }
-            if (eventSystem.GetComponent<BaseInputModule>() == null)
-            {
-                eventSystem.gameObject.AddComponent<StandaloneInputModule>();
-            }
-        }
-
-        private bool HasOpenModal()
-        {
-            if (_canvas == null)
-            {
-                return false;
-            }
-            UiModal[] modals = _canvas.GetComponentsInChildren<UiModal>(false);
-            for (int i = 0; i < modals.Length; i++)
-            {
-                if (modals[i].IsOpen)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private bool WindowsAreAlive()
-        {
-            return _market != null && _marketTicker != null && _inventory != null && _inventory.Root != null &&
-                _inventoryAssetBar != null && _inventoryTicker != null && _inventoryNavigation != null;
-        }
-
-        private void HideWindows()
-        {
-            if (_market != null)
-            {
-                _market.Hide();
-            }
-            if (_inventory != null)
-            {
-                _inventory.Hide();
-            }
-        }
-
-        private void UnsubscribeMarket()
-        {
-            if (_subscribedMarket != null)
-            {
-                _subscribedMarket.WeekAdvanced -= OnMarketWeekAdvanced;
-                _subscribedMarket = null;
             }
         }
 
         private void AttachSceneHook()
         {
             if (_sceneHookAttached)
-            {
                 return;
-            }
             SceneManager.sceneLoaded += OnSceneLoaded;
             _sceneHookAttached = true;
         }
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            CloseAll();
+            CloseAll(UiCloseReason.SceneChanged);
+            DisposeFrontend();
             _menuFailures.Clear();
             _menuScanRemaining = 0f;
         }
 
-        private Font FindGameFont()
-        {
-            Text[] texts = UnityEngine.Object.FindObjectsOfType<Text>();
-            for (int i = 0; i < texts.Length; i++)
-            {
-                Text text = texts[i];
-                if (text != null && text.font != null && (_canvas == null || text.GetComponentInParent<Canvas>() != _canvas))
-                {
-                    return text.font;
-                }
-            }
-            return null;
-        }
-
-        private static WeeklyPoint GetCurrentIndexPoint(RunState state)
-        {
-            WeeklyPoint current = null;
-            if (state.IndexHistory == null)
-            {
-                return null;
-            }
-            int currentWeek = state.Clock == null ? 0 : state.Clock.MarketWeekIndex;
-            for (int i = 0; i < state.IndexHistory.Count; i++)
-            {
-                WeeklyPoint point = state.IndexHistory[i];
-                if (point != null && point.MarketWeekIndex <= currentWeek &&
-                    (current == null || point.MarketWeekIndex >= current.MarketWeekIndex))
-                {
-                    current = point;
-                }
-            }
-            return current;
-        }
-
-        private static Button FindButton(Transform parent, string name)
-        {
-            Transform child = parent.Find(name);
-            return child == null ? null : child.GetComponent<Button>();
-        }
-
         private void ReportWarning(string message)
         {
+            string formatted = "[XingShangMod.UI] " + message;
+            if (TryLogBepInExWarning(formatted))
+                return;
             Action<string> logger = LogWarning;
             if (logger != null)
-            {
-                logger("[XingShangMod.UI] " + message);
-            }
+                logger(formatted);
             else
+                Debug.LogWarning(formatted);
+        }
+
+        private static bool TryLogBepInExWarning(string message)
+        {
+            try
             {
-                Debug.LogWarning("[XingShangMod.UI] " + message);
+                global::XingShangMod.Plugin plugin = global::XingShangMod.Plugin.Current;
+                if (plugin == null)
+                    return false;
+                if (!ReferenceEquals(_loggerOwner, plugin))
+                {
+                    PropertyInfo property = plugin.GetType().GetProperty(
+                        "Logger",
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    _pluginLogger = property == null ? null : property.GetValue(plugin, null) as ManualLogSource;
+                    _loggerOwner = plugin;
+                }
+                if (_pluginLogger != null)
+                {
+                    _pluginLogger.LogWarning(message);
+                    return true;
+                }
             }
+            catch (Exception)
+            {
+            }
+            return false;
         }
 
         private void ThrowIfDisposed()
         {
             if (_disposed)
-            {
                 throw new ObjectDisposedException(GetType().FullName);
-            }
         }
     }
 
@@ -762,9 +808,7 @@ namespace XingShangMod.UI
         private void Update()
         {
             if (Owner != null)
-            {
                 Owner.Tick();
-            }
         }
 
         private void OnDestroy()
@@ -772,9 +816,7 @@ namespace XingShangMod.UI
             ModUserInterface owner = Owner;
             Owner = null;
             if (owner != null)
-            {
                 owner.Dispose();
-            }
         }
     }
 }

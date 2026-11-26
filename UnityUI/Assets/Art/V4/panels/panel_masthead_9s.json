@@ -1,0 +1,22 @@
+{
+  "id": "panel_masthead_9s",
+  "file": "panel_masthead_9s.png",
+  "width": 512,
+  "height": 128,
+  "category": "panels",
+  "spriteBorder": [
+    192,
+    16,
+    16,
+    16
+  ],
+  "pivot": [
+    0.5,
+    0.5
+  ],
+  "pixelsPerUnit": 100,
+  "tintable": false,
+  "wrapMode": "Clamp",
+  "filterMode": "bilinear",
+  "sourceScript": "tools/unity_ui/draw_panel_masthead_9s.py"
+}

@@ -25,13 +25,21 @@ namespace XingShangMod.Market
     {
         public const double MinimumReturn = -0.99;
 
-        public static PriceSeriesSample Advance(WeeklySecurity security, ref int nextRecordIndex, ref bool isDataExhausted)
+        public static PriceSeriesSample Advance(WeeklySecurity security, ref int nextRecordIndex, ref bool isDataExhausted,
+            bool skipSuspensions = false)
         {
             if (security == null)
                 throw new ArgumentNullException("security");
             if (nextRecordIndex < 0 || nextRecordIndex > security.Count)
                 throw new ArgumentOutOfRangeException("nextRecordIndex");
 
+            while (skipSuspensions && nextRecordIndex < security.Count)
+            {
+                WeeklyRecord candidate = security.GetRecord(nextRecordIndex);
+                if (candidate.Status != 1 || WeeklySecurity.IsDelistingRecord(candidate))
+                    break;
+                nextRecordIndex++;
+            }
             if (nextRecordIndex >= security.Count)
             {
                 isDataExhausted = true;

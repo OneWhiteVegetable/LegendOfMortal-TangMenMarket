@@ -27,6 +27,17 @@ namespace XingShangMod.Market
                 throw new ArgumentNullException("state");
             if (year < 1)
                 throw new ArgumentOutOfRangeException("year");
+
+            AnnualIndexBinding previous = state.FindAnnualIndexBinding(year - 1);
+            return EnsureBinding(state, year, previous == null ? null : previous.SecurityId);
+        }
+
+        public AnnualIndexBinding EnsureBinding(RunState state, int year, string previousSecurityId)
+        {
+            if (state == null)
+                throw new ArgumentNullException("state");
+            if (year < 1)
+                throw new ArgumentOutOfRangeException("year");
             if (state.AnnualIndexBindings == null)
                 state.AnnualIndexBindings = new List<AnnualIndexBinding>();
 
@@ -34,7 +45,10 @@ namespace XingShangMod.Market
             if (existing != null)
                 return existing;
 
-            AnnualIndexBinding binding = _selector.CreateAnnualIndexBinding(year, state.CurrentIndex);
+            AnnualIndexBinding binding = _selector.CreateAnnualIndexBinding(
+                year,
+                state.CurrentIndex,
+                previousSecurityId);
             state.AnnualIndexBindings.Add(binding);
             return binding;
         }

@@ -1,0 +1,4204 @@
+{
+  "schemaVersion": 1,
+  "visualBaseline": "UI/design_UI V4",
+  "generatedCount": 110,
+  "reusedCount": 55,
+  "totalSpriteCount": 165,
+  "categoryCounts": {
+    "brand": 2,
+    "brushes": 8,
+    "buttons/brush_arrow": 4,
+    "buttons/checkout_red": 4,
+    "buttons/contract_green": 4,
+    "buttons/contract_red": 4,
+    "buttons/modal_neutral": 3,
+    "buttons/modal_primary": 3,
+    "buttons/paper_icon": 4,
+    "buttons/range_tab": 3,
+    "buttons/sort": 3,
+    "buttons/text_action": 3,
+    "buttons/trade_green": 4,
+    "buttons/trade_red": 4,
+    "cards": 6,
+    "decor": 3,
+    "delist": 1,
+    "icons": 21,
+    "inventory": 4,
+    "items/final": 54,
+    "masks": 2,
+    "native": 1,
+    "panels": 12,
+    "rows": 2,
+    "stamps": 2,
+    "textures": 4
+  },
+  "unity": {
+    "textureType": "Sprite (2D and UI)",
+    "alpha": "straight",
+    "colorSpace": "sRGB",
+    "defaultFilter": "Bilinear",
+    "defaultWrap": "Clamp",
+    "meshType": "Full Rect for sliced UI; Tight optional for icons/items",
+    "delist": {
+      "wordmark": "delist/wasted_delist_wordmark.png",
+      "rotationDegrees": -12,
+      "itemSaturation": 0.15,
+      "card": "cards/card_goods_delisted.png",
+      "tradeButtons": "use each family's disabled sprite; disable interactable in C# as well"
+    }
+  },
+  "assets": [
+    {
+      "id": "brand_shang_mark",
+      "file": "brand/brand_shang_mark.png",
+      "width": 256,
+      "height": 256,
+      "category": "brand",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_brand_shang_mark.py",
+      "actualMode": "RGBA",
+      "sha256": "1768b9425acebf1db1c941be888e33e3ebc249f34163055ff1adeebaa248192d",
+      "reused": false,
+      "svg": "brand/brand_shang_mark.svg"
+    },
+    {
+      "id": "money_coin_v3",
+      "file": "brand/money_coin_v3.png",
+      "width": 512,
+      "height": 512,
+      "category": "brand",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_money_coin_v3.py",
+      "actualMode": "RGBA",
+      "sha256": "17361d5a663eadfc8d5cdf16d4c47ea8f445eda2171c976eca8dd190989d885d",
+      "reused": false,
+      "svg": "brand/money_coin_v3.svg"
+    },
+    {
+      "id": "brush_arrow_hover_swash",
+      "file": "brushes/brush_arrow_hover_swash.png",
+      "width": 256,
+      "height": 128,
+      "category": "brushes",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_brush_arrow_hover_swash.py",
+      "actualMode": "RGBA",
+      "sha256": "9d8e57c7137f7bac45c6cff082772d975497c992f96eec2584aa1140de06724c",
+      "reused": false
+    },
+    {
+      "id": "brush_gold_long",
+      "file": "brushes/brush_gold_long.png",
+      "width": 1024,
+      "height": 32,
+      "category": "brushes",
+      "spriteBorder": [
+        24,
+        0,
+        24,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_brush_gold_long.py",
+      "actualMode": "RGBA",
+      "sha256": "9ec55bf33de913badf99e4597a55ea1d586219dbb5486e3160b5cdac74c84fae",
+      "reused": false
+    },
+    {
+      "id": "brush_ink_long",
+      "file": "brushes/brush_ink_long.png",
+      "width": 1024,
+      "height": 32,
+      "category": "brushes",
+      "spriteBorder": [
+        24,
+        0,
+        24,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_brush_ink_long.py",
+      "actualMode": "RGBA",
+      "sha256": "40adbacf9ef72b0778b956ab520fa908d6a73ebd324527612b4e45dfaca2b5ce",
+      "reused": false
+    },
+    {
+      "id": "brush_red_long",
+      "file": "brushes/brush_red_long.png",
+      "width": 1024,
+      "height": 32,
+      "category": "brushes",
+      "spriteBorder": [
+        24,
+        0,
+        24,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_brush_red_long.py",
+      "actualMode": "RGBA",
+      "sha256": "66b5a8cb35a95ddc818243b3996dea165411c5b6243b92758f1c107d97d2f6bc",
+      "reused": false
+    },
+    {
+      "id": "brush_red_short",
+      "file": "brushes/brush_red_short.png",
+      "width": 256,
+      "height": 64,
+      "category": "brushes",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_brush_red_short.py",
+      "actualMode": "RGBA",
+      "sha256": "a0c613161f0e5ff7f47ec3af72762359662cfb52480973d57966f35bc7cfda6b",
+      "reused": false
+    },
+    {
+      "id": "detail_stage_gold_slash",
+      "file": "brushes/detail_stage_gold_slash.png",
+      "width": 512,
+      "height": 64,
+      "category": "brushes",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_detail_stage_gold_slash.py",
+      "actualMode": "RGBA",
+      "sha256": "d33fed978f6bee39dbbe380746d5ffd9d2419caa0ccdcd37aa98edf2c24eb004",
+      "reused": false
+    },
+    {
+      "id": "trend_down_brush",
+      "file": "brushes/trend_down_brush.png",
+      "width": 512,
+      "height": 384,
+      "category": "brushes",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_trend_down_brush.py",
+      "actualMode": "RGBA",
+      "sha256": "877008f842006eb75e4ee5ad985a1b8cdac69fa3754683bbb4cc793f07a3bcc1",
+      "reused": false,
+      "svg": "brushes/trend_down_brush.svg"
+    },
+    {
+      "id": "trend_up_brush",
+      "file": "brushes/trend_up_brush.png",
+      "width": 512,
+      "height": 384,
+      "category": "brushes",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_trend_up_brush.py",
+      "actualMode": "RGBA",
+      "sha256": "ddd067b8496f4a491d0c1dbfb3fde7d49e319895668aa80bcb6a6fb2a0545373",
+      "reused": false,
+      "svg": "brushes/trend_up_brush.svg"
+    },
+    {
+      "id": "button_brush_arrow_disabled",
+      "file": "buttons/brush_arrow/button_brush_arrow_disabled.png",
+      "width": 192,
+      "height": 176,
+      "category": "buttons/brush_arrow",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_brush_arrow_disabled.py",
+      "actualMode": "RGBA",
+      "sha256": "f07391dcda611b30ce93f9084e6b47a04f86713388dd490746d1b9cb134bcc35",
+      "reused": false
+    },
+    {
+      "id": "button_brush_arrow_hover",
+      "file": "buttons/brush_arrow/button_brush_arrow_hover.png",
+      "width": 192,
+      "height": 176,
+      "category": "buttons/brush_arrow",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_brush_arrow_hover.py",
+      "actualMode": "RGBA",
+      "sha256": "977a473186008e817c426d768ba3f5f715f4533fbc09993679c4723594fafda3",
+      "reused": false
+    },
+    {
+      "id": "button_brush_arrow_normal",
+      "file": "buttons/brush_arrow/button_brush_arrow_normal.png",
+      "width": 192,
+      "height": 176,
+      "category": "buttons/brush_arrow",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_brush_arrow_normal.py",
+      "nonEmptyTransparentPlaceholder": true,
+      "actualMode": "RGBA",
+      "sha256": "ff595f9d5abe9e2b662b8b1db1d6dd630876b9d047d11f22b0dd73db2295086c",
+      "reused": false
+    },
+    {
+      "id": "button_brush_arrow_pressed",
+      "file": "buttons/brush_arrow/button_brush_arrow_pressed.png",
+      "width": 192,
+      "height": 176,
+      "category": "buttons/brush_arrow",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_brush_arrow_pressed.py",
+      "actualMode": "RGBA",
+      "sha256": "6e750446eb95db8b58613aa96911459f468eff839f4febd968d3fbe40fad19d2",
+      "reused": false
+    },
+    {
+      "id": "button_checkout_red_disabled_9s",
+      "file": "buttons/checkout_red/button_checkout_red_disabled_9s.png",
+      "width": 512,
+      "height": 144,
+      "category": "buttons/checkout_red",
+      "spriteBorder": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_checkout_red_disabled_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "51c364b8909c870d8e4e9a9668ca44ffb0f3419487766d62950dcf234ed443e7",
+      "reused": false
+    },
+    {
+      "id": "button_checkout_red_hover_9s",
+      "file": "buttons/checkout_red/button_checkout_red_hover_9s.png",
+      "width": 512,
+      "height": 144,
+      "category": "buttons/checkout_red",
+      "spriteBorder": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_checkout_red_hover_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "73e14fb47d07ceed54a82b922ed183861d3cce1d2e16558751a204b009a97c32",
+      "reused": false
+    },
+    {
+      "id": "button_checkout_red_normal_9s",
+      "file": "buttons/checkout_red/button_checkout_red_normal_9s.png",
+      "width": 512,
+      "height": 144,
+      "category": "buttons/checkout_red",
+      "spriteBorder": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_checkout_red_normal_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "15e7f90a0ab2fb95aa497c58ebda6cef9eb64c3b687e1f4468361d8a125a4a9d",
+      "reused": false
+    },
+    {
+      "id": "button_checkout_red_pressed_9s",
+      "file": "buttons/checkout_red/button_checkout_red_pressed_9s.png",
+      "width": 512,
+      "height": 144,
+      "category": "buttons/checkout_red",
+      "spriteBorder": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_checkout_red_pressed_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "b4ce839df39d6af2a0babf18c0240f2c18bdc5206d2aadbf51759e59502684cc",
+      "reused": false
+    },
+    {
+      "id": "button_contract_green_disabled_9s",
+      "file": "buttons/contract_green/button_contract_green_disabled_9s.png",
+      "width": 320,
+      "height": 160,
+      "category": "buttons/contract_green",
+      "spriteBorder": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_contract_green_disabled_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "16908807c67a3ddc437a638bc8c386d2351247f47ae2bc216bcf556f9343684b",
+      "reused": false
+    },
+    {
+      "id": "button_contract_green_hover_9s",
+      "file": "buttons/contract_green/button_contract_green_hover_9s.png",
+      "width": 320,
+      "height": 160,
+      "category": "buttons/contract_green",
+      "spriteBorder": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_contract_green_hover_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "901f82847865891bf8a59338d77fe2cf9d85fdb59dc89031dbee87ff8f2d0297",
+      "reused": false
+    },
+    {
+      "id": "button_contract_green_normal_9s",
+      "file": "buttons/contract_green/button_contract_green_normal_9s.png",
+      "width": 320,
+      "height": 160,
+      "category": "buttons/contract_green",
+      "spriteBorder": [
+        8,
+        20,
+        20,
+        8
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_contract_green_normal_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "e0e6df1a8cf801a6654a44b3c21538679335bae07aa9f822498b1dd11abca914",
+      "reused": false
+    },
+    {
+      "id": "button_contract_green_pressed_9s",
+      "file": "buttons/contract_green/button_contract_green_pressed_9s.png",
+      "width": 320,
+      "height": 160,
+      "category": "buttons/contract_green",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 200,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_contract_green_pressed_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "1f60f08fc17373c5df68c38d8be8616765a956c92acf19aa46058bdc43acd983",
+      "reused": false
+    },
+    {
+      "id": "button_contract_red_disabled_9s",
+      "file": "buttons/contract_red/button_contract_red_disabled_9s.png",
+      "width": 320,
+      "height": 160,
+      "category": "buttons/contract_red",
+      "spriteBorder": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_contract_red_disabled_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "defcaf6fd4e87cf507c6a9a0dccc050154377138de6398629bfcb892c189c538",
+      "reused": false
+    },
+    {
+      "id": "button_contract_red_hover_9s",
+      "file": "buttons/contract_red/button_contract_red_hover_9s.png",
+      "width": 320,
+      "height": 160,
+      "category": "buttons/contract_red",
+      "spriteBorder": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_contract_red_hover_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "3f4ec86dd81f92c978ee5582eddfbd986e6ba23d41fa981dfa94985a564ad183",
+      "reused": false
+    },
+    {
+      "id": "button_contract_red_normal_9s",
+      "file": "buttons/contract_red/button_contract_red_normal_9s.png",
+      "width": 320,
+      "height": 160,
+      "category": "buttons/contract_red",
+      "spriteBorder": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_contract_red_normal_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "95e3488eb8dcb96b197a82e4eea2903eb3c90075b6c53351eb5d59f34ae90350",
+      "reused": false
+    },
+    {
+      "id": "button_contract_red_pressed_9s",
+      "file": "buttons/contract_red/button_contract_red_pressed_9s.png",
+      "width": 320,
+      "height": 160,
+      "category": "buttons/contract_red",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_contract_red_pressed_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "00460e71588e8fdcbca7c20ede30ab38d6396291e4976432a9ad807ddf2c7c5e",
+      "reused": false
+    },
+    {
+      "id": "button_modal_neutral_hover_9s",
+      "file": "buttons/modal_neutral/button_modal_neutral_hover_9s.png",
+      "width": 320,
+      "height": 128,
+      "category": "buttons/modal_neutral",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_modal_neutral_hover_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "4490bc162b76793ecc6dedf7beaf7e1a1dc36a3012f133f750c977e773c570dd",
+      "reused": false
+    },
+    {
+      "id": "button_modal_neutral_normal_9s",
+      "file": "buttons/modal_neutral/button_modal_neutral_normal_9s.png",
+      "width": 320,
+      "height": 128,
+      "category": "buttons/modal_neutral",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_modal_neutral_normal_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "1b00c47764e452d5445a1c30885f8c88158cf1f17ebaff81945f0e19da44bd76",
+      "reused": false
+    },
+    {
+      "id": "button_modal_neutral_pressed_9s",
+      "file": "buttons/modal_neutral/button_modal_neutral_pressed_9s.png",
+      "width": 320,
+      "height": 128,
+      "category": "buttons/modal_neutral",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_modal_neutral_pressed_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "afaf6ff4a10e1a42f5ad17224c83455ce0ef9aca0c05639261a751a7f762fcc5",
+      "reused": false
+    },
+    {
+      "id": "button_modal_primary_hover_9s",
+      "file": "buttons/modal_primary/button_modal_primary_hover_9s.png",
+      "width": 320,
+      "height": 128,
+      "category": "buttons/modal_primary",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_modal_primary_hover_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "9d1e6e10b453bd9be401985a12fd57c757d774234b43af273436bbc177c2e011",
+      "reused": false
+    },
+    {
+      "id": "button_modal_primary_normal_9s",
+      "file": "buttons/modal_primary/button_modal_primary_normal_9s.png",
+      "width": 320,
+      "height": 128,
+      "category": "buttons/modal_primary",
+      "spriteBorder": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_modal_primary_normal_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "be83aa51e5948c465958d379284656eff2d71515803c5ddddd1bbfecb93f61b6",
+      "reused": false
+    },
+    {
+      "id": "button_modal_primary_pressed_9s",
+      "file": "buttons/modal_primary/button_modal_primary_pressed_9s.png",
+      "width": 320,
+      "height": 128,
+      "category": "buttons/modal_primary",
+      "spriteBorder": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_modal_primary_pressed_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "b49c4372d6d7deba32e3fdd579722c169e1ae18e52f5475d5842e29773a23411",
+      "reused": false
+    },
+    {
+      "id": "button_paper_icon_disabled",
+      "file": "buttons/paper_icon/button_paper_icon_disabled.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/paper_icon",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_paper_icon_disabled.py",
+      "actualMode": "RGBA",
+      "sha256": "dcf353af2f83a9b048882f3ec3fb25338f07b4e2750052a4d8bae57d2e92d38e",
+      "reused": false
+    },
+    {
+      "id": "button_paper_icon_hover",
+      "file": "buttons/paper_icon/button_paper_icon_hover.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/paper_icon",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_paper_icon_hover.py",
+      "actualMode": "RGBA",
+      "sha256": "721428c1471de5bad32ad509df864c5a8ff6f44c9250d0d7df47b784b507fe00",
+      "reused": false
+    },
+    {
+      "id": "button_paper_icon_normal",
+      "file": "buttons/paper_icon/button_paper_icon_normal.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/paper_icon",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_paper_icon_normal.py",
+      "actualMode": "RGBA",
+      "sha256": "25384b02247a224e32bc741c7b0f7f3803c5bdbcda04a27f31696bd776f4afc4",
+      "reused": false
+    },
+    {
+      "id": "button_paper_icon_pressed",
+      "file": "buttons/paper_icon/button_paper_icon_pressed.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/paper_icon",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_paper_icon_pressed.py",
+      "actualMode": "RGBA",
+      "sha256": "50554d24fcb15224cc10e1ab6ea35e0a7da0651e76a6056ba165f76ef7434763",
+      "reused": false
+    },
+    {
+      "id": "tab_range_active_9s",
+      "file": "buttons/range_tab/tab_range_active_9s.png",
+      "width": 192,
+      "height": 96,
+      "category": "buttons/range_tab",
+      "spriteBorder": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_tab_range_active_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "017dc8f69812a3e1b9e3887aff01f2d53a3def4f2c65084a84ddb842053a328e",
+      "reused": false
+    },
+    {
+      "id": "tab_range_hover_9s",
+      "file": "buttons/range_tab/tab_range_hover_9s.png",
+      "width": 192,
+      "height": 96,
+      "category": "buttons/range_tab",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_tab_range_hover_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "05108192242f3cfbd97767e202ec39dd8b5f616470d474bab05495cb4b301c95",
+      "reused": false
+    },
+    {
+      "id": "tab_range_normal_9s",
+      "file": "buttons/range_tab/tab_range_normal_9s.png",
+      "width": 192,
+      "height": 96,
+      "category": "buttons/range_tab",
+      "spriteBorder": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "nonEmptyTransparentPlaceholder": true,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_tab_range_normal_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "39c02e898d061e170c48cb2d73ae5c55471c96ce0c2d57bfda4551240497c7e7",
+      "reused": false
+    },
+    {
+      "id": "button_sort_hover_9s",
+      "file": "buttons/sort/button_sort_hover_9s.png",
+      "width": 384,
+      "height": 128,
+      "category": "buttons/sort",
+      "spriteBorder": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_sort_hover_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "be8215ef8f67e2d799034a8ffe469db0c8258c743bc81c5e5abcff9ae7f82788",
+      "reused": false
+    },
+    {
+      "id": "button_sort_normal_9s",
+      "file": "buttons/sort/button_sort_normal_9s.png",
+      "width": 384,
+      "height": 128,
+      "category": "buttons/sort",
+      "spriteBorder": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_sort_normal_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "12b5b441944b602e7661cac9a685f14eaf64c4a24e607acaa15b49c930a79efc",
+      "reused": false
+    },
+    {
+      "id": "button_sort_pressed_9s",
+      "file": "buttons/sort/button_sort_pressed_9s.png",
+      "width": 384,
+      "height": 128,
+      "category": "buttons/sort",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_sort_pressed_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "1aa5f4b9ec524e3d93f1d531f652c7f5c18b16d0f07d0714e73283b80d590b0a",
+      "reused": false
+    },
+    {
+      "id": "button_text_action_disabled_9s",
+      "file": "buttons/text_action/button_text_action_disabled_9s.png",
+      "width": 320,
+      "height": 112,
+      "category": "buttons/text_action",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_text_action_disabled_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "d320f3e7395e516e16ef50897360fe0ee3d3a66e6342a5b188ac48c9781e4874",
+      "reused": false
+    },
+    {
+      "id": "button_text_action_hover_9s",
+      "file": "buttons/text_action/button_text_action_hover_9s.png",
+      "width": 320,
+      "height": 112,
+      "category": "buttons/text_action",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_text_action_hover_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "7c57c862040df30107c089f2f4ec4659dbb8fa46052432bed4cd79a88114def3",
+      "reused": false
+    },
+    {
+      "id": "button_text_action_normal_9s",
+      "file": "buttons/text_action/button_text_action_normal_9s.png",
+      "width": 320,
+      "height": 112,
+      "category": "buttons/text_action",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_text_action_normal_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "c3e8322ab4b517d27c578df9af3a4946e0f7b0df6377cc7dfec2348f3820ee67",
+      "reused": false
+    },
+    {
+      "id": "button_trade_green_disabled",
+      "file": "buttons/trade_green/button_trade_green_disabled.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/trade_green",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_trade_green_disabled.py",
+      "actualMode": "RGBA",
+      "sha256": "59a53dce430af71f2623197de304302067c1c0351ad2678650d73a41235469a4",
+      "reused": false
+    },
+    {
+      "id": "button_trade_green_hover",
+      "file": "buttons/trade_green/button_trade_green_hover.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/trade_green",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_trade_green_hover.py",
+      "actualMode": "RGBA",
+      "sha256": "b7bce0e2f330ad731453f5b78b28f6ee62ffc240c556ad37e2ab39742050276f",
+      "reused": false
+    },
+    {
+      "id": "button_trade_green_normal",
+      "file": "buttons/trade_green/button_trade_green_normal.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/trade_green",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_trade_green_normal.py",
+      "actualMode": "RGBA",
+      "sha256": "efbd9314157950d6ae99809d6332bb246017a61ffc519d3910b08cf2d75f97d6",
+      "reused": false
+    },
+    {
+      "id": "button_trade_green_pressed",
+      "file": "buttons/trade_green/button_trade_green_pressed.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/trade_green",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_trade_green_pressed.py",
+      "actualMode": "RGBA",
+      "sha256": "241cf3c6c0882d4a1b4fc57e1727ca7061ac579091d4cd7ee56b09d5138f87d3",
+      "reused": false
+    },
+    {
+      "id": "button_trade_red_disabled",
+      "file": "buttons/trade_red/button_trade_red_disabled.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/trade_red",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_trade_red_disabled.py",
+      "actualMode": "RGBA",
+      "sha256": "d9360a9b2d8a6fe2ae7fe0fc26b347363734c49f71bcd9de981f4baa762f6ab1",
+      "reused": false
+    },
+    {
+      "id": "button_trade_red_hover",
+      "file": "buttons/trade_red/button_trade_red_hover.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/trade_red",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_trade_red_hover.py",
+      "actualMode": "RGBA",
+      "sha256": "bb5305438439db39e7c755f45106e51cdde85e16f9b0ab420e06399ffa3cc8a2",
+      "reused": false
+    },
+    {
+      "id": "button_trade_red_normal",
+      "file": "buttons/trade_red/button_trade_red_normal.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/trade_red",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_trade_red_normal.py",
+      "actualMode": "RGBA",
+      "sha256": "c70368aafa01ad03788aae6a81a2e5c7139e6d0fb0ef2289cc2d3eab487562ce",
+      "reused": false
+    },
+    {
+      "id": "button_trade_red_pressed",
+      "file": "buttons/trade_red/button_trade_red_pressed.png",
+      "width": 160,
+      "height": 144,
+      "category": "buttons/trade_red",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_button_trade_red_pressed.py",
+      "actualMode": "RGBA",
+      "sha256": "230978377be98cde2a42ad7ac5c64776611f9e67b84a27963a112f60cc4a0e4e",
+      "reused": false
+    },
+    {
+      "id": "card_asset_9s",
+      "file": "cards/card_asset_9s.png",
+      "width": 384,
+      "height": 160,
+      "category": "cards",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_card_asset_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "1b35dc807b839c4ff98a87a0eab4a1ed808518538b64bae0e7594a6a38ff760b",
+      "reused": false
+    },
+    {
+      "id": "card_cart_entry_long_9s",
+      "file": "cards/card_cart_entry_long_9s.png",
+      "width": 384,
+      "height": 192,
+      "category": "cards",
+      "spriteBorder": [
+        8,
+        24,
+        8,
+        24
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_card_cart_entry_long_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "899147c8e9dd436c9b6154c9a3236d74ee6466562fb2c02aeaad3a5f3c9587d6",
+      "reused": false
+    },
+    {
+      "id": "card_cart_entry_short_9s",
+      "file": "cards/card_cart_entry_short_9s.png",
+      "width": 384,
+      "height": 192,
+      "category": "cards",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_card_cart_entry_short_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "b34e3135451525f4a69cd8ea5eba817ee507733bc771c5f3dc99d18ee8fd902f",
+      "reused": false
+    },
+    {
+      "id": "card_goods_delisted",
+      "file": "cards/card_goods_delisted.png",
+      "width": 512,
+      "height": 512,
+      "category": "cards",
+      "spriteBorder": [
+        40,
+        88,
+        80,
+        80
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_card_goods_delisted.py",
+      "actualMode": "RGBA",
+      "sha256": "e78d3f170b46abd67131f6557fb4aa97d37c58412c11ac5d5faf5bc6312459d5",
+      "reused": false
+    },
+    {
+      "id": "card_goods_hover",
+      "file": "cards/card_goods_hover.png",
+      "width": 512,
+      "height": 512,
+      "category": "cards",
+      "spriteBorder": [
+        16,
+        32,
+        32,
+        32
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_card_goods_hover.py",
+      "actualMode": "RGBA",
+      "sha256": "02d248d5af200e7b95ee0052eb2e131d828f87dd236e24ca9c5f1c3b7b70ad9c",
+      "reused": false
+    },
+    {
+      "id": "card_goods_normal",
+      "file": "cards/card_goods_normal.png",
+      "width": 512,
+      "height": 512,
+      "category": "cards",
+      "spriteBorder": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_card_goods_normal.py",
+      "actualMode": "RGBA",
+      "sha256": "957b3be333963b358aa74379089a76af95390d811c2866e99c0b91d48d59a8f4",
+      "reused": false
+    },
+    {
+      "id": "decor_window_double_diamond",
+      "file": "decor/decor_window_double_diamond.png",
+      "width": 620,
+      "height": 620,
+      "category": "decor",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 200,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_decor_window_double_diamond.py",
+      "actualMode": "RGBA",
+      "sha256": "b859ad7dc406bd1de6f5be88cc22a730898ea7be59d00f39d9c5a2560eb64035",
+      "reused": false
+    },
+    {
+      "id": "detail_stage_paper",
+      "file": "decor/detail_stage_paper.png",
+      "width": 512,
+      "height": 384,
+      "category": "decor",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_detail_stage_paper.py",
+      "actualMode": "RGBA",
+      "sha256": "98c179319bc7015c24fe362d642cc603043b80c7f935dd49439107ea42b75ec1",
+      "reused": false
+    },
+    {
+      "id": "detail_stage_red_shard",
+      "file": "decor/detail_stage_red_shard.png",
+      "width": 256,
+      "height": 384,
+      "category": "decor",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_detail_stage_red_shard.py",
+      "actualMode": "RGBA",
+      "sha256": "fb4fa1b2df1e0ee736cfd13d4948349a4d5029ffc06b665e787d188255a5889e",
+      "reused": false
+    },
+    {
+      "id": "wasted_delist_wordmark",
+      "file": "delist/wasted_delist_wordmark.png",
+      "width": 1200,
+      "height": 420,
+      "category": "delist",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_wasted_delist_wordmark.py",
+      "actualMode": "RGBA",
+      "sha256": "ca5458b1bf63a09d20c4d12edb544bcfc9f85715cfad0c3b7aae320aecf79209",
+      "reused": false
+    },
+    {
+      "id": "icon_bag",
+      "file": "icons/icon_bag.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_bag.py",
+      "actualMode": "RGBA",
+      "sha256": "bffd4fe5d6f743cc8e1d3feb69f24155af84bbf9291adfb0752e0391bea98414",
+      "reused": false,
+      "svg": "icons/icon_bag.svg"
+    },
+    {
+      "id": "icon_cart",
+      "file": "icons/icon_cart.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_cart.py",
+      "actualMode": "RGBA",
+      "sha256": "c665b363aece48e51bdf58f4ab9bba8422a876929922aa2b8cd8000f4ca85d63",
+      "reused": false,
+      "svg": "icons/icon_cart.svg"
+    },
+    {
+      "id": "icon_chart",
+      "file": "icons/icon_chart.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_chart.py",
+      "actualMode": "RGBA",
+      "sha256": "1eea13acd138de353d725fca2f127af0ac2fd7ee7427d9fe521afbc1c21319ab",
+      "reused": false,
+      "svg": "icons/icon_chart.svg"
+    },
+    {
+      "id": "icon_check",
+      "file": "icons/icon_check.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_check.py",
+      "actualMode": "RGBA",
+      "sha256": "27c4ec845eaa72a454866e30e5a6d812ea21793bfe561cb95a77d84b7337f86f",
+      "reused": false,
+      "svg": "icons/icon_check.svg"
+    },
+    {
+      "id": "icon_close",
+      "file": "icons/icon_close.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_close.py",
+      "actualMode": "RGBA",
+      "sha256": "cc73a042c2f8822e14c7220fe1514993ff555b9233b1f11058119a9e5638bbb6",
+      "reused": false,
+      "svg": "icons/icon_close.svg"
+    },
+    {
+      "id": "icon_coin",
+      "file": "icons/icon_coin.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_coin.py",
+      "actualMode": "RGBA",
+      "sha256": "5a266518619df4a3d47a6f7abda5ca4b21c98316787f0d9bd000386204bd1e8e",
+      "reused": false,
+      "svg": "icons/icon_coin.svg"
+    },
+    {
+      "id": "icon_eye",
+      "file": "icons/icon_eye.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_eye.py",
+      "actualMode": "RGBA",
+      "sha256": "09fb5d2eb9ce130841499e6420995f01210644792006651ea703037825643757",
+      "reused": false,
+      "svg": "icons/icon_eye.svg"
+    },
+    {
+      "id": "icon_info",
+      "file": "icons/icon_info.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_info.py",
+      "actualMode": "RGBA",
+      "sha256": "09696f9f26cd7e38cee63f95510f6b69ab92cf52b83556bc2e019b0c2e1da181",
+      "reused": false,
+      "svg": "icons/icon_info.svg"
+    },
+    {
+      "id": "icon_left",
+      "file": "icons/icon_left.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_left.py",
+      "actualMode": "RGBA",
+      "sha256": "0dc28e86ebf5648c7431dbc4d3f1ece486d9a050245da1ee4555cbe39b434a5e",
+      "reused": false,
+      "svg": "icons/icon_left.svg"
+    },
+    {
+      "id": "icon_minus",
+      "file": "icons/icon_minus.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_minus.py",
+      "actualMode": "RGBA",
+      "sha256": "477e5fa9fcf8b31a5697544533706b146e00aa795834ac33a63b0cbf7e7c722d",
+      "reused": false,
+      "svg": "icons/icon_minus.svg"
+    },
+    {
+      "id": "icon_motion",
+      "file": "icons/icon_motion.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_motion.py",
+      "actualMode": "RGBA",
+      "sha256": "d469ade031e34bb5b2be6b31b0e4b57359f574b7846d5d511ebd9cc8c549b96b",
+      "reused": false,
+      "svg": "icons/icon_motion.svg"
+    },
+    {
+      "id": "icon_plus",
+      "file": "icons/icon_plus.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_plus.py",
+      "actualMode": "RGBA",
+      "sha256": "8b586f0b767c269df9188c4d4543c451a792db90c7dc1a45efa06e32b0593e4e",
+      "reused": false,
+      "svg": "icons/icon_plus.svg"
+    },
+    {
+      "id": "icon_rank",
+      "file": "icons/icon_rank.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_rank.py",
+      "actualMode": "RGBA",
+      "sha256": "a0287d9a6a2a1e9e1d826fd72eb7f8415278312085a60dd44213e865cf70157d",
+      "reused": false,
+      "svg": "icons/icon_rank.svg"
+    },
+    {
+      "id": "icon_reset",
+      "file": "icons/icon_reset.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_reset.py",
+      "actualMode": "RGBA",
+      "sha256": "a18f9ec8a3856fefafc08eaa488246b0862717dee8a8334f910eb2fdf94cf2a0",
+      "reused": false,
+      "svg": "icons/icon_reset.svg"
+    },
+    {
+      "id": "icon_return",
+      "file": "icons/icon_return.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_return.py",
+      "actualMode": "RGBA",
+      "sha256": "6663e883656d0d999740a58b47089a446a1079cc2040a61f6e288df52e46dd55",
+      "reused": false,
+      "svg": "icons/icon_return.svg"
+    },
+    {
+      "id": "icon_right",
+      "file": "icons/icon_right.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_right.py",
+      "actualMode": "RGBA",
+      "sha256": "df92840ae3d7af90d96960b8977683bd4faac2d1c45551f05e3586159dfede83",
+      "reused": false,
+      "svg": "icons/icon_right.svg"
+    },
+    {
+      "id": "icon_scroll",
+      "file": "icons/icon_scroll.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_scroll.py",
+      "actualMode": "RGBA",
+      "sha256": "c4fa9c15c7fbfa095090f315c16d78dafffd727095294e304e69976c05ae86e5",
+      "reused": false,
+      "svg": "icons/icon_scroll.svg"
+    },
+    {
+      "id": "icon_sort",
+      "file": "icons/icon_sort.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_sort.py",
+      "actualMode": "RGBA",
+      "sha256": "43290f0927b0f6093ac7990f079befae2d7221fd39db73dc5190c6da72b9ff6c",
+      "reused": false,
+      "svg": "icons/icon_sort.svg"
+    },
+    {
+      "id": "icon_stamina",
+      "file": "icons/icon_stamina.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_stamina.py",
+      "actualMode": "RGBA",
+      "sha256": "3d8dfa7700c3aeabf2e2492240d2ebf127d3ee3c8d22c4ca93ef8d6079c0d6cd",
+      "reused": false,
+      "svg": "icons/icon_stamina.svg"
+    },
+    {
+      "id": "icon_trade",
+      "file": "icons/icon_trade.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_trade.py",
+      "actualMode": "RGBA",
+      "sha256": "86d20096cd82ac309bc443aa6db9b2623a8ab4bf9e9ea7bc0ff887d00de0cc24",
+      "reused": false,
+      "svg": "icons/icon_trade.svg"
+    },
+    {
+      "id": "icon_trash",
+      "file": "icons/icon_trash.png",
+      "width": 256,
+      "height": 256,
+      "category": "icons",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_icon_trash.py",
+      "actualMode": "RGBA",
+      "sha256": "1e4d3d35b7ad9994cabc48c7b8f5986f527cbd1d481e4a2cfc8a01a39dae7d2e",
+      "reused": false,
+      "svg": "icons/icon_trash.svg"
+    },
+    {
+      "id": "loan_maturity_atlas",
+      "file": "inventory/loan_maturity_atlas.png",
+      "width": 2048,
+      "height": 1024,
+      "category": "inventory",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "XingShangMod/tools/draw_loan_maturity_atlas.py",
+      "actualMode": "RGBA",
+      "reused": false,
+      "sha256": "7bfd879ac39b299b92c871a3d10cc13e48892b5f98d45644f1c3c34ab14cebc1"
+    },
+    {
+      "id": "slot_inventory_empty_9s",
+      "file": "inventory/slot_inventory_empty_9s.png",
+      "width": 384,
+      "height": 256,
+      "category": "inventory",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_slot_inventory_empty_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "df4e8a288be49beaa1445bba5ff39ad99049ee28db3308d6c80b30fb4a9bc2db",
+      "reused": false
+    },
+    {
+      "id": "slot_inventory_long_9s",
+      "file": "inventory/slot_inventory_long_9s.png",
+      "width": 384,
+      "height": 256,
+      "category": "inventory",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_slot_inventory_long_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "68dab1e2cf92ddabbceb5b5864bf16f2125d18cddf2ac8387e0f199ffc32c35e",
+      "reused": false
+    },
+    {
+      "id": "slot_inventory_short_9s",
+      "file": "inventory/slot_inventory_short_9s.png",
+      "width": 384,
+      "height": 256,
+      "category": "inventory",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_slot_inventory_short_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "cc68e93985492156b1fc577618a78b113c6b94fe25b16173247b7ae5bbe296b2",
+      "reused": false
+    },
+    {
+      "id": "mask_chart_drybrush_tile",
+      "file": "masks/mask_chart_drybrush_tile.png",
+      "width": 256,
+      "height": 256,
+      "category": "masks",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Repeat",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_mask_chart_drybrush_tile.py",
+      "actualMode": "RGBA",
+      "sha256": "db8e23789b2112c4e34eded9ba05e1c323fae35cefee5543cbacd8017c61c3f4",
+      "reused": false
+    },
+    {
+      "id": "mask_ticker_edge_fade",
+      "file": "masks/mask_ticker_edge_fade.png",
+      "width": 512,
+      "height": 34,
+      "category": "masks",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_mask_ticker_edge_fade.py",
+      "actualMode": "RGBA",
+      "sha256": "17f3b79740935d1985d0dac5dc95dca03cfdd24bfa59cc3469314549084fdb5e",
+      "reused": false
+    },
+    {
+      "id": "panel_brand_block",
+      "file": "panels/panel_brand_block.png",
+      "width": 512,
+      "height": 160,
+      "category": "panels",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_brand_block.py",
+      "actualMode": "RGBA",
+      "sha256": "cd6001c9f0deaa81844eb10cfb16ceaa7e29c4e051c831cbc13986e63b2196ec",
+      "reused": false
+    },
+    {
+      "id": "panel_cart_rail_9s",
+      "file": "panels/panel_cart_rail_9s.png",
+      "width": 384,
+      "height": 512,
+      "category": "panels",
+      "spriteBorder": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_cart_rail_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "2978f463dd72bd5d611af7e7dfe32f509149646b96fc95324cc05810779a801a",
+      "reused": false
+    },
+    {
+      "id": "panel_contract_modal_9s",
+      "file": "panels/panel_contract_modal_9s.png",
+      "width": 640,
+      "height": 512,
+      "category": "panels",
+      "spriteBorder": [
+        16,
+        4,
+        24,
+        24
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_contract_modal_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "ac4086e80395cb6040e7cd3d14d8bc972187d67f5f4b9c00dac424e00933186c",
+      "reused": false
+    },
+    {
+      "id": "panel_detail_chart_9s",
+      "file": "panels/panel_detail_chart_9s.png",
+      "width": 512,
+      "height": 512,
+      "category": "panels",
+      "spriteBorder": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_detail_chart_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "2eb9b67d23cdeed0f6eea9eed125e7cca2a766f0d73f648c999afb635f4b249b",
+      "reused": false
+    },
+    {
+      "id": "panel_masthead_9s",
+      "file": "panels/panel_masthead_9s.png",
+      "width": 512,
+      "height": 128,
+      "category": "panels",
+      "spriteBorder": [
+        192,
+        16,
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_masthead_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "f1815bd4a0ab0847c1ed0a94af16e537712e985f62f726dd4c7ef6566283c207",
+      "reused": false
+    },
+    {
+      "id": "panel_merchant_window_9s",
+      "file": "panels/panel_merchant_window_9s.png",
+      "width": 512,
+      "height": 512,
+      "category": "panels",
+      "spriteBorder": [
+        96,
+        96,
+        96,
+        96
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_merchant_window_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "6abe0f205ee30d17654c049dd2d8dd45bcac66e846a6e7a4df86c9f9928ef610",
+      "reused": false
+    },
+    {
+      "id": "panel_paper_tooltip_9s",
+      "file": "panels/panel_paper_tooltip_9s.png",
+      "width": 384,
+      "height": 256,
+      "category": "panels",
+      "spriteBorder": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_paper_tooltip_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "3f5f48079fd279bac7f518ea7b5f85c5c69e261dd23441f40be9893b1f81733d",
+      "reused": false
+    },
+    {
+      "id": "panel_position_cell_9s",
+      "file": "panels/panel_position_cell_9s.png",
+      "width": 256,
+      "height": 128,
+      "category": "panels",
+      "spriteBorder": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_position_cell_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "d44aee74c87289588c06c47241a1f661a708e3bc5efb07b45c474b74538a52f7",
+      "reused": false
+    },
+    {
+      "id": "panel_story_news_9s",
+      "file": "panels/panel_story_news_9s.png",
+      "width": 384,
+      "height": 256,
+      "category": "panels",
+      "spriteBorder": [
+        3,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_story_news_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "a3fef31652a7e4bbab5b571f32666ba155499ca749583c9b6b920115165b8d5f",
+      "reused": false
+    },
+    {
+      "id": "panel_ticker_label",
+      "file": "panels/panel_ticker_label.png",
+      "width": 256,
+      "height": 80,
+      "category": "panels",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_ticker_label.py",
+      "actualMode": "RGBA",
+      "sha256": "ebef5cd6650921036abb700a2a90ed277ee658bb243264173ef950e28a687534",
+      "reused": false
+    },
+    {
+      "id": "panel_toast_9s",
+      "file": "panels/panel_toast_9s.png",
+      "width": 384,
+      "height": 96,
+      "category": "panels",
+      "spriteBorder": [
+        5,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_panel_toast_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "f403fde8f048206c391ae0cd7a91c3f74a4ac7e33ac25bc5c9c53f4c635fc15b",
+      "reused": false
+    },
+    {
+      "id": "tag_cart_count",
+      "file": "panels/tag_cart_count.png",
+      "width": 128,
+      "height": 112,
+      "category": "panels",
+      "spriteBorder": [
+        18,
+        18,
+        18,
+        18
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_tag_cart_count.py",
+      "actualMode": "RGBA",
+      "sha256": "d992169103b9c2b3ba9bd3b36035627e2bf2ecb596749f70e43a5535e05e631f",
+      "reused": false
+    },
+    {
+      "id": "row_ranking_hover_9s",
+      "file": "rows/row_ranking_hover_9s.png",
+      "width": 1024,
+      "height": 160,
+      "category": "rows",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_row_ranking_hover_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "b0ebdc4b73799aa81170111cd1fbc936b41e33c3fb6cc858f9d04f91070264dd",
+      "reused": false
+    },
+    {
+      "id": "row_ranking_normal_9s",
+      "file": "rows/row_ranking_normal_9s.png",
+      "width": 1024,
+      "height": 160,
+      "category": "rows",
+      "spriteBorder": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_row_ranking_normal_9s.py",
+      "actualMode": "RGBA",
+      "sha256": "157701fe712533a280e976f007decee9bd7662915b7fea2cdfacf46e1c94a9f8",
+      "reused": false
+    },
+    {
+      "id": "stamp_deal_chengjiao",
+      "file": "stamps/stamp_deal_chengjiao.png",
+      "width": 512,
+      "height": 512,
+      "category": "stamps",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_stamp_deal_chengjiao.py",
+      "actualMode": "RGBA",
+      "sha256": "6d7f38bcedf2ab57af5c1aeeaa5df5d5b7b4b2a91e1cb6968b8920b2df45c1e9",
+      "reused": false
+    },
+    {
+      "id": "stamp_deal_pingcang",
+      "file": "stamps/stamp_deal_pingcang.png",
+      "width": 512,
+      "height": 512,
+      "category": "stamps",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "bilinear",
+      "sourceScript": "tools/unity_ui/draw_stamp_deal_pingcang.py",
+      "actualMode": "RGBA",
+      "sha256": "d3cdb2c33cef77e00361798a0e1b9d6f27885da9889f9824dd420f4bacdc7eb8",
+      "reused": false
+    },
+    {
+      "id": "texture_celadon_halftone",
+      "file": "textures/texture_celadon_halftone.png",
+      "width": 512,
+      "height": 512,
+      "category": "textures",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 400,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_texture_celadon_halftone.py",
+      "actualMode": "RGBA",
+      "sha256": "74901617afe36f378638cd737aaf59ba6252bcae61c519204acdea3bd63ef988",
+      "reused": false
+    },
+    {
+      "id": "texture_ink_diagonal_hatch_tile",
+      "file": "textures/texture_ink_diagonal_hatch_tile.png",
+      "width": 256,
+      "height": 256,
+      "category": "textures",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": true,
+      "wrapMode": "Repeat",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_texture_ink_diagonal_hatch_tile.py",
+      "actualMode": "RGBA",
+      "sha256": "bbe1dd77ac8bdf27f8fb16fe1a259b561d9e79628524e6437dba99d8b2ce72b2",
+      "reused": false
+    },
+    {
+      "id": "texture_ink_grain_tile",
+      "file": "textures/texture_ink_grain_tile.png",
+      "width": 512,
+      "height": 512,
+      "category": "textures",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Repeat",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_texture_ink_grain_tile.py",
+      "actualMode": "RGBA",
+      "sha256": "dde536549e1731756d15306308a78a11402421a43efffedead4a7586f45a319e",
+      "reused": false
+    },
+    {
+      "id": "texture_paper_grain_tile",
+      "file": "textures/texture_paper_grain_tile.png",
+      "width": 512,
+      "height": 512,
+      "category": "textures",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Repeat",
+      "filterMode": "Bilinear",
+      "sourceScript": "tools/unity_ui/draw_texture_paper_grain_tile.py",
+      "actualMode": "RGBA",
+      "sha256": "da9f2133585ec822c1f79c3f20acaa60a659f84811bd267e983617a8eac81845",
+      "reused": false
+    },
+    {
+      "id": "01_飞天门辟邪玉",
+      "file": "items/final/01_飞天门辟邪玉.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/01_飞天门辟邪玉.png",
+      "sha256": "59bbd591641ada0cb0af02a403b6ef167cec850c8d27add250a4ac35f18b90a9"
+    },
+    {
+      "id": "02_藏宝图刺青拓样",
+      "file": "items/final/02_藏宝图刺青拓样.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/02_藏宝图刺青拓样.png",
+      "sha256": "91d34178d5941193f1587ceda54b1979dc9aba75e449ef73c1f3e9af3cfbb28b"
+    },
+    {
+      "id": "03_杂鱼收尸契",
+      "file": "items/final/03_杂鱼收尸契.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/03_杂鱼收尸契.png",
+      "sha256": "efa5e7fea10039cb07572af1aaa527dee15890dc67f579ba8ae62b0e840827ea"
+    },
+    {
+      "id": "04_铁拳暖食盒",
+      "file": "items/final/04_铁拳暖食盒.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/04_铁拳暖食盒.png",
+      "sha256": "c9781d3ba11435e75e6b81624f53d0922cabfb9ac6090351dd90bf22f1a7b6eb"
+    },
+    {
+      "id": "05_仿南宫尖肩甲",
+      "file": "items/final/05_仿南宫尖肩甲.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/05_仿南宫尖肩甲.png",
+      "sha256": "a7eb065f08b2f4317a34e68f758cd979b4f62907c251bb16f41f4261fd725fe5"
+    },
+    {
+      "id": "06_飞石帮荣誉会员牌",
+      "file": "items/final/06_飞石帮荣誉会员牌.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/06_飞石帮荣誉会员牌.png",
+      "sha256": "fd90cb5640160456057506f6356d92d34fd52e62c7fe9faaa24c9f08d87a0f93"
+    },
+    {
+      "id": "07_快报印花",
+      "file": "items/final/07_快报印花.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/07_快报印花.png",
+      "sha256": "a5c7ddea43c1ce9cceabc218894dbaf840edd5d570079346a25cc66840e5dae4"
+    },
+    {
+      "id": "08_海捕画影",
+      "file": "items/final/08_海捕画影.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/08_海捕画影.png",
+      "sha256": "affc494d9a6ec8616833220ad4a03c776394362cf8002c13cddb0216d56e7e42"
+    },
+    {
+      "id": "09_奇侠破奇冤戏本",
+      "file": "items/final/09_奇侠破奇冤戏本.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/09_奇侠破奇冤戏本.png",
+      "sha256": "4ce23cd6ccc5b5258daa59acb3fd63198bf140b112cba16f5d768422d25ba6ce"
+    },
+    {
+      "id": "10_装死槟榔",
+      "file": "items/final/10_装死槟榔.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/10_装死槟榔.png",
+      "sha256": "0ecc79ae3ffac863bc9e0c4b21b976e216a57589fe90fda7567c1898d57321c6"
+    },
+    {
+      "id": "11_南宫润喉糖",
+      "file": "items/final/11_南宫润喉糖.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/11_南宫润喉糖.png",
+      "sha256": "6afdc17b459183ef54dc89aa51e93c843042b9eaced0c73d9838a6a6a49f2da8"
+    },
+    {
+      "id": "12_断肠护花散",
+      "file": "items/final/12_断肠护花散.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/12_断肠护花散.png",
+      "sha256": "ad64f3c9cbe552f9003e587a168650ed16bf64da25e7c5e9a7d076646ddc8784"
+    },
+    {
+      "id": "13_崆峒全加豆浆",
+      "file": "items/final/13_崆峒全加豆浆.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/13_崆峒全加豆浆.png",
+      "sha256": "b0438a365e01cc8b9e3f449a97387ea2e26786e265ef188d0b5a1286b267bfa0"
+    },
+    {
+      "id": "14_纸夫人",
+      "file": "items/final/14_纸夫人.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/14_纸夫人.png",
+      "sha256": "5c3a8acdfac01d2a5ede8e88a210c32f38633c9e68ea69fbbdafa4cb03225f99"
+    },
+    {
+      "id": "15_白鲨鱼脍",
+      "file": "items/final/15_白鲨鱼脍.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/15_白鲨鱼脍.png",
+      "sha256": "b4a20783101a9425b47f3a19d30e3fd2f836762f789e5fe5da4e4b858f5125bf"
+    },
+    {
+      "id": "16_正色布",
+      "file": "items/final/16_正色布.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/16_正色布.png",
+      "sha256": "62fc2a63ffd47e5c08411b64585f0974b4c95d671f7686950275f26a482b380a"
+    },
+    {
+      "id": "17_和事灰浆",
+      "file": "items/final/17_和事灰浆.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/17_和事灰浆.png",
+      "sha256": "ee4967194213513ca0d8061073fe169082f393b5321c2aa399858c05ea1b52e2"
+    },
+    {
+      "id": "18_崆峒发光菜",
+      "file": "items/final/18_崆峒发光菜.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/18_崆峒发光菜.png",
+      "sha256": "60a219a0006019465a6510409ebac0290122ba346e472d33cac1f1ece9b7db34"
+    },
+    {
+      "id": "19_盆砂",
+      "file": "items/final/19_盆砂.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/19_盆砂.png",
+      "sha256": "5b745eff25cb42b8b950c7f2fd3e0b4f00f272a0b786f9992dd0031766ab4e6a"
+    },
+    {
+      "id": "20_地听瓮",
+      "file": "items/final/20_地听瓮.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/20_地听瓮.png",
+      "sha256": "62786448451eda032049cbc2c52b338e2e62d04fbf584f03fc41405379140d19"
+    },
+    {
+      "id": "21_羊脬渡命环",
+      "file": "items/final/21_羊脬渡命环.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/21_羊脬渡命环.png",
+      "sha256": "b2559b7ef84d9487aa1b5d85b303ff9f7edc29a1dba9951181225189f6b834e9"
+    },
+    {
+      "id": "22_传书雁",
+      "file": "items/final/22_传书雁.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/22_传书雁.png",
+      "sha256": "d0af9ef25a45130aad7b63cab0c5a481f64d432bff269af73859d19d3b17bae4"
+    },
+    {
+      "id": "23_五色泥",
+      "file": "items/final/23_五色泥.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/23_五色泥.png",
+      "sha256": "33bcf1604c0df3b242399ee72b8ca20f0160fe3cc3d277f4ad4b733736bbcd38"
+    },
+    {
+      "id": "24_防侠瓦",
+      "file": "items/final/24_防侠瓦.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/24_防侠瓦.png",
+      "sha256": "29314b60be10b8d28bd136921d31da4fd42fac1394ce60dfafe224deac7ad75f"
+    },
+    {
+      "id": "25_磁心投壶",
+      "file": "items/final/25_磁心投壶.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/25_磁心投壶.png",
+      "sha256": "5a10fb92c01f0f20ee8f81307a1af4f35d54031d56fd07ea110790059f5a2575"
+    },
+    {
+      "id": "26_遮颜斗笠",
+      "file": "items/final/26_遮颜斗笠.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/26_遮颜斗笠.png",
+      "sha256": "c37021f2dc1d9ff52b53b5abf0f2344ec572142deddc23a23b2d9cae092331ab"
+    },
+    {
+      "id": "27_云南软铁锭",
+      "file": "items/final/27_云南软铁锭.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/27_云南软铁锭.png",
+      "sha256": "57a23d664d6b4f79c88859efaffd98210f3e93a86e933a7fc15c929a626a06e5"
+    },
+    {
+      "id": "28_蜡看菜",
+      "file": "items/final/28_蜡看菜.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/28_蜡看菜.png",
+      "sha256": "cbbe6c4369d88d461d9dbd3a846201022f0ebdbe67789e64fbb15298680742a7"
+    },
+    {
+      "id": "29_开锋血",
+      "file": "items/final/29_开锋血.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/29_开锋血.png",
+      "sha256": "c5eec483ef4beb5efca042e35dc55dba2d295cfbf16983e80dd76ea40010c8cb"
+    },
+    {
+      "id": "30_断义袍",
+      "file": "items/final/30_断义袍.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/30_断义袍.png",
+      "sha256": "2977f4bcee20e144cb473108eac169c33cc424eb161af723a8e70074aadf5a73"
+    },
+    {
+      "id": "31_遮血褐衫",
+      "file": "items/final/31_遮血褐衫.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/31_遮血褐衫.png",
+      "sha256": "417a535e4e504fde129e8a93550a8c591e6dbe9f6696c245290d1e7dc15d885c"
+    },
+    {
+      "id": "32_点茶家什",
+      "file": "items/final/32_点茶家什.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/32_点茶家什.png",
+      "sha256": "256dcd4bb7e5edba645a378c2812b34bb4112200e0282819fd16fd4b47f19d36"
+    },
+    {
+      "id": "33_江湖路程图",
+      "file": "items/final/33_江湖路程图.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/33_江湖路程图.png",
+      "sha256": "8f049e9f6126aa7812b8f26340f8b85a856644174d55f39efa75f715c3af062e"
+    },
+    {
+      "id": "34_孤狼衔草",
+      "file": "items/final/34_孤狼衔草.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/34_孤狼衔草.png",
+      "sha256": "2138c77dc827544d96a1c10573a16f227f94fce6c4f2d4861a41d3af767ae44a"
+    },
+    {
+      "id": "35_洗手金盆",
+      "file": "items/final/35_洗手金盆.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/35_洗手金盆.png",
+      "sha256": "fb74a975362531bc8a84844befacbec1369358cd98bcc87a5bcad903170fb818"
+    },
+    {
+      "id": "36_嫁剑妆奁",
+      "file": "items/final/36_嫁剑妆奁.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/36_嫁剑妆奁.png",
+      "sha256": "7a4552760031db96938d053b47ba24fcdc420d7ca608abb49c5eedb7bf5b619f"
+    },
+    {
+      "id": "37_开山匾",
+      "file": "items/final/37_开山匾.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/37_开山匾.png",
+      "sha256": "31f48f4724d0c0268813c41f0e0cd5463969c1ee1f827f4eb63f24a3f80ee4c4"
+    },
+    {
+      "id": "38_威风诨号谱",
+      "file": "items/final/38_威风诨号谱.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/38_威风诨号谱.png",
+      "sha256": "0cef351b5fe545cace8095a128f0f523fdd310f6c67e48b47ba12587e8c9f880"
+    },
+    {
+      "id": "39_坐名旗",
+      "file": "items/final/39_坐名旗.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/39_坐名旗.png",
+      "sha256": "c6f75946173311270ed6a61a2fdee74c3aef0f19be881da5c2263d9af8112615"
+    },
+    {
+      "id": "40_太公直钩",
+      "file": "items/final/40_太公直钩.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/40_太公直钩.png",
+      "sha256": "f7d347def73b09f8d4c1b4781e2deae082f0887d0d0ab05687eac66689648f8a"
+    },
+    {
+      "id": "41_结善缘钵",
+      "file": "items/final/41_结善缘钵.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/41_结善缘钵.png",
+      "sha256": "37017bfff80dbffa307999c56a9a95494c8e614a9c21aa870142752fe2a5c399"
+    },
+    {
+      "id": "42_百炼包袱",
+      "file": "items/final/42_百炼包袱.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/42_百炼包袱.png",
+      "sha256": "e32427808516e357c338de7a99b728a2881af19ba5b664529784931247213d23"
+    },
+    {
+      "id": "43_绿林切口抄",
+      "file": "items/final/43_绿林切口抄.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/43_绿林切口抄.png",
+      "sha256": "88057367975fd530c6e1d312c4c4cf4dd352c26697e9fdfc30de7e6745794ffd"
+    },
+    {
+      "id": "44_袖蛇",
+      "file": "items/final/44_袖蛇.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/44_袖蛇.png",
+      "sha256": "405337a86ab4a27b564341cbdb750da09f04ea56feb99285c51e635e73e29d17"
+    },
+    {
+      "id": "45_掩耳蜡",
+      "file": "items/final/45_掩耳蜡.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/45_掩耳蜡.png",
+      "sha256": "7177482005d6df7cb7183c0c7c13770beb29fb96eba9acfb061e9961463243cb"
+    },
+    {
+      "id": "46_凤仙染甲浆",
+      "file": "items/final/46_凤仙染甲浆.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/46_凤仙染甲浆.png",
+      "sha256": "5ded65f571b42eb1bc2a16b1acd4976fa3717540dbf3506dfe17b3980f0a77c6"
+    },
+    {
+      "id": "47_点苍松露膏",
+      "file": "items/final/47_点苍松露膏.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/47_点苍松露膏.png",
+      "sha256": "f3021f20f8d6f51988dea094ea57ad1d296f31d12ffbdba69c6bf5b22ccea88a"
+    },
+    {
+      "id": "48_叆叇镜",
+      "file": "items/final/48_叆叇镜.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/48_叆叇镜.png",
+      "sha256": "43e3e9b3ca3bcd4b73f42f5049c1e6b637a267507c9dcaf3639698ac6e279def"
+    },
+    {
+      "id": "49_问亡圣筊",
+      "file": "items/final/49_问亡圣筊.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/49_问亡圣筊.png",
+      "sha256": "f4e12be157f53a0fd3438470a62de804df6e8614f4347479626e887ac5c94f3b"
+    },
+    {
+      "id": "50_七星晒衣竿",
+      "file": "items/final/50_七星晒衣竿.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/50_七星晒衣竿.png",
+      "sha256": "888796cf02830e69a480d2164f8c7aeb8eeaf7aef72ab6704028d2601f06e7ec"
+    },
+    {
+      "id": "51_轻功铃",
+      "file": "items/final/51_轻功铃.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/51_轻功铃.png",
+      "sha256": "9bb15a7b4c86b27067c6c6502e89afac4f6c9d27666c361402b11e659284e743"
+    },
+    {
+      "id": "52_唐门外堡宿舍",
+      "file": "items/final/52_唐门外堡宿舍.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/52_唐门外堡宿舍.png",
+      "sha256": "98685deb63ff6ea024cfb7da58ee941ae9abfac22637e5b9549b9fcbd9a0df35"
+    },
+    {
+      "id": "53_唐门谷底肉酱罐头",
+      "file": "items/final/53_唐门谷底肉酱罐头.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/53_唐门谷底肉酱罐头.png",
+      "sha256": "6fface64265be7fd2a80b5f2b7d63010f567a9c8e9fd2bb6f193ecff76cb5ffc"
+    },
+    {
+      "id": "54_奶娃布制玩偶",
+      "file": "items/final/54_奶娃布制玩偶.png",
+      "width": 312,
+      "height": 300,
+      "mode": "RGBA",
+      "category": "items/final",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/items/final/54_奶娃布制玩偶.png",
+      "sha256": "97f045a796b9f6a085e163e855dd70fec1c5dffda3a09d2fc733b1ed654a3dcb"
+    },
+    {
+      "id": "back_menu_screen_1__265",
+      "file": "native/back_menu_screen_1__265.png",
+      "width": 1920,
+      "height": 1080,
+      "mode": "RGBA",
+      "category": "native",
+      "spriteBorder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixelsPerUnit": 100,
+      "tintable": false,
+      "wrapMode": "Clamp",
+      "filterMode": "Bilinear",
+      "reused": true,
+      "source": "UI/design_UI/assets/native/back_menu_screen_1__265.png",
+      "sha256": "124a16c8d68655e93499cdd06582ce73a39322cb14aba6d39ca85f20bab76b78"
+    }
+  ]
+}
